@@ -27,11 +27,10 @@ public class Customer extends Person {
 	@Column(name="industry")
 	private String industry;
 	
-	@OneToMany(cascade = {CascadeType.DETACH,CascadeType.REFRESH,CascadeType.REMOVE})
-	@JoinColumn(name="address_id")
-	private List<Address> addresses;
+	@OneToMany(mappedBy="customer", cascade = CascadeType.ALL)
+	private List<Address> address;
 	
-	@OneToOne(cascade = {CascadeType.DETACH,CascadeType.REFRESH,CascadeType.REMOVE})
+	@OneToOne(cascade = CascadeType.ALL)
 	@JoinColumn(name="social_media_id")
 	private SocialMedia socialMedia;
 	
@@ -45,7 +44,7 @@ public class Customer extends Person {
 
 
 	public Customer() {
-		this.addresses = new ArrayList<Address>();
+		
 	}
 
 
@@ -79,20 +78,19 @@ public class Customer extends Person {
 	}
 
 
-	public List<Address> getAddresses() {
-		return addresses;
+	public List<Address> getAddress() {
+		return address;
 	}
 
 
-	public void setAddresses(List<Address> addresses) {
-		this.addresses = addresses;
+	public void setAddress(List<Address> address) {
+		this.address = address;
 	}
 
 
 	public SocialMedia getSocialMedia() {
 		return socialMedia;
 	}
-
 
 	public void setSocialMedia(SocialMedia socialMedia) {
 		this.socialMedia = socialMedia;
