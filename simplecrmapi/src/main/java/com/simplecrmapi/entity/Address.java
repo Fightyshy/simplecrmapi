@@ -5,16 +5,21 @@ import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
+import javax.persistence.JoinColumn;
+import javax.persistence.ManyToOne;
 import javax.persistence.Table;
 import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
+
+import com.fasterxml.jackson.annotation.JsonIgnore;
 
 @Entity
 @Table(name="address")
 public class Address {
 	@Id
 	@GeneratedValue(strategy=GenerationType.IDENTITY)
-	private long id;
+	@Column(name="id")
+	private Integer id;
 	
 	@Column(name="type_of_address")
 	@NotNull
@@ -57,6 +62,17 @@ public class Address {
 	
 	@Column(name="fax")
 	private Integer faxNumber;
+	
+	//TODO elegant solution, unidrectional required
+	@ManyToOne
+	@JoinColumn(name="customer_id")
+	@JsonIgnore
+	private Customer customer;
+	
+	@ManyToOne
+	@JoinColumn(name="employee_id")
+	@JsonIgnore
+	private Employee employee;
 
 	public Address() {
 	
@@ -78,11 +94,11 @@ public class Address {
 		this.faxNumber = faxNumber;
 	}
 
-	public long getId() {
+	public Integer getId() {
 		return id;
 	}
 
-	public void setId(long id) {
+	public void setId(Integer id) {
 		this.id = id;
 	}
 
@@ -165,5 +181,22 @@ public class Address {
 	public void setFaxNumber(Integer faxNumber) {
 		this.faxNumber = faxNumber;
 	}
+
+	public Customer getCustomer() {
+		return customer;
+	}
+
+	public void setCustomer(Customer customer) {
+		this.customer = customer;
+	}
+
+	public Employee getEmployee() {
+		return employee;
+	}
+
+	public void setEmployee(Employee employee) {
+		this.employee = employee;
+	}
+
 	
 }
