@@ -16,7 +16,8 @@ public class SocialMedia {
 	
 	@Id
 	@GeneratedValue(strategy=GenerationType.IDENTITY)
-	private long id;
+	@Column(name="id")
+	private Integer id;
 	
 	@Column(name="pref_sm")
 	@NotNull
@@ -57,11 +58,11 @@ public class SocialMedia {
 		this.whatsappHandle = whatsappHandle;
 	}
 
-	public long getId() {
+	public Integer getId() {
 		return id;
 	}
 
-	public void setId(long id) {
+	public void setId(Integer id) {
 		this.id = id;
 	}
 
