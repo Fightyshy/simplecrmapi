@@ -12,12 +12,13 @@ import javax.validation.constraints.NotNull;
 
 //For extension only
 @MappedSuperclass //means this is NOT an table entity
+//https://www.baeldung.com/hibernate-inheritance
 public class Person {
 	
 	@Id
 	@GeneratedValue(strategy=GenerationType.IDENTITY)
 	@Column(name="id")
-	private long id;
+	private Integer id;
 	
 	@Column(name="first_name")
 	@NotNull
@@ -40,7 +41,7 @@ public class Person {
 	@Column(name="phone_number")
 	private Integer phoneNumber;
 	
-	@Column(name="email")
+	@Column(name="email_address")
 	private String emailAddress;
 	
 	public Person() {
@@ -60,11 +61,11 @@ public class Person {
 		this.emailAddress = emailAddress;
 	}
 
-	public long getId() {
+	public Integer getId() {
 		return id;
 	}
 
-	public void setId(long id) {
+	public void setId(Integer id) {
 		this.id = id;
 	}
 
