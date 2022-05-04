@@ -2,14 +2,13 @@ package com.simplecrmapi.entity;
 
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Set;
 
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
-import javax.persistence.Id;
 import javax.persistence.JoinColumn;
+import javax.persistence.ManyToMany;
 import javax.persistence.OneToMany;
 import javax.persistence.OneToOne;
 import javax.persistence.Table;
@@ -19,10 +18,6 @@ import javax.validation.constraints.NotNull;
 @Entity
 @Table(name="employee")
 public class Employee extends Person{
-	
-	@Id
-	@GeneratedValue(strategy=GenerationType.IDENTITY)
-	private long id;
 	
 	//Metrics below
 	@Column(name="cases_active")
@@ -37,21 +32,20 @@ public class Employee extends Person{
 	@Column(name="cases_closed")
 	private Integer casesClosed;
 	
-	@OneToMany(cascade= {CascadeType.DETACH, CascadeType.REFRESH, CascadeType.REMOVE})
-	@JoinColumn(name="address_id")
+	@OneToMany(mappedBy="employee",cascade= {CascadeType.DETACH, CascadeType.REFRESH, CascadeType.REMOVE})
+//	@JoinColumn(mappedBy="employee")
 	private List<Address> addresses;
 	
 	@OneToOne(cascade= {CascadeType.DETACH, CascadeType.REFRESH, CascadeType.REMOVE})
 	@JoinColumn(name="social_media_id")
 	private SocialMedia socialMedia;
 	
-	@OneToMany(cascade= {CascadeType.DETACH})
-	@JoinColumn(name="customer_id")
-	private List<Customer> customers;
+	//TODO properly shift oneTomanys to appropriate POJOs and make appropriate db fixes
+	//Customers here redundant, see new dataflow plan
 
-	@OneToMany
-	@JoinColumn(name="case_id")
-	private List<Case> cases;
+//	@JsonIgnore
+	@ManyToMany(mappedBy="employee",cascade= {CascadeType.DETACH,CascadeType.REFRESH,CascadeType.REMOVE})
+	private Set<Cases> cases;
 	
 	public Employee() {
 	}
@@ -63,14 +57,6 @@ public class Employee extends Person{
 		this.casesPending = casesPending;
 		this.casesResolved = casesResolved;
 		this.casesClosed = casesClosed;
-	}
-
-	public long getId() {
-		return id;
-	}
-
-	public void setId(long id) {
-		this.id = id;
 	}
 
 	public Integer getCasesActive() {
@@ -113,14 +99,6 @@ public class Employee extends Person{
 		this.addresses = addresses;
 	}
 
-	public List<Customer> getCustomers() {
-		return customers;
-	}
-
-	public void setCustomers(List<Customer> customers) {
-		this.customers = customers;
-	}
-
 	public SocialMedia getSocialMedia() {
 		return socialMedia;
 	}
@@ -129,13 +107,11 @@ public class Employee extends Person{
 		this.socialMedia = socialMedia;
 	}
 
-	public List<Case> getCases() {
+	public Set<Cases> getCases() {
 		return cases;
 	}
 
-	public void setCases(List<Case> cases) {
+	public void setCases(Set<Cases> cases) {
 		this.cases = cases;
 	}
-	
-	
 }

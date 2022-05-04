@@ -1,8 +1,8 @@
 package com.simplecrmapi.entity;
 
 import java.time.LocalDate;
-import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
@@ -28,7 +28,7 @@ public class Customer extends Person {
 	private String industry;
 	
 	@OneToMany(mappedBy="customer", cascade = CascadeType.ALL)
-	private List<Address> address;
+	private Set<Address> address;
 	
 	@OneToOne(cascade = CascadeType.ALL)
 	@JoinColumn(name="social_media_id")
@@ -78,12 +78,12 @@ public class Customer extends Person {
 	}
 
 
-	public List<Address> getAddress() {
+	public Set<Address> getAddress() {
 		return address;
 	}
 
 
-	public void setAddress(List<Address> address) {
+	public void setAddress(Set<Address> address) {
 		this.address = address;
 	}
 
