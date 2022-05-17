@@ -6,5 +6,6 @@ public enum SocialMediaNames {
 	INSTAGRAM,
 	LINE,
 	WHATSAPP,
-	NONE
+	NO_PREFERENCE,
+	NONE //Special to denote "empty" SocialMedia object
 }
