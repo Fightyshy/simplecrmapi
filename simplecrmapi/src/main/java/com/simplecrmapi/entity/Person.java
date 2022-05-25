@@ -9,6 +9,7 @@ import javax.persistence.Id;
 import javax.persistence.MappedSuperclass;
 import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
+import javax.validation.constraints.Past;
 
 //For extension only
 @MappedSuperclass //means this is NOT an table entity
@@ -18,6 +19,7 @@ public class Person {
 	@Id
 	@GeneratedValue(strategy=GenerationType.IDENTITY)
 	@Column(name="id")
+//	@NotNull
 	private Integer id;
 	
 	@Column(name="first_name")
@@ -35,11 +37,11 @@ public class Person {
 	
 	@Column(name="date_of_birth")
 	@NotNull
-	@NotEmpty
+	@Past
 	private LocalDate dateOfBirth; //use this instead of java.Date.util (depreciated)
 	
 	@Column(name="phone_number")
-	private Integer phoneNumber;
+	private String phoneNumber;
 	
 	@Column(name="email_address")
 	private String emailAddress;
@@ -51,7 +53,7 @@ public class Person {
 	}
 
 	public Person(@NotNull @NotEmpty String firstName, String middleName, @NotNull @NotEmpty String lastName,
-			@NotNull @NotEmpty LocalDate dateOfBirth, Integer phoneNumber, String emailAddress) {
+			@NotNull @NotEmpty LocalDate dateOfBirth, String phoneNumber, String emailAddress) {
 		super();
 		this.firstName = firstName;
 		this.middleName = middleName;
@@ -101,11 +103,11 @@ public class Person {
 		this.dateOfBirth = dateOfBirth;
 	}
 
-	public Integer getPhoneNumber() {
+	public String getPhoneNumber() {
 		return phoneNumber;
 	}
 
-	public void setPhoneNumber(Integer phoneNumber) {
+	public void setPhoneNumber(String phoneNumber) {
 		this.phoneNumber = phoneNumber;
 	}
 

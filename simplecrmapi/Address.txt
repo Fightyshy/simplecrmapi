@@ -1,0 +1,5 @@
+1,PERSONAL,#03-14 Apartment building,096 Gutmann Throughway,,93019,United States of America,Florida,Montgomery,9305010782,
+2,BUSINESS,5024 Runolfsdottir Trace,Holdstadt Building,,82450-2161,United States of America,California,East Sadyefort,6898748512,3379465096
+3,ADMIN,Arms and armour,Administrative site 123,096 Gutmann Throughway,PL15 2RJ,United Kingdom,,Bathpool,07843591547,07812345678
+4,BUSINESS,Printwerks 3D printing services,203A Henderson Road,#06-03 Henderson Industrial Park,159547,Singapore,,Singapore,62732662,61234567
+5,PERSONAL,174-1062,Kusaicho Ono,,174-1062,Japan,Aichi,Konan-shi,81420195116,81123456789

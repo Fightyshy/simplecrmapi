@@ -1,0 +1,5 @@
+1,Myrtle,S,Delvalle,1960-04-16,8632489703,MyrtleSDelvalle@armyspy.com,EMAIL,Office Assistant,Business
+2,George,M,Martinez,1951-12-15,7188762879,GeorgeMMartinez@armyspy.com,PHONE,Combination food and preparation and serving worker,Food and Beverage
+3,Fryderyka,,Wieczorek,2002-12-13,0298739162,FryderykaWieczorek@teleworm.us,SOCIAL MEDIA,Oral and maxillofacial radiologist,Healthcare
+4,Elvira,,Castiglione,1981-05-20,739764184,ElviraCastiglione@armyspy.com,EMAIL,Employment clerk,Food and Beverage
+5,Alannah,,Whitham,1975-05-13,0224303925,AlannahWhitham@rhyta.com,PHONE,Cutting and slicing machine setter,Textiles

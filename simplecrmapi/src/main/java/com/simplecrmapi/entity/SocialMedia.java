@@ -57,6 +57,10 @@ public class SocialMedia {
 		this.lineHandle = lineHandle;
 		this.whatsappHandle = whatsappHandle;
 	}
+	
+	public SocialMedia(@NotNull String preferredSocialMedia) {
+		this.preferredSocialMedia = preferredSocialMedia;
+	}
 
 	public Integer getId() {
 		return id;

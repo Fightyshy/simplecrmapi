@@ -33,10 +33,9 @@ public class Employee extends Person{
 	private Integer casesClosed;
 	
 	@OneToMany(mappedBy="employee",cascade= {CascadeType.DETACH, CascadeType.REFRESH, CascadeType.REMOVE})
-//	@JoinColumn(mappedBy="employee")
 	private List<Address> addresses;
 	
-	@OneToOne(cascade= {CascadeType.DETACH, CascadeType.REFRESH, CascadeType.REMOVE})
+	@OneToOne(cascade=CascadeType.ALL)
 	@JoinColumn(name="social_media_id")
 	private SocialMedia socialMedia;
 	
@@ -51,7 +50,7 @@ public class Employee extends Person{
 	}
 
 	public Employee(@NotNull @NotEmpty String firstName, String middleName, @NotNull @NotEmpty String lastName,
-			@NotNull @NotEmpty LocalDate dateOfBirth, Integer phoneNumber, String emailAddress, Integer casesActive, Integer casesPending, Integer casesResolved, Integer casesClosed) {
+			@NotNull @NotEmpty LocalDate dateOfBirth, String phoneNumber, String emailAddress, Integer casesActive, Integer casesPending, Integer casesResolved, Integer casesClosed) {
 		super(firstName, middleName, lastName, dateOfBirth, phoneNumber, emailAddress);
 		this.casesActive = casesActive;
 		this.casesPending = casesPending;

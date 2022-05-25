@@ -1,5 +1,6 @@
 package com.simplecrmapi.entity;
 
+import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
@@ -57,19 +58,18 @@ public class Address {
 	
 	@Column(name="phone_number")
 	@NotNull
-	@NotEmpty
-	private Integer phoneNumber;
+	private String phoneNumber;
 	
 	@Column(name="fax")
-	private Integer faxNumber;
+	private String faxNumber;
 	
 	//TODO elegant solution, unidrectional required
-	@ManyToOne
+	@ManyToOne()
 	@JoinColumn(name="customer_id")
 	@JsonIgnore
 	private Customer customer;
 	
-	@ManyToOne
+	@ManyToOne(cascade={CascadeType.PERSIST,CascadeType.MERGE,CascadeType.DETACH,CascadeType.REFRESH})
 	@JoinColumn(name="employee_id")
 	@JsonIgnore
 	private Employee employee;
@@ -80,7 +80,7 @@ public class Address {
 
 	public Address(@NotNull @NotEmpty String typeOfAddress, @NotNull @NotEmpty String line1, String line2, String line3,
 			@NotNull @NotEmpty String postcode, @NotNull @NotEmpty String country, String province,
-			@NotNull @NotEmpty String city, @NotNull @NotEmpty Integer phoneNumber, Integer faxNumber) {
+			@NotNull @NotEmpty String city, @NotNull @NotEmpty String phoneNumber, String faxNumber) {
 		super();
 		this.typeOfAddress = typeOfAddress;
 		this.line1 = line1;
@@ -166,19 +166,19 @@ public class Address {
 		this.city = city;
 	}
 
-	public Integer getPhoneNumber() {
+	public String getPhoneNumber() {
 		return phoneNumber;
 	}
 
-	public void setPhoneNumber(Integer phoneNumber) {
+	public void setPhoneNumber(String phoneNumber) {
 		this.phoneNumber = phoneNumber;
 	}
 
-	public Integer getFaxNumber() {
+	public String getFaxNumber() {
 		return faxNumber;
 	}
 
-	public void setFaxNumber(Integer faxNumber) {
+	public void setFaxNumber(String faxNumber) {
 		this.faxNumber = faxNumber;
 	}
 

@@ -1,0 +1,5 @@
+1,TWITTER,facebooktest,@Testaccount,,,
+2,FACEBOOK,facebooktest2,,whatever,,
+3,INSTAGRAM,,@AnotherTest,whatever2,,idunnolol
+4,LINE,,,linetestpleaseignore,ialsodunnolol
+5,WHATSAPP,,,,,actualwhatsapptest

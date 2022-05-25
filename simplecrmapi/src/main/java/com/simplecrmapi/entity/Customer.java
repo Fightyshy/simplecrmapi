@@ -27,15 +27,16 @@ public class Customer extends Person {
 	@Column(name="industry")
 	private String industry;
 	
-	@OneToMany(mappedBy="customer", cascade = CascadeType.ALL)
-	private Set<Address> address;
+	//Back to limited cascade
+	@OneToMany(mappedBy="customer", cascade={CascadeType.DETACH,CascadeType.REFRESH,CascadeType.REMOVE})
+	private List<Address> address;
 	
-	@OneToOne(cascade = CascadeType.ALL)
+	@OneToOne(cascade=CascadeType.ALL)
 	@JoinColumn(name="social_media_id")
 	private SocialMedia socialMedia;
 	
 	public Customer(@NotNull @NotEmpty String firstName, String middleName, @NotNull @NotEmpty String lastName,
-			@NotNull @NotEmpty LocalDate dateOfBirth, Integer phoneNumber, String emailAddress, String prefComms, String occupation, String industry) {
+			@NotNull @NotEmpty LocalDate dateOfBirth, String phoneNumber, String emailAddress, String prefComms, String occupation, String industry) {
 		super(firstName, middleName, lastName, dateOfBirth, phoneNumber, emailAddress);
 		this.prefComms = prefComms;
 		this.occupation = occupation;
@@ -78,12 +79,12 @@ public class Customer extends Person {
 	}
 
 
-	public Set<Address> getAddress() {
+	public List<Address> getAddress() {
 		return address;
 	}
 
 
-	public void setAddress(Set<Address> address) {
+	public void setAddress(List<Address> address) {
 		this.address = address;
 	}
 
