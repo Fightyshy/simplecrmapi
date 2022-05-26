@@ -15,7 +15,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import java.util.ArrayList;
 import java.util.List;
 
-import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
 import org.mockito.InjectMocks;
@@ -67,7 +67,8 @@ class CustomerControllerTest {
 	
 	private List<Customer> finalTestingSet = new ArrayList<Customer>();
 	
-	@BeforeAll
+//	@BeforeAll //once before all tests
+	@BeforeEach //once before every test
 	void init() {
 		finalTestingSet = new ArrayList<Customer>();
 		//parse data into pojos, 5x each
@@ -397,7 +398,6 @@ class CustomerControllerTest {
 	@Test
 	@WithMockUser(username="john", roles= {"CUSTOMER"})
 	void updateAddressOnlyToCustomer() throws Exception{
-		init();
 		Address add = finalTestingSet.get(1).getAddress().get(0);
 		add.setCity("Very cursed update here");
 		
@@ -420,7 +420,6 @@ class CustomerControllerTest {
 	@Test
 	@WithMockUser(username="john", roles= {"CUSTOMER"})
 	void updateSocialMediaOnlyToCustomer() throws Exception{
-		init(); //works but weird
 		SocialMedia sm = finalTestingSet.get(1).getSocialMedia();
 		sm.setPreferredSocialMedia("NO_PREFERENCE");
 		
@@ -441,7 +440,6 @@ class CustomerControllerTest {
 	@Test
 	@WithMockUser(username="john", roles= {"CUSTOMER"})
 	void updateSocialMediaOnlyToCustomerInvalidID() throws Exception{
-		init(); //works but weird
 		SocialMedia sm = finalTestingSet.get(1).getSocialMedia();
 		sm.setPreferredSocialMedia("NO_PREFERENCE");
 		
@@ -462,7 +460,6 @@ class CustomerControllerTest {
 	@Test
 	@WithMockUser(username="john", roles= {"CUSTOMER"})
 	void updateSocialMediaOnlyToCustomerNullID() throws Exception{
-		init(); //works but weird
 		SocialMedia sm = finalTestingSet.get(1).getSocialMedia();
 		sm.setPreferredSocialMedia("NO_PREFERENCE");
 		
