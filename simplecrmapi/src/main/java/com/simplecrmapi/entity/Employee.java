@@ -33,7 +33,7 @@ public class Employee extends Person{
 	private Integer casesClosed;
 	
 	@OneToMany(mappedBy="employee",cascade= {CascadeType.DETACH, CascadeType.REFRESH, CascadeType.REMOVE})
-	private List<Address> addresses;
+	private List<Address> address;
 	
 	@OneToOne(cascade=CascadeType.ALL)
 	@JoinColumn(name="social_media_id")
@@ -90,12 +90,12 @@ public class Employee extends Person{
 		this.casesClosed = casesClosed;
 	}
 
-	public List<Address> getAddresses() {
-		return addresses;
+	public List<Address> getAddress() {
+		return address;
 	}
 
-	public void setAddresses(List<Address> addresses) {
-		this.addresses = addresses;
+	public void setAddress(List<Address> address) {
+		this.address = address;
 	}
 
 	public SocialMedia getSocialMedia() {
