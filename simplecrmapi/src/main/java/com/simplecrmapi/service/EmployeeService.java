@@ -19,4 +19,6 @@ public interface EmployeeService {
 	public List<Customer> getCustomersAssignedToEmployee(int ID);
 
 	public List<Cases> getEmployeeCasesByID(int ID);
+
+	public Customer getCustomerFromEmployeeAssignedCase(int empID, int caseID);
 }
