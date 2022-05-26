@@ -8,7 +8,6 @@ import javax.persistence.Query;
 
 import org.springframework.stereotype.Repository;
 
-import com.simplecrmapi.entity.Customer;
 import com.simplecrmapi.entity.Employee;
 import com.simplecrmapi.util.EntityNotFound;
 
