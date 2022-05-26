@@ -3,6 +3,7 @@ package com.simplecrmapi.dao;
 import java.util.List;
 
 import javax.persistence.EntityManager;
+import javax.persistence.EntityNotFoundException;
 import javax.persistence.Query;
 
 import org.springframework.stereotype.Repository;
@@ -42,10 +43,27 @@ public class EmployeeDAOImpl implements EmployeeDAO {
 	@Override
 	public Employee saveEmployee(Employee employee) {
 		//merge to save new/update old
-		Employee dbCustomer = entityManager.merge(employee);
+//		Employee dbCustomer = entityManager.merge(employee);
 		//set arg id to db id for save/update ops
-		employee.setId(dbCustomer.getId());
-		return employee;
+//		employee.setId(dbCustomer.getId());
+//		return employee;
+		Employee dbEmployee;
+		try {
+			//merge to save new/update old
+			if(employee.getId()==0) {
+				entityManager.persist(employee);
+				return employee;
+			}else if(employee.getId()!=0) {
+				dbEmployee = entityManager.merge(employee);
+				return dbEmployee;
+			}
+			
+			return null;
+		}catch(NullPointerException npe) {
+			throw new EntityNotFound();
+		}catch(EntityNotFoundException enfe) {
+			throw new EntityNotFound();
+		}
 	}
 
 	@Override
