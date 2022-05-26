@@ -56,8 +56,13 @@ public class EmployeeController {
 	@GetMapping("/id/customers")
 	public ResponseEntity<Object> getCustomersAssignedToEmployee(@RequestParam(name="id") int ID){
 		List<Customer> customers = employeeService.getCustomersAssignedToEmployee(ID);
-		
 		return ResponseEntity.ok(customers);
+	}
+	
+	@GetMapping("/id/cases/customer")
+	public ResponseEntity<Object> getCustomerFromEmployeeAssignedCase(@RequestParam(name="empId") int empID, @RequestParam(name="caseId") int caseID){
+		Customer customer = employeeService.getCustomerFromEmployeeAssignedCase(empID, caseID);
+		return ResponseEntity.ok(customer);
 	}
 	
 	@PostMapping("")
