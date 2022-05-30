@@ -12,4 +12,6 @@ public interface EmployeeDAO {
 	public Employee saveEmployee(Employee employee);
 
 	public void deleteEmployee(Integer ID);
+
+	public void deleteEmployeeAddressByIDs(int employeeID, int addressID);
 }

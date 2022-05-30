@@ -72,4 +72,13 @@ public class EmployeeDAOImpl implements EmployeeDAO {
 		deleteCustomer.executeUpdate();
 	}
 
+	@Override
+	public void deleteEmployeeAddressByIDs(int employeeID, int addressID) {
+		Query deleteAddress = entityManager.createQuery("delete from Address a where a.id=:addressID and a.employee.id=:employeeID");
+		deleteAddress.setParameter("customerID", employeeID);
+		deleteAddress.setParameter("addressID", addressID);
+		deleteAddress.executeUpdate();
+	}
+
+	
 }
