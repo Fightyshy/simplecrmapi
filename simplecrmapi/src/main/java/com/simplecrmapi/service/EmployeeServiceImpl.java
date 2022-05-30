@@ -3,16 +3,20 @@ package com.simplecrmapi.service;
 import java.util.ArrayList;
 import java.util.List;
 
+import javax.validation.Valid;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.simplecrmapi.dao.AddressDAO;
+import com.simplecrmapi.dao.CasesDAO;
 import com.simplecrmapi.dao.EmployeeDAO;
 import com.simplecrmapi.entity.Address;
 import com.simplecrmapi.entity.Cases;
 import com.simplecrmapi.entity.Customer;
 import com.simplecrmapi.entity.Employee;
+import com.simplecrmapi.entity.SocialMedia;
 import com.simplecrmapi.util.CustomerInvalidAddressException;
 import com.simplecrmapi.util.CustomerInvalidSocialMediaException;
 import com.simplecrmapi.util.EntityNotFound;
@@ -25,6 +29,9 @@ public class EmployeeServiceImpl implements EmployeeService {
 	
 	@Autowired
 	private AddressDAO addressDAO;
+	
+	@Autowired
+	private CasesDAO casesDAO;
 	
 	@Override
 	@Transactional
@@ -107,6 +114,51 @@ public class EmployeeServiceImpl implements EmployeeService {
 			return newEmployee;
 		}
 	}
+	
+	@Override
+	@Transactional
+	public Address saveNewAddressToEmployee(Address address, Integer ID) {
+		Employee addAddress = getEmployeeByID(ID);
+		addAddress.getAddress().add(address);
+		
+		employeeDAO.saveEmployee(addAddress);
+		addressDAO.save(address);
+		return address;
+	}
+	
+	@Override
+	@Transactional
+	public Cases saveNewCaseToEmployee(Cases cases, Integer ID) {
+		Employee addCase = getEmployeeByID(ID);
+		addCase.getCases().add(cases);
+		
+		employeeDAO.saveEmployee(addCase);
+		return cases;
+	}
+
+	@Override
+	@Transactional
+	public Address updateEmployeeAddressByID(Address address, Integer ID) {
+		return addressDAO.save(address);
+	}
+
+	@Override
+	public Cases updateEmployeeAssignedCaseByID(Cases cases, Integer ID) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public SocialMedia updateEmployeeSocialMedia(@Valid SocialMedia socialMedia, Integer ID) {
+		try {
+			Employee getEmployeeFromID = getEmployeeByID(ID);
+			getEmployeeFromID.setSocialMedia(socialMedia);
+			getEmployeeFromID = employeeDAO.saveEmployee(getEmployeeFromID);
+			return getEmployeeFromID.getSocialMedia();
+		}catch(NullPointerException e){
+			return null;
+		}
+	}
 
 	@Override
 	@Transactional
@@ -114,7 +166,37 @@ public class EmployeeServiceImpl implements EmployeeService {
 		employeeDAO.deleteEmployee(ID);
 	}
 
+	@Override
+	public void deleteEmployeeAddressByIDs(int employeeID, int addressID) {
+		employeeDAO.deleteEmployeeAddressByIDs(employeeID, addressID);
+	}
 
+	@Override
+	public void removeEmployeeAssignedCase(int employeeID, int caseID) {
+		Employee emp = getEmployeeByID(employeeID);
+		Cases foundCase = new Cases();
+		
+		//temp
+		for(Cases cases: emp.getCases()) {
+			if(cases.getId()==caseID) {
+				foundCase = cases;
+				emp.getCases().remove(cases);
+				break;
+			}
+		}
+		//save de-association for employee
+		employeeDAO.saveEmployee(emp);
+		//save de-association for case
+		
+		//temp
+		for(Employee emps:foundCase.getEmployee()) {
+			if(emps.getId()==employeeID) {
+				foundCase.getEmployee().remove(emps);
+				break;
+			}
+		}
+		casesDAO.saveCase(foundCase);
+	}
 
-
+	
 }
