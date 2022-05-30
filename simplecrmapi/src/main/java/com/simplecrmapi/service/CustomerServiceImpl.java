@@ -12,6 +12,7 @@ import com.simplecrmapi.entity.Address;
 import com.simplecrmapi.entity.Customer;
 import com.simplecrmapi.entity.SocialMedia;
 import com.simplecrmapi.util.CustomerInvalidAddressException;
+import com.simplecrmapi.util.CustomerInvalidObjectsException;
 import com.simplecrmapi.util.CustomerInvalidSocialMediaException;
 import com.simplecrmapi.util.EntityNotFound;
 
@@ -72,7 +73,7 @@ public class CustomerServiceImpl implements CustomerService {
 		if(customer.getId()==null) {
 			throw new EntityNotFound();
 		}else if((customer.getAddress().isEmpty()||customer.getAddress().equals(null))&&(customer.getSocialMedia()==null||!customer.getSocialMedia().getPreferredSocialMedia().equals("NO_PREFERENCE"))) {
-			
+			throw new CustomerInvalidObjectsException();
 		}else if(customer.getAddress().isEmpty()||customer.getAddress().equals(null)) {
 			throw new CustomerInvalidAddressException();
 		}else if(customer.getSocialMedia()==null||!customer.getSocialMedia().getPreferredSocialMedia().equals("NO_PREFERENCE")) {
