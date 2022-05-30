@@ -76,7 +76,7 @@ public class CustomerController {
 		return ResponseEntity.created(new URI("/customers/id/"+newCustomer.getId())).body(newCustomer);
 	}
 	
-	@PostMapping("/addresses")
+	@PostMapping("/id/addresses")
 	public ResponseEntity<Object> saveNewAddressToCustomer(@Valid @RequestBody Address address, @RequestParam(name="id") int ID) throws Exception{
 		Address newAddress = customerService.saveAddressToCustomer(address, ID);
 		return ResponseEntity.created(new URI("/customers/id/addresses/"+newAddress.getId())).body(newAddress);
@@ -90,7 +90,7 @@ public class CustomerController {
 	
 	//TODO temp ifs
 	//TODO validation catch, null catch
-	@PutMapping("/socialmedia")
+	@PutMapping("/id/socialmedia")
 	public ResponseEntity<Object> updateCustomerSocialMedia(@Valid @RequestBody SocialMedia socialMedia, @RequestParam(name="id") int ID){
 		SocialMedia sm = customerService.updateCustomerSocialMedia(socialMedia, ID);
 		if(sm==null) {
@@ -99,7 +99,7 @@ public class CustomerController {
 		return ResponseEntity.ok(sm);
 	}
 	
-	@PutMapping("/addresses")
+	@PutMapping("/id/addresses")
 	public ResponseEntity<Object> updateCustomerAddressByID(@Valid @RequestBody Address address){
 		Address updatedAddress = customerService.updateCustomerAddressByID(address);
 		if(updatedAddress==null) {
@@ -116,13 +116,13 @@ public class CustomerController {
 	}
 	
 	//Dodgy as fuck, worth revisiting
-	@DeleteMapping("/socialmedia")
+	@DeleteMapping("/id/socialmedia")
 	public ResponseEntity<Object> deleteCustomerSocialMedia(@RequestParam(name="id") int ID){
 		customerService.deleteCustomerSocialMediaByID(ID);
 		return ResponseEntity.noContent().build();
 	}
 	
-	@DeleteMapping("/addresses")
+	@DeleteMapping("/id/addresses")
 	public ResponseEntity<Object> deleteCustomerAddressByIDs(@RequestParam(name="customerid") int customerID, @RequestParam(name="addressid") int addressID){
 		customerService.deleteCustomerAddressByID(customerID, addressID);
 		return ResponseEntity.noContent().build();
