@@ -17,9 +17,11 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.simplecrmapi.entity.Address;
 import com.simplecrmapi.entity.Cases;
 import com.simplecrmapi.entity.Customer;
 import com.simplecrmapi.entity.Employee;
+import com.simplecrmapi.entity.SocialMedia;
 import com.simplecrmapi.service.EmployeeService;
 import com.simplecrmapi.util.EntityNotFound;
 
@@ -36,7 +38,7 @@ public class EmployeeController {
 	}
 	
 	@GetMapping("/id")
-	public ResponseEntity<Object> getEmployeeByID(@RequestParam(name="id") int ID) {
+	public ResponseEntity<Object> getEmployeeByID(@RequestParam("id") int ID) {
 		Employee emp = employeeService.getEmployeeByID(ID);
 		
 		if(emp!=null) {
@@ -48,39 +50,81 @@ public class EmployeeController {
 	}
 	
 	@GetMapping("/id/cases")
-	public ResponseEntity<Object> getEmployeeCasesByID(@RequestParam(name="id") int ID){
+	public ResponseEntity<Object> getEmployeeCasesByID(@RequestParam("id") int ID){
 		List<Cases> cases = employeeService.getEmployeeCasesByID(ID);
 		return ResponseEntity.ok(cases);
 	}
 	
 	@GetMapping("/id/customers")
-	public ResponseEntity<Object> getCustomersAssignedToEmployee(@RequestParam(name="id") int ID){
+	public ResponseEntity<Object> getCustomersAssignedToEmployee(@RequestParam("id") int ID){
 		List<Customer> customers = employeeService.getCustomersAssignedToEmployee(ID);
 		return ResponseEntity.ok(customers);
 	}
 	
 	@GetMapping("/id/cases/customer")
-	public ResponseEntity<Object> getCustomerFromEmployeeAssignedCase(@RequestParam(name="empId") int empID, @RequestParam(name="caseId") int caseID){
+	public ResponseEntity<Object> getCustomerFromEmployeeAssignedCase(@RequestParam("empId") int empID, @RequestParam("caseId") int caseID){
 		Customer customer = employeeService.getCustomerFromEmployeeAssignedCase(empID, caseID);
 		return ResponseEntity.ok(customer);
 	}
 	
 	@PostMapping("")
-	public ResponseEntity<Object> saveEmployee(@Valid @RequestBody Employee employee) throws Exception {
+	public ResponseEntity<Object> saveNewEmployee(@Valid @RequestBody Employee employee) throws Exception {
 		employee.setId(0);
 		Employee newEmployee = employeeService.saveEmployeeDetails(employee);
 		return ResponseEntity.created(new URI("/employees/id/"+newEmployee.getId())).body(newEmployee);
 	}
 	
+	@PostMapping("/id/addresses")
+	public ResponseEntity<Object> saveNewAddressToEmployee(@Valid @RequestBody Address address, @RequestParam("id") int ID) throws URISyntaxException{
+		Address newAddress = employeeService.saveNewAddressToEmployee(address, ID);
+		return ResponseEntity.created(new URI("/employees/id/addresses/"+newAddress.getId())).body(newAddress);
+	}
+	
+	@PostMapping("/id/cases")
+	public ResponseEntity<Object> saveNewCaseToEmployee(@Valid @RequestBody Cases cases, @RequestParam("id") int ID) throws URISyntaxException{
+		Cases newCase = employeeService.saveNewCaseToEmployee(cases, ID);
+		return ResponseEntity.created(new URI("/employees/id/cases/"+newCase.getId())).body(newCase);
+	}
+	
 	@PutMapping("")
-	public ResponseEntity<Object> updateEmployee(@Valid @RequestBody Employee employee) throws URISyntaxException {
+	public ResponseEntity<Object> updateFullEmployee(@Valid @RequestBody Employee employee) throws URISyntaxException {
 		Employee updatedEmployee = employeeService.saveEmployeeDetails(employee);
-		return ResponseEntity.created(new URI("/employees/id/"+updatedEmployee.getId())).body(updatedEmployee);
+		return ResponseEntity.ok(updatedEmployee);
+	}
+	
+	@PutMapping("/id/addresses")
+	public ResponseEntity<Object> updateEmployeeAddressByID(@Valid @RequestBody Address address, @RequestParam("id") int ID){
+		Address updatedAddress = employeeService.updateEmployeeAddressByID(address, ID);
+		return ResponseEntity.ok(updatedAddress);
+	}
+	
+	@PutMapping("/id/cases")
+	public ResponseEntity<Object> updateEmployeeAssignedCaseByID(@Valid @RequestBody Cases cases, @RequestParam("id") int ID){
+		Cases updatedCase = employeeService.updateEmployeeAssignedCaseByID(cases, ID);
+		return ResponseEntity.ok(updatedCase);
+	}
+	
+	@PutMapping("/id/socialmedia")
+	public ResponseEntity<Object> updateEmployeeSocialMedia(@Valid @RequestBody SocialMedia socialMedia, @RequestParam("id") int ID){
+		SocialMedia updatedSocialMedia = employeeService.updateEmployeeSocialMedia(socialMedia, ID);
+		return ResponseEntity.ok(updatedSocialMedia);
 	}
 	
 	@DeleteMapping("/id")
-	public ResponseEntity<Object> deleteEmployeeByID(@RequestParam(name="id") int ID) {
+	public ResponseEntity<Object> deleteEmployeeByID(@RequestParam("id") int ID) {
 		employeeService.deleteEmployeeByID(ID);
+		return ResponseEntity.noContent().build();
+	}
+	
+	@DeleteMapping("/id/addresses")
+	public ResponseEntity<Object> deleteCustomerAddressByIDs(@RequestParam("employeeId") int employeeID, @RequestParam("addressId") int addressID){
+		employeeService.deleteEmployeeAddressByIDs(employeeID, addressID);
+		return ResponseEntity.noContent().build();
+	}
+	
+	@DeleteMapping("/id/cases")
+	public ResponseEntity<Object> removeEmployeeAssignedCase(@RequestParam("employeeId") int employeeID, @RequestParam("caseId") int caseID){
+		employeeService.removeEmployeeAssignedCase(employeeID, caseID);
 		return ResponseEntity.noContent().build();
 	}
 }
