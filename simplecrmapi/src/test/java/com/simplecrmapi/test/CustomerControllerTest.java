@@ -44,6 +44,7 @@ import com.simplecrmapi.util.CustomerInvalidSocialMediaException;
 import com.simplecrmapi.util.EntityNotFound;
 
 //https://stackabuse.com/guide-to-unit-testing-spring-boot-rest-apis/
+//https://stackoverflow.com/questions/65520264/how-to-test-json-structure-in-spring-boot
 @WebMvcTest(CustomerController.class)
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 //https://www.baeldung.com/java-beforeall-afterall-non-static
@@ -377,7 +378,7 @@ class CustomerControllerTest {
 		Mockito.when(customerService.saveAddressToCustomer(any(Address.class), any(int.class))).thenReturn(add);
 		String expectedBody = mapper.writeValueAsString(add);
 		
-		MockHttpServletRequestBuilder mockRequest = MockMvcRequestBuilders.post("/customers/addresses",add).param("id", "0")
+		MockHttpServletRequestBuilder mockRequest = MockMvcRequestBuilders.post("/customers/id/addresses",add).param("id", "0")
 																		.contentType(MediaType.APPLICATION_JSON)
 																		.content(expectedBody)
 																		.accept(MediaType.APPLICATION_JSON);
@@ -404,7 +405,7 @@ class CustomerControllerTest {
 		Mockito.when(customerService.updateCustomerAddressByID(any(Address.class))).thenReturn(add);
 		String expectedBody = mapper.writeValueAsString(add);
 		
-		MockHttpServletRequestBuilder mockRequest = MockMvcRequestBuilders.put("/customers/addresses",add)
+		MockHttpServletRequestBuilder mockRequest = MockMvcRequestBuilders.put("/customers/id/addresses",add)
 																		.contentType(MediaType.APPLICATION_JSON)
 																		.content(expectedBody)
 																		.accept(MediaType.APPLICATION_JSON);
@@ -426,7 +427,7 @@ class CustomerControllerTest {
 		Mockito.when(customerService.updateCustomerSocialMedia(any(SocialMedia.class), any(int.class))).thenReturn(sm);
 		String expectedBody = mapper.writeValueAsString(sm);
 		
-		MockHttpServletRequestBuilder mockRequest = MockMvcRequestBuilders.put("/customers/socialmedia",sm).param("id", finalTestingSet.get(1).getId().toString())
+		MockHttpServletRequestBuilder mockRequest = MockMvcRequestBuilders.put("/customers/id/socialmedia",sm).param("id", finalTestingSet.get(1).getId().toString())
 																		.contentType(MediaType.APPLICATION_JSON)
 																		.content(expectedBody)
 																		.accept(MediaType.APPLICATION_JSON);
@@ -446,7 +447,7 @@ class CustomerControllerTest {
 		Mockito.when(customerService.updateCustomerSocialMedia(any(SocialMedia.class), any(int.class))).thenThrow(new EntityNotFound());
 		String expectedBody = mapper.writeValueAsString(sm);
 		
-		MockHttpServletRequestBuilder mockRequest = MockMvcRequestBuilders.put("/customers/socialmedia",sm).param("id", "55")
+		MockHttpServletRequestBuilder mockRequest = MockMvcRequestBuilders.put("/customers/id/socialmedia",sm).param("id", "55")
 																		.contentType(MediaType.APPLICATION_JSON)
 																		.content(expectedBody)
 																		.accept(MediaType.APPLICATION_JSON);
@@ -466,7 +467,7 @@ class CustomerControllerTest {
 		Mockito.when(customerService.updateCustomerSocialMedia(any(SocialMedia.class), any(int.class))).thenThrow(new EntityNotFound());
 		String expectedBody = mapper.writeValueAsString(sm);
 		
-		MockHttpServletRequestBuilder mockRequest = MockMvcRequestBuilders.put("/customers/socialmedia",sm).param("id", "")
+		MockHttpServletRequestBuilder mockRequest = MockMvcRequestBuilders.put("/customers/id/socialmedia",sm).param("id", "")
 																		.contentType(MediaType.APPLICATION_JSON)
 																		.content(expectedBody)
 																		.accept(MediaType.APPLICATION_JSON);
@@ -594,7 +595,7 @@ class CustomerControllerTest {
 	void deleteCustomerAddressByIDs() throws Exception{
 		Mockito.doNothing().when(customerService).deleteCustomerAddressByID(finalTestingSet.get(1).getId(),finalTestingSet.get(1).getAddress().get(0).getId());
 		
-		MockHttpServletRequestBuilder mockRequest = MockMvcRequestBuilders.delete("/customers/addresses").param("customerid", "2").param("addressid", "1")
+		MockHttpServletRequestBuilder mockRequest = MockMvcRequestBuilders.delete("/customers/id/addresses").param("customerid", "2").param("addressid", "1")
 																			.contentType(MediaType.APPLICATION_JSON);
 		
 		mockMvc.perform(mockRequest)
@@ -610,7 +611,7 @@ class CustomerControllerTest {
 	void wipeCustomerSocialMedia() throws Exception{
 		Mockito.doNothing().when(customerService).deleteCustomerSocialMediaByID(finalTestingSet.get(0).getId());
 		
-		MockHttpServletRequestBuilder mockRequest = MockMvcRequestBuilders.delete("/customers/socialmedia").param("id", "1")
+		MockHttpServletRequestBuilder mockRequest = MockMvcRequestBuilders.delete("/customers/id/socialmedia").param("id", "1")
 				.contentType(MediaType.APPLICATION_JSON);
 		
 		mockMvc.perform(mockRequest)
