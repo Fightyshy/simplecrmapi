@@ -39,6 +39,7 @@ public class Person {
 	@NotNull
 	@Past
 	private LocalDate dateOfBirth; //use this instead of java.Date.util (depreciated)
+	//sauce https://stackoverflow.com/questions/43039614/insert-fetch-java-time-localdate-objects-to-from-an-sql-database-such-as-h2
 	
 	@Column(name="phone_number")
 	private String phoneNumber;

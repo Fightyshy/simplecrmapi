@@ -31,7 +31,7 @@ public class CSVParser {
 					missingSplitted[i]=splitted[i];
 				}
 				missingSplitted[10]=null;
-				System.out.println("CSV line length: "+missingSplitted.length);
+//				System.out.println("CSV line length: "+missingSplitted.length);
 				csvMap.add(missingSplitted);
 			}else if(filename.equals("SocialMedia.txt")&&splitted.length!=7) {
 				String[] missingSM = new String[7];
