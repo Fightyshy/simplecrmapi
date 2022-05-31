@@ -17,17 +17,13 @@ public class RestExceptionHandler extends ResponseEntityExceptionHandler {
 	
 	@ExceptionHandler(EntityNotFound.class)
 	protected ResponseEntity<Object> handleEntityNotFound(EntityNotFound e){
-		
 		return ResponseEntity.status(HttpStatus.NOT_FOUND).body("404 NOT FOUND: Entity not found due to invalid ID");
-		
 	}
 	
 	//overriding
 	@ExceptionHandler(EntityNotFoundException.class)
 	protected ResponseEntity<Object> handleEntityNotFound(EntityNotFoundException e){
-		
 		return ResponseEntity.status(HttpStatus.NOT_FOUND).body("404 NOT FOUND: Entity not found due to invalid ID");
-		
 	}
 	
 	@ExceptionHandler(MethodArgumentTypeMismatchException.class)
@@ -48,5 +44,10 @@ public class RestExceptionHandler extends ResponseEntityExceptionHandler {
 	@ExceptionHandler(CustomerInvalidObjectsException.class)
 	protected ResponseEntity<Object> handleInvalidSocialMedia(CustomerInvalidObjectsException e){
 		return ResponseEntity.status(HttpStatus.NOT_ACCEPTABLE).body("406 NOT ACCEPTABLE: Customer is missing non-null/empty social media and address object(s)");
+	}
+	
+	@ExceptionHandler(InvalidParamsException.class)
+	protected ResponseEntity<Object> handleInvalidParams(InvalidParamsException e){
+		return ResponseEntity.badRequest().body("400 BAD REQUEST: Invalid params");
 	}
 }
