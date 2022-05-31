@@ -10,6 +10,7 @@ import org.springframework.stereotype.Repository;
 
 import com.simplecrmapi.entity.Employee;
 import com.simplecrmapi.util.EntityNotFound;
+import com.simplecrmapi.util.InvalidParamsException;
 
 @Repository
 public class EmployeeDAOImpl implements EmployeeDAO {
@@ -30,12 +31,12 @@ public class EmployeeDAOImpl implements EmployeeDAO {
 	@Override
 	public Employee getEmployeeByID(Integer ID) {
 		try {
-			Employee employee= entityManager.find(Employee.class, ID);
+			Employee employee = entityManager.find(Employee.class, ID);
 			return employee;
 		}catch(IllegalArgumentException e) {
-			e.printStackTrace();
+//			e.printStackTrace();
 //			System.out.println(">>> An exception due to invalid arguements has occurred, returning null");
-			throw new EntityNotFound();
+			throw new InvalidParamsException();
 		}
 	}
 

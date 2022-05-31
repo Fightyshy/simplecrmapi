@@ -10,8 +10,8 @@ import org.springframework.stereotype.Repository;
 
 import com.simplecrmapi.entity.Customer;
 import com.simplecrmapi.entity.SocialMedia;
-import com.simplecrmapi.enums.SocialMediaNames;
 import com.simplecrmapi.util.EntityNotFound;
+import com.simplecrmapi.util.InvalidParamsException;
 
 @Repository
 public class CustomerDAOImpl implements CustomerDAO {
@@ -36,7 +36,7 @@ public class CustomerDAOImpl implements CustomerDAO {
 		}catch(IllegalArgumentException e) {
 			e.printStackTrace();
 //			System.out.println(">>> An exception due to invalid arguements has occurred, returning null");
-			throw new EntityNotFound();
+			throw new InvalidParamsException();
 		}
 	}
 
