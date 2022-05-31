@@ -45,6 +45,7 @@ import com.simplecrmapi.rest.EmployeeController;
 import com.simplecrmapi.service.EmployeeService;
 import com.simplecrmapi.test.util.CSVParser;
 import com.simplecrmapi.util.EntityNotFound;
+import com.simplecrmapi.util.InvalidParamsException;
 
 @WebMvcTest(EmployeeController.class)
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
@@ -250,22 +251,23 @@ public class EmployeeControllerTest {
 				.andExpect(status().isOk())
 				.andExpect(jsonPath("$", hasSize(0)))
 				.andExpect(content().json(mapper.writeValueAsString(emptyList)));
+		
+		verify(employeeService).getEmployees();
 	}
 	
 	@Test
 	@WithMockUser(username="john", roles= {"CUSTOMER"})
 	void getEmployeeByID() throws Exception{
-		//wtf doesnt reset
-		System.out.println(employeeTestingSet.get(0).getId());
-		System.out.println(employeeTestingSet.get(0).getFirstName());
-		Mockito.when(employeeService.getEmployeeByID(employeeTestingSet.get(0).getId())).thenReturn(employeeTestingSet.get(0));
+		Mockito.when(employeeService.getEmployeeByID(1)).thenReturn(employeeTestingSet.get(0));
 		
 		mockMvc.perform(MockMvcRequestBuilders
 						.get("/employees/id").param("id", "1")
 						.contentType(MediaType.APPLICATION_JSON))
 						.andExpect(status().isOk())
 						.andExpect(jsonPath("$", notNullValue()))
-						.andExpect(jsonPath("$.firstName", is("Benjamin")));	
+						.andExpect(jsonPath("$.firstName", is("Benjamin")));
+		
+		verify(employeeService).getEmployeeByID(1);
 	}
 	
 	@Test
@@ -276,6 +278,9 @@ public class EmployeeControllerTest {
 		mockMvc.perform(MockMvcRequestBuilders.get("/employees/id").param("id", "").contentType(MediaType.APPLICATION_JSON))
 			.andExpect(status().isBadRequest())
 			.andExpect(jsonPath("$", is("400 BAD REQUEST: Invalid params")));
+		
+		//No need?
+//		verify(employeeService).getEmployeeByID(null);
 	}
 	
 	@Test
@@ -286,6 +291,8 @@ public class EmployeeControllerTest {
 		mockMvc.perform(MockMvcRequestBuilders.get("/employees/id").param("id", "55").contentType(MediaType.APPLICATION_JSON))
 			.andExpect(status().isNotFound())
 			.andExpect(jsonPath("$", is("404 NOT FOUND: Entity not found due to invalid ID")));
+		
+		verify(employeeService).getEmployeeByID(55);
 	}
 	
 	@Test
@@ -308,6 +315,8 @@ public class EmployeeControllerTest {
 		mockMvc.perform(MockMvcRequestBuilders.get("/employees/id/cases").param("id","1").contentType(MediaType.APPLICATION_JSON))
 			.andExpect(status().isOk())
 			.andExpect(jsonPath("$", hasSize(2)));
+		
+		verify(employeeService, times(3)).getEmployeeCasesByID(any(int.class));
 	}
 	
 	@Test
@@ -321,6 +330,8 @@ public class EmployeeControllerTest {
 		mockMvc.perform(MockMvcRequestBuilders.get("/employees/id/cases").param("id", "1").contentType(MediaType.APPLICATION_JSON))
 				.andExpect(status().isOk())
 				.andExpect(jsonPath("$", hasSize(0)));
+		
+		verify(employeeService, times(1)).getEmployeeCasesByID(1);
 	}
 	
 	@Test
@@ -338,6 +349,8 @@ public class EmployeeControllerTest {
 		mockMvc.perform((MockMvcRequestBuilders.get("/employees/id/customers").param("id", "3").contentType(MediaType.APPLICATION_JSON)))
 			.andExpect(status().isOk())
 			.andExpect(jsonPath("$", hasSize(3)));
+		
+		verify(employeeService, times(1)).getCustomersAssignedToEmployee(3);
 	}
 	
 	@Test
@@ -350,6 +363,22 @@ public class EmployeeControllerTest {
 		mockMvc.perform(MockMvcRequestBuilders.get("/employees/id/customers").param("id", "1").contentType(MediaType.APPLICATION_JSON))
 			.andExpect(status().isOk())
 			.andExpect(jsonPath("$", hasSize(0)));
+		
+		verify(employeeService, times(1)).getCustomersAssignedToEmployee(1);
+	}
+	
+	@Test
+	@WithMockUser(username="john", roles= {"CUSTOMER"})
+	void getEmployeeAssignedCustomersInvalidParam() throws Exception {
+		Employee emp = employeeTestingSet.get(0);
+		
+		Mockito.when(employeeService.getCustomersAssignedToEmployee(55)).thenThrow(new InvalidParamsException());
+		
+		mockMvc.perform(MockMvcRequestBuilders.get("/employees/id/customers").param("id", "55").contentType(MediaType.APPLICATION_JSON))
+				.andExpect(status().isBadRequest())
+				.andExpect(jsonPath("$", is("400 BAD REQUEST: Invalid params")));
+		
+		verify(employeeService, times(1)).getCustomersAssignedToEmployee(55);
 	}
 	
 	//employee->case->customer
@@ -369,6 +398,20 @@ public class EmployeeControllerTest {
 		mockMvc.perform(MockMvcRequestBuilders.get("/employees/id/cases/customer").param("empId", "3").param("caseId", "2").contentType(MediaType.APPLICATION_JSON))
 				.andExpect(status().isOk())
 				.andExpect(jsonPath("$.id", is(2)));
+		
+		verify(employeeService, times(1)).getCustomerFromEmployeeAssignedCase(3,2);
+	}
+	
+	@Test
+	@WithMockUser(username="john", roles= {"CUSTOMER"})
+	void getCustomerFromEmployeeAssignedCaseInvalidParam() throws Exception {
+		Mockito.when(employeeService.getCustomerFromEmployeeAssignedCase(321, 55)).thenThrow(new InvalidParamsException());
+		
+		mockMvc.perform((MockMvcRequestBuilders.get("/employees/id/cases/customer").param("empId", "321").param("caseId", "55").contentType(MediaType.APPLICATION_JSON)))
+				.andExpect(status().isBadRequest())
+				.andExpect(jsonPath("$", is("400 BAD REQUEST: Invalid params")));
+		
+		verify(employeeService, times(1)).getCustomerFromEmployeeAssignedCase(321, 55);
 	}
 	
 	//POST
@@ -393,7 +436,7 @@ public class EmployeeControllerTest {
         mockMvc.perform(mockRequest)
 		        .andExpect(status().isCreated())
 		        .andExpect(content().json(expectedBody));
-//        verify(employeeService.saveEmployeeDetails(emp),times(1));
+        verify(employeeService,times(1)).saveEmployeeDetails(any(Employee.class));
 	}
 	
 	@Test
@@ -412,6 +455,8 @@ public class EmployeeControllerTest {
 		mockMvc.perform(mockRequest)
 				.andExpect(status().isCreated())
 				.andExpect(content().json(expectedBody));
+		
+		verify(employeeService,times(1)).saveNewAddressToEmployee(any(Address.class), any(int.class));
 	}
 	
 	@Test
@@ -429,6 +474,8 @@ public class EmployeeControllerTest {
 		mockMvc.perform(mockRequest)
 				.andExpect(status().isCreated())
 				.andExpect(content().json(expectedBody));
+		
+		verify(employeeService,times(1)).saveNewCaseToEmployee(any(Cases.class), any(int.class));
 	}
 	
 	//PUT
@@ -450,6 +497,8 @@ public class EmployeeControllerTest {
 		
 		mockMvc.perform(mockRequest)
 				.andExpect(content().json(expectedBody));
+		
+		verify(employeeService, times(1)).saveEmployeeDetails(any(Employee.class));
 	}
 	
 	@Test
@@ -469,6 +518,22 @@ public class EmployeeControllerTest {
 		mockMvc.perform(MockRequest)
 				.andExpect(status().isOk())
 				.andExpect(content().json(expectedBody));
+		
+		verify(employeeService, times(1)).updateEmployeeAddressByID(any(Address.class),any(int.class));
+	}
+	
+	@Test
+	@WithMockUser(username="john", roles= {"CUSTOMER"})
+	void updateEmployeeAddressByIDInvalidID() throws Exception {
+		Mockito.when(employeeService.updateEmployeeAddressByID(any(Address.class), any(int.class))).thenThrow(new InvalidParamsException());
+		mockMvc.perform(MockMvcRequestBuilders.put("/employees/id/addresses").param("id", "555")
+											.contentType(MediaType.APPLICATION_JSON)
+											.content(mapper.writeValueAsString(employeeTestingSet.get(0).getAddress().get(0)))
+											.accept(MediaType.APPLICATION_JSON))
+			.andExpect(status().isBadRequest())
+			.andExpect(jsonPath("$", is("400 BAD REQUEST: Invalid params")));
+		
+		verify(employeeService, times(1)).updateEmployeeAddressByID(any(Address.class),any(int.class));
 	}
 	
 	@Test
@@ -488,6 +553,22 @@ public class EmployeeControllerTest {
 		mockMvc.perform(MockRequest)
 				.andExpect(status().isOk())
 				.andExpect(content().json(expectedBody));
+		
+		verify(employeeService, times(1)).updateEmployeeAssignedCaseByID(any(Cases.class),any(int.class));
+	}
+	
+	@Test
+	@WithMockUser(username="john", roles= {"CUSTOMER"})
+	void updateEmployeeAssignedCaseByIDInvalidID() throws Exception {
+		Mockito.when(employeeService.updateEmployeeAssignedCaseByID(any(Cases.class), any(int.class))).thenThrow(new InvalidParamsException());
+		mockMvc.perform(MockMvcRequestBuilders.put("/employees/id/cases").param("id", "555")
+											.contentType(MediaType.APPLICATION_JSON)
+											.content(mapper.writeValueAsString(employeeTestingSet.get(0).getCases().iterator().next()))
+											.accept(MediaType.APPLICATION_JSON))
+			.andExpect(status().isBadRequest())
+			.andExpect(jsonPath("$", is("400 BAD REQUEST: Invalid params")));
+		
+		verify(employeeService, times(1)).updateEmployeeAssignedCaseByID(any(Cases.class),any(int.class));
 	}
 	
 	@Test
@@ -506,14 +587,31 @@ public class EmployeeControllerTest {
 		mockMvc.perform(MockRequest)
 				.andExpect(status().isOk())
 				.andExpect(content().json(expectedBody));
+		
+		verify(employeeService, times(1)).updateEmployeeSocialMedia(any(SocialMedia.class), any(int.class));
+	}
+	
+	@Test
+	@WithMockUser(username="john", roles= {"CUSTOMER"})
+	void updateEmployeeSocialMediaInvalidID() throws Exception {
+		Mockito.when(employeeService.updateEmployeeSocialMedia(any(SocialMedia.class), any(int.class))).thenThrow(new InvalidParamsException());
+		mockMvc.perform(MockMvcRequestBuilders.put("/employees/id/socialmedia").param("id", "555")
+											.contentType(MediaType.APPLICATION_JSON)
+											.content(mapper.writeValueAsString(employeeTestingSet.get(0).getSocialMedia()))
+											.accept(MediaType.APPLICATION_JSON))
+			.andExpect(status().isBadRequest())
+			.andExpect(jsonPath("$", is("400 BAD REQUEST: Invalid params")));
+		
+		verify(employeeService, times(1)).updateEmployeeSocialMedia(any(SocialMedia.class), any(int.class));
 	}
 	
 	//TODO Need to think
-	@Test
-	@WithMockUser(username="john", roles= {"CUSTOMER"})
-	void updateEmployeeStats() {
-		
-	}
+	//Concept depreciated, can update via full employee endpoints /w validation support
+//	@Test
+//	@WithMockUser(username="john", roles= {"CUSTOMER"})
+//	void updateEmployeeStats() {
+//		
+//	}
 	
 	//DELETE
 	@Test
@@ -532,17 +630,38 @@ public class EmployeeControllerTest {
 	
 	@Test
 	@WithMockUser(username="john", roles= {"CUSTOMER"})
+	void deleteEmployeeInvalidParams() throws Exception {
+		Mockito.doThrow(new InvalidParamsException()).when(employeeService).deleteEmployeeByID(555);
+		mockMvc.perform(MockMvcRequestBuilders.delete("/employees/id").param("id", "555").contentType(MediaType.APPLICATION_JSON))
+				.andExpect(status().isBadRequest());
+		
+		verify(employeeService, times(1)).deleteEmployeeByID(555);
+	}
+	
+	@Test
+	@WithMockUser(username="john", roles= {"CUSTOMER"})
 	void deleteEmployeeCase() throws Exception {
 		//id=1 case of id=1 employee
-		Mockito.doNothing().when(employeeService).removeEmployeeAssignedCase(employeeTestingSet.get(0).getId(), employeeTestingSet.get(0).getCases().iterator().next().getId());
+//		Mockito.doNothing().when(employeeService).removeEmployeeAssignedCase(employeeTestingSet.get(0).getId(), employeeTestingSet.get(0).getCases().iterator().next().getId());
+		Mockito.doNothing().when(employeeService).removeEmployeeAssignedCase(1, 3);
 		
-		MockHttpServletRequestBuilder mockRequest = MockMvcRequestBuilders.delete("/employees/id/cases").param("employeeId", "1").param("caseId", "1")
+		MockHttpServletRequestBuilder mockRequest = MockMvcRequestBuilders.delete("/employees/id/cases").param("employeeId", "1").param("caseId", "3")
 																		.contentType(MediaType.APPLICATION_JSON);
 		
 		mockMvc.perform(mockRequest)
 				.andExpect(status().isNoContent());
 		
-		verify(employeeService, times(1)).removeEmployeeAssignedCase(employeeTestingSet.get(0).getId(), employeeTestingSet.get(0).getCases().iterator().next().getId());
+		verify(employeeService, times(1)).removeEmployeeAssignedCase(1,3);
+	}
+	
+	@Test
+	@WithMockUser(username="john", roles= {"CUSTOMER"})
+	void deleteEmployeeCaseInvalidParams() throws Exception {
+		Mockito.doThrow(new InvalidParamsException()).when(employeeService).removeEmployeeAssignedCase(555, 555);
+		mockMvc.perform(MockMvcRequestBuilders.delete("/employees/id/cases").param("employeeId", "555").param("caseId", "555").contentType(MediaType.APPLICATION_JSON))
+				.andExpect(status().isBadRequest());
+		
+		verify(employeeService, times(1)).removeEmployeeAssignedCase(555,555);
 	}
 	
 	@Test
@@ -558,5 +677,15 @@ public class EmployeeControllerTest {
 				.andExpect(status().isNoContent());
 		
 		verify(employeeService, times(1)).deleteEmployeeAddressByIDs(2, 1);
+	}
+	
+	@Test
+	@WithMockUser(username="john", roles= {"CUSTOMER"})
+	void deleteEmployeeAddressInvalidParams() throws Exception {
+		Mockito.doThrow(new InvalidParamsException()).when(employeeService).deleteEmployeeAddressByIDs(555, 555);
+		mockMvc.perform(MockMvcRequestBuilders.delete("/employees/id/addresses").param("employeeId", "555").param("addressId", "555").contentType(MediaType.APPLICATION_JSON))
+				.andExpect(status().isBadRequest());
+		
+		verify(employeeService, times(1)).deleteEmployeeAddressByIDs(555,555);
 	}
 }
