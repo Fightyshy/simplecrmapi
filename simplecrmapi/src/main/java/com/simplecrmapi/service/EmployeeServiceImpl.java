@@ -20,6 +20,7 @@ import com.simplecrmapi.entity.SocialMedia;
 import com.simplecrmapi.util.CustomerInvalidAddressException;
 import com.simplecrmapi.util.CustomerInvalidSocialMediaException;
 import com.simplecrmapi.util.EntityNotFound;
+import com.simplecrmapi.util.InvalidParamsException;
 
 @Service
 public class EmployeeServiceImpl implements EmployeeService {
@@ -75,16 +76,18 @@ public class EmployeeServiceImpl implements EmployeeService {
 	
 	@Override
 	public Customer getCustomerFromEmployeeAssignedCase(int empID, int caseID) {
-		Employee emp = employeeDAO.getEmployeeByID(empID);
-		Cases cases = new Cases();
-		//cleaner way doko
-		for(Cases cas:emp.getCases()) {
-			if(cas.getId()==caseID) {
-				cases = cas;
-				break;
+		//Trade cumbersome set iteration for 2 queries and comparator?
+		try {
+			Employee emp = employeeDAO.getEmployeeByID(empID);
+			Cases cases = casesDAO.getCaseByID(caseID);
+			if(emp.getCases().contains(cases)) {
+				return cases.getCustomer();
+			}else {
+				return null;
 			}
+		}catch(Exception e) {
+			throw new EntityNotFound();
 		}
-		return cases.getCustomer();
 	}
 
 	
