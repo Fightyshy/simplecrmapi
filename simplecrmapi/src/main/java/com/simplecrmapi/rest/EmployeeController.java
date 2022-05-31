@@ -42,7 +42,7 @@ public class EmployeeController {
 		Employee emp = employeeService.getEmployeeByID(ID);
 		
 		if(emp!=null) {
-			return ResponseEntity.ok(employeeService.getEmployeeByID(ID));
+			return ResponseEntity.ok(emp);
 		}else {
 			throw new EntityNotFound(); //temp
 //			return ResponseEntity.status(HttpStatus.NOT_FOUND).body("404 NOT FOUND: Entity not found with parameters"); //Is ideal, not working atm
