@@ -37,10 +37,9 @@ public class CustomerController {
 	
 	@GetMapping("id")
 	public ResponseEntity<Customer> getCustomerByID(@RequestParam(name="id") int ID) {
-//		return customerService.getCustomerByID(ID);
 		Customer retrieved = customerService.getCustomerByID(ID);
 		if(retrieved!=null) {
-			return ResponseEntity.ok(customerService.getCustomerByID(ID));
+			return ResponseEntity.ok(retrieved);
 		}else {
 			throw new EntityNotFound(); //temp
 		}
