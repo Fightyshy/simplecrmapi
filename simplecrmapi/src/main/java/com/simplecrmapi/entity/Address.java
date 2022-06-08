@@ -3,6 +3,7 @@ package com.simplecrmapi.entity;
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
+import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
@@ -64,7 +65,7 @@ public class Address {
 	private String faxNumber;
 	
 	//TODO elegant solution, unidrectional required
-	@ManyToOne()
+	@ManyToOne(fetch=FetchType.LAZY)
 	@JoinColumn(name="customer_id")
 	@JsonIgnore
 	private Customer customer;
