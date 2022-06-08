@@ -80,6 +80,7 @@ public class EmployeeServiceImpl implements EmployeeService {
 		try {
 			Employee emp = employeeDAO.getEmployeeByID(empID);
 			Cases cases = casesDAO.getCaseByID(caseID);
+			//Check if cases is part of emp set
 			if(emp.getCases().contains(cases)) {
 				return cases.getCustomer();
 			}else {
@@ -94,7 +95,6 @@ public class EmployeeServiceImpl implements EmployeeService {
 	@Override
 	@Transactional
 	public Employee saveEmployeeDetails(Employee employee) {
-		Employee newEmployee;
 		if(employee.getId()==null) {
 			throw new EntityNotFound();
 		}else if((employee.getAddress().isEmpty()||employee.getAddress().equals(null))&&(employee.getSocialMedia()==null||!employee.getSocialMedia().getPreferredSocialMedia().equals("NO_PREFERENCE"))) {
@@ -105,11 +105,12 @@ public class EmployeeServiceImpl implements EmployeeService {
 			throw new CustomerInvalidSocialMediaException();
 		}
 		
+		employee.setId(0);
+		Employee newEmployee = employeeDAO.saveEmployee(employee);
+
 		if(employee.getAddress().isEmpty()||employee.getAddress()==null) {
-			newEmployee = employeeDAO.saveEmployee(employee);
 			return newEmployee; //TODO customer should be modified if needed			
 		}else {
-			newEmployee = employeeDAO.saveEmployee(employee);
 			for(Address add:employee.getAddress()) {
 				add.setEmployee(newEmployee); //It works shutup
 				addressDAO.save(add);
@@ -122,6 +123,7 @@ public class EmployeeServiceImpl implements EmployeeService {
 	@Transactional
 	public Address saveNewAddressToEmployee(Address address, Integer ID) {
 		Employee addAddress = getEmployeeByID(ID);
+		address.setId(0);
 		addAddress.getAddress().add(address);
 		
 		employeeDAO.saveEmployee(addAddress);
@@ -133,6 +135,7 @@ public class EmployeeServiceImpl implements EmployeeService {
 	@Transactional
 	public Cases saveNewCaseToEmployee(Cases cases, Integer ID) {
 		Employee addCase = getEmployeeByID(ID);
+		cases.setId(0);
 		addCase.getCases().add(cases);
 		
 		employeeDAO.saveEmployee(addCase);
@@ -147,8 +150,11 @@ public class EmployeeServiceImpl implements EmployeeService {
 
 	@Override
 	public Cases updateEmployeeAssignedCaseByID(Cases cases, Integer ID) {
-		// TODO Auto-generated method stub
-		return null;
+		Employee addCase = getEmployeeByID(ID);
+		addCase.getCases().add(cases);
+		
+		employeeDAO.saveEmployee(addCase);
+		return cases;
 	}
 
 	@Override
