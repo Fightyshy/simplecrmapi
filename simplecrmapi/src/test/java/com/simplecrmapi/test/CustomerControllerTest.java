@@ -160,7 +160,7 @@ class CustomerControllerTest {
 						.andExpect(jsonPath("$[3].firstName", is("Elvira")))
 						.andExpect(jsonPath("$[4].firstName", is("Alannah")));
 		
-		verify(customerService).getCustomers();
+		verify(customerService, times(1)).getCustomers();
 	}
 	
 	@Test
@@ -173,6 +173,8 @@ class CustomerControllerTest {
 		mockMvc.perform(MockMvcRequestBuilders.get("/customers").contentType(MediaType.APPLICATION_JSON))
 												.andExpect(status().isOk())
 												.andExpect(content().json(mapper.writeValueAsString(emptyList)));
+		
+		verify(customerService, times(1)).getCustomers();
 	}
 
 	@Test
@@ -187,7 +189,7 @@ class CustomerControllerTest {
 						.andExpect(jsonPath("$", notNullValue()))
 						.andExpect(jsonPath("$.firstName", is("Myrtle")));
 		
-//		verify(customerService).getCustomerByID(finalTestingSet.get(0).getId());
+		verify(customerService, times(1)).getCustomerByID(1);
 	}
 
 	@Test
@@ -213,7 +215,7 @@ class CustomerControllerTest {
 				.andExpect(status().isNotFound())
 				.andExpect(jsonPath("$", is("404 NOT FOUND: Entity not found due to invalid ID")));
 
-//		verify(customerService).getCustomerByID(finalTestingSet.get(0).getId());
+		verify(customerService, times(1)).getCustomerByID(55);
 	}
 	
 	@Test
@@ -272,6 +274,8 @@ class CustomerControllerTest {
         mockMvc.perform(mockRequest)
 		        .andExpect(status().isCreated())
 		        .andExpect(content().json(expectedBody));
+        
+        verify(customerService).saveCustomerDetails(any(Customer.class));
 	}
 	
 	@Test
@@ -290,6 +294,8 @@ class CustomerControllerTest {
 		mockMvc.perform(mockRequest)
 				.andExpect(status().isCreated())
 				.andExpect(content().json(expectedBody));
+		
+		verify(customerService).saveCustomerDetails(any(Customer.class));
 	}
 	
 	//Assume working for 1 or more addresses
@@ -310,6 +316,8 @@ class CustomerControllerTest {
 		mockMvc.perform(mockRequest)
 				.andExpect(status().isNotAcceptable())
 				.andExpect(jsonPath("$", is("406 NOT ACCEPTABLE: Customer is missing non-null social media object")));
+		
+		verify(customerService).saveCustomerDetails(any(Customer.class));
 	}
 	
 	@Test
@@ -329,6 +337,8 @@ class CustomerControllerTest {
 		mockMvc.perform(mockRequest)
 				.andExpect(status().isNotAcceptable())
 				.andExpect(jsonPath("$", is("406 NOT ACCEPTABLE: Customer is missing non-null/empty address object(s)")));
+		
+		verify(customerService).saveCustomerDetails(any(Customer.class));
 	}
 	
 	@Test
@@ -348,6 +358,8 @@ class CustomerControllerTest {
 		mockMvc.perform(mockRequest)
 				.andExpect(status().isNotAcceptable())
 				.andExpect(jsonPath("$", is("406 NOT ACCEPTABLE: Customer is missing non-null/empty address object(s)")));
+		
+		verify(customerService).saveCustomerDetails(any(Customer.class));
 	}
 	
 	@Test
@@ -368,6 +380,8 @@ class CustomerControllerTest {
 		mockMvc.perform(mockRequest)
 				.andExpect(status().isNotAcceptable())
 				.andExpect(jsonPath("$", is("406 NOT ACCEPTABLE: Customer is missing non-null/empty social media and address object(s)")));
+		
+		verify(customerService).saveCustomerDetails(any(Customer.class));
 	}
 	
 	@Test
@@ -387,6 +401,8 @@ class CustomerControllerTest {
 				.andDo(print())
 				.andExpect(status().isCreated())
 				.andExpect(content().json(expectedBody));
+		
+		verify(customerService).saveAddressToCustomer(any(Address.class), any(int.class));
 	}
 
 	//Probably not needed
@@ -436,6 +452,8 @@ class CustomerControllerTest {
 				.andDo(print())
 				.andExpect(status().isOk())
 				.andExpect(content().json(expectedBody));
+		
+		verify(customerService).updateCustomerSocialMedia(any(SocialMedia.class), any(int.class));
 	}
 	
 	@Test
@@ -456,6 +474,8 @@ class CustomerControllerTest {
 				.andDo(print())
 				.andExpect(status().isNotFound())
 				.andExpect(jsonPath("$",is("404 NOT FOUND: Entity not found due to invalid ID")));
+		
+		verify(customerService).updateCustomerSocialMedia(any(SocialMedia.class), any(int.class));
 	}
 	
 	@Test
