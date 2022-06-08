@@ -12,6 +12,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -22,6 +23,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
 import org.mockito.InjectMocks;
 import org.mockito.Mockito;
+import org.mockito.internal.matchers.GreaterThan;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
@@ -32,7 +34,6 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.simplecrmapi.dao.EmployeeDAO;
 import com.simplecrmapi.entity.Address;
@@ -418,13 +419,23 @@ public class EmployeeControllerTest {
 	@Test
 	@WithMockUser(username="john", roles= {"CUSTOMER"})
 	void saveNewEmployee() throws Exception {
-		Employee emp = employeeTestingSet.get(0);
-		emp.setId(0);
+		Employee emp = new Employee();
 		emp.setFirstName("John");
 		emp.setMiddleName("Sam");
 		emp.setLastName("Smith");
-		
-		Mockito.when(employeeService.saveEmployeeDetails(any(Employee.class))).thenReturn(emp);
+		emp.setDateOfBirth(LocalDate.of(1995, 12, 19));
+		emp.setPhoneNumber("123456789012");
+		emp.setEmailAddress("test@test.com");
+		emp.setCasesActive(0);
+		emp.setCasesPending(0);
+		emp.setCasesResolved(0);
+		emp.setCasesClosed(0);
+		emp.setAddress(employeeTestingSet.get(0).getAddress());
+		emp.setSocialMedia(new SocialMedia());
+		Employee empFin = emp;
+		empFin.setId(6);
+
+		Mockito.when(employeeService.saveEmployeeDetails(any(Employee.class))).thenReturn(empFin);
 		
 		String expectedBody = mapper.writeValueAsString(emp);
 		
@@ -434,8 +445,10 @@ public class EmployeeControllerTest {
 													.accept(MediaType.APPLICATION_JSON);
 		
         mockMvc.perform(mockRequest)
+        		.andDo(print())
 		        .andExpect(status().isCreated())
-		        .andExpect(content().json(expectedBody));
+		        .andExpect(content().json(mapper.writeValueAsString(empFin)))
+        		.andExpect(jsonPath("$.id", is(6)));
         verify(employeeService,times(1)).saveEmployeeDetails(any(Employee.class));
 	}
 	
@@ -443,6 +456,7 @@ public class EmployeeControllerTest {
 	@WithMockUser(username="john", roles= {"CUSTOMER"})
 	void saveNewAddressToEmployee() throws Exception {
 		Address add = employeeTestingSet.get(1).getAddress().get(0);
+		add.setId(0);
 		
 		Mockito.when(employeeService.saveNewAddressToEmployee(any(Address.class), any(int.class))).thenReturn(add);
 		
@@ -463,6 +477,7 @@ public class EmployeeControllerTest {
 	@WithMockUser(username="john", roles= {"CUSTOMER"})
 	void saveNewCaseToEmployee() throws Exception {
 		Cases testCase = employeeTestingSet.get(4).getCases().iterator().next();
+		testCase.setId(0);
 		
 		Mockito.when(employeeService.saveNewCaseToEmployee(any(Cases.class), any(int.class))).thenReturn(testCase);
 		String expectedBody = mapper.writeValueAsString(testCase);
