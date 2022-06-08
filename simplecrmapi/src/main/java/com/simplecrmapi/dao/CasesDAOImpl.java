@@ -15,6 +15,10 @@ public class CasesDAOImpl implements CasesDAO {
 
 	private EntityManager entityManager;
 	
+	public CasesDAOImpl(EntityManager entityManager) {
+		this.entityManager = entityManager;
+	}
+	
 	@Override
 	public List<Cases> getCases() {
 		Query getCases = entityManager.createQuery("from Cases",Cases.class);
@@ -31,6 +35,20 @@ public class CasesDAOImpl implements CasesDAO {
 //			System.out.println(">>> An exception due to invalid arguements has occurred, returning null");
 			return null;
 		}
+	}
+	
+	@Override
+	public List<Cases> getCasesByCustomerFirstName(String firstName){
+		Query getCases = entityManager.createQuery("from Cases c where c.customer.firstName=:paramFirstName");
+		getCases.setParameter("paramFirstName", firstName);
+		return getCases.getResultList();
+	}
+	
+	@Override
+	public List<Cases> getCasesByCustomerLastName(String lastName){
+		Query getCases = entityManager.createQuery("from Cases c where c.customer.lastName=:paramLastName");
+		getCases.setParameter("paramLastName", lastName);
+		return getCases.getResultList();
 	}
 
 	@Override
@@ -53,7 +71,7 @@ public class CasesDAOImpl implements CasesDAO {
 		Cases dbCustomer = entityManager.merge(cases);
 		//set arg id to db id for save/update ops
 		cases.setId(dbCustomer.getId());
-		return cases;
+		return dbCustomer;
 	}
 
 	@Override

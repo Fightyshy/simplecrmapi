@@ -16,4 +16,8 @@ public interface CasesDAO {
 	public Cases saveCase(Cases casee);
 	
 	public void deleteCaseByID(Integer ID);
+
+	public List<Cases> getCasesByCustomerFirstName(String firstName);
+
+	public List<Cases> getCasesByCustomerLastName(String lastName);
 }
