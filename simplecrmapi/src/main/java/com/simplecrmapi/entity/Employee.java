@@ -15,6 +15,8 @@ import javax.persistence.Table;
 import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
 @Entity
 @Table(name="employee")
 public class Employee extends Person{
@@ -42,7 +44,7 @@ public class Employee extends Person{
 	//TODO properly shift oneTomanys to appropriate POJOs and make appropriate db fixes
 	//Customers here redundant, see new dataflow plan
 
-//	@JsonIgnore
+	@JsonIgnore
 	@ManyToMany(mappedBy="employee",cascade= {CascadeType.DETACH,CascadeType.REFRESH,CascadeType.REMOVE})
 	private Set<Cases> cases;
 	

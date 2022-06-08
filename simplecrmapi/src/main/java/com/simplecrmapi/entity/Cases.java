@@ -1,7 +1,6 @@
 package com.simplecrmapi.entity;
 
 import java.time.LocalDateTime;
-import java.util.List;
 import java.util.Set;
 
 import javax.persistence.Column;
@@ -16,7 +15,6 @@ import javax.persistence.OneToOne;
 import javax.persistence.Table;
 import javax.validation.constraints.NotNull;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.simplecrmapi.enums.CaseStatus;
 
 @Entity
@@ -42,7 +40,7 @@ public class Cases {
 	private String product;
 	
 	//TODO get this working
-	@JsonIgnore //Jsonview this so it doesn't show when querying employee
+//	@JsonIgnore //Jsonview this so it doesn't show when querying employee
 	@ManyToMany
 	@JoinTable(
 			name="employee_cases",
