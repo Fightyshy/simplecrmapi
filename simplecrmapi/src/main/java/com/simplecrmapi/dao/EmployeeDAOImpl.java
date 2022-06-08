@@ -50,15 +50,19 @@ public class EmployeeDAOImpl implements EmployeeDAO {
 		Employee dbEmployee;
 		try {
 			//merge to save new/update old
-			if(employee.getId()==0) {
-				entityManager.persist(employee);
-				return employee;
-			}else if(employee.getId()!=0) {
-				dbEmployee = entityManager.merge(employee);
-				return dbEmployee;
-			}
+//			if(employee.getId()==0) {
+//				entityManager.persist(employee);
+//				entityManager.flush();
+//				return employee;
+//			}else if(employee.getId()!=0) {
+//				dbEmployee = entityManager.merge(employee);
+//				return dbEmployee;
+//			}
 			
-			return null;
+			dbEmployee = entityManager.merge(employee);
+			return dbEmployee;
+			
+//			return null;
 		}catch(NullPointerException npe) {
 			throw new EntityNotFound();
 		}catch(EntityNotFoundException enfe) {
