@@ -37,7 +37,7 @@ public class SimpleCRMSecurityConfig extends WebSecurityConfigurerAdapter {
 		//show x role certain pages, ** is everything after x roles, * is everything after char
 		//Fixed because you're not supposed to put in the root, dumbass
 		http.authorizeRequests()
-			.antMatchers("/", "/customers", "/employees").permitAll()
+			.antMatchers("/", "/customers", "/employees", "/cases").permitAll()
 			.anyRequest().authenticated()
 			.and()
 		.formLogin()
