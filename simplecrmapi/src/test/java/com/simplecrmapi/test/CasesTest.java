@@ -416,7 +416,7 @@ public class CasesTest {
 		Cases egCase = casesTestingSet.get(0);
 		egCase.setId(0);
 		egCase.setProduct("Altered example product name here");
-		Mockito.when(casesService.saveNewCase(any(Cases.class),any(int.class))).thenThrow(new InvalidParamsException());
+		Mockito.when(casesService.saveNewCase(any(Cases.class),any(int.class))).thenThrow(new EntityNotFound());
 		
 		String body = mapper.writeValueAsString(egCase);
 		MockHttpServletRequestBuilder mockRequest = MockMvcRequestBuilders.post("/cases").param("empId","55")
@@ -425,8 +425,8 @@ public class CasesTest {
 																		.accept(MediaType.APPLICATION_JSON);
 		
 		mockMvc.perform(mockRequest)
-				.andExpect(status().isBadRequest())
-				.andExpect(jsonPath("$", is("400 BAD REQUEST: Invalid params")));
+				.andExpect(status().isNotFound())
+				.andExpect(jsonPath("$", is("404 NOT FOUND: Entity not found due to invalid ID")));
 		
 		verify(casesService, times(1)).saveNewCase(any(Cases.class),any(int.class));
 	}
@@ -467,6 +467,79 @@ public class CasesTest {
 				.andExpect(content().json(body));
 		
 		verify(casesService, times(1)).updateCase(any(Cases.class));
+	}
+	
+	@Test
+	@WithMockUser(username="john", roles= {"CUSTOMER"})
+	void saveEmployeeToCase() throws Exception{
+		Cases egCase = casesTestingSet.get(0);
+		egCase.setProduct("I only updated the product now");
+		Mockito.when(casesService.saveEmployeeToCase(any(Cases.class), any(int.class))).thenReturn(egCase);
+		String body = mapper.writeValueAsString(egCase);
+		MockHttpServletRequestBuilder mockRequest = MockMvcRequestBuilders.put("/cases/id/employees").param("empId", "4")
+																			.contentType(MediaType.APPLICATION_JSON)
+																			.content(body)
+																			.accept(MediaType.APPLICATION_JSON);
+		
+		mockMvc.perform(mockRequest)
+				.andExpect(status().isOk())
+				.andExpect(content().json(body));
+		
+		verify(casesService, times(1)).saveEmployeeToCase(any(Cases.class), any(int.class));
+	}
+	
+	@Test
+	@WithMockUser(username="john", roles= {"CUSTOMER"})
+	void saveEmployeeToCaseNullParams() throws Exception{
+		Cases egCase = casesTestingSet.get(0);
+		egCase.setProduct("I only updated the product now");
+		Mockito.when(casesService.saveEmployeeToCase(any(Cases.class), any(int.class))).thenThrow(new InvalidParamsException());
+		String body = mapper.writeValueAsString(egCase);
+		MockHttpServletRequestBuilder mockRequest = MockMvcRequestBuilders.put("/cases/id/employees").param("empId", "")
+																			.contentType(MediaType.APPLICATION_JSON)
+																			.content(body)
+																			.accept(MediaType.APPLICATION_JSON);
+		
+		mockMvc.perform(mockRequest)
+				.andExpect(status().isBadRequest())
+				.andExpect(jsonPath("$", is("400 BAD REQUEST: Invalid params")));
+		
+	}
+	
+	@Test
+	@WithMockUser(username="john", roles= {"CUSTOMER"})
+	void saveEmployeeToCaseInvalidParams() throws Exception{
+		Cases egCase = casesTestingSet.get(0);
+		egCase.setProduct("I only updated the product now");
+		Mockito.when(casesService.saveEmployeeToCase(any(Cases.class), any(int.class))).thenThrow(new EntityNotFound());
+		String body = mapper.writeValueAsString(egCase);
+		MockHttpServletRequestBuilder mockRequest = MockMvcRequestBuilders.put("/cases/id/employees").param("empId", "55")
+																			.contentType(MediaType.APPLICATION_JSON)
+																			.content(body)
+																			.accept(MediaType.APPLICATION_JSON);
+		
+		mockMvc.perform(mockRequest)
+				.andExpect(status().isNotFound())
+				.andExpect(jsonPath("$", is("404 NOT FOUND: Entity not found due to invalid ID")));
+		
+		verify(casesService, times(1)).saveEmployeeToCase(any(Cases.class), any(int.class));
+	}
+	
+	@Test
+	@WithMockUser(username="john", roles= {"CUSTOMER"})
+	void saveEmployeeToCaseInvalidParamsType() throws Exception{
+		Cases egCase = casesTestingSet.get(0);
+		egCase.setProduct("I only updated the product now");
+		Mockito.when(casesService.saveEmployeeToCase(any(Cases.class), any(int.class))).thenThrow(new InvalidParamsException());
+		String body = mapper.writeValueAsString(egCase);
+		MockHttpServletRequestBuilder mockRequest = MockMvcRequestBuilders.put("/cases/id/employees").param("empId", "aaaa")
+																			.contentType(MediaType.APPLICATION_JSON)
+																			.content(body)
+																			.accept(MediaType.APPLICATION_JSON);
+		
+		mockMvc.perform(mockRequest)
+				.andExpect(status().isBadRequest())
+				.andExpect(jsonPath("$", is("400 BAD REQUEST: Invalid params")));
 	}
 	
 	@Test

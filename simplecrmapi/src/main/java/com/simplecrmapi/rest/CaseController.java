@@ -56,6 +56,11 @@ public class CaseController {
 	
 	//PostMapping("id/employees")
 	//Save new employee to case
+	@PutMapping("/id/employees")
+	public ResponseEntity<Object> saveEmployeeToCase(@Valid @RequestBody Cases cases, @RequestParam("empId") int empID){
+		Cases updatedCase = casesService.saveEmployeeToCase(cases, empID);
+		return ResponseEntity.ok(updatedCase);
+	}
 	
 	//only for updating cases but no relationships
 	@PutMapping("")

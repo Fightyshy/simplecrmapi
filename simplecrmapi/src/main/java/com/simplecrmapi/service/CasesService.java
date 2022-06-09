@@ -17,6 +17,8 @@ public interface CasesService {
 	
 	public Cases updateCase(Cases cases);
 
+	public Cases saveEmployeeToCase(Cases cases, Integer empID);
+
 	public void deleteCaseByID(Integer ID);
 
 	public void deleteEmployeeFromCase(Integer ID, Integer empID);

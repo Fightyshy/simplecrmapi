@@ -2,7 +2,6 @@ package com.simplecrmapi.service;
 
 import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -11,7 +10,6 @@ import org.springframework.transaction.annotation.Transactional;
 import com.simplecrmapi.dao.CasesDAO;
 import com.simplecrmapi.dao.EmployeeDAO;
 import com.simplecrmapi.entity.Cases;
-import com.simplecrmapi.entity.Customer;
 import com.simplecrmapi.entity.Employee;
 
 @Service
@@ -70,6 +68,17 @@ public class CasesServiceImpl implements CasesService {
 	public Cases updateCase(Cases cases) {
 		Cases updatedCase = casesDAO.saveCase(cases);
 		return updatedCase;
+	}
+	
+	@Override
+	@Transactional
+	public Cases saveEmployeeToCase(Cases cases, Integer empID) {
+		Employee toAdd = employeeDAO.getEmployeeByID(empID);
+		toAdd.getCases().add(cases);
+		employeeDAO.saveEmployee(toAdd);
+		
+		cases.getEmployee().add(toAdd);
+		return casesDAO.saveCase(cases);
 	}
 	
 	@Override
