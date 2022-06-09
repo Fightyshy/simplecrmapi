@@ -4,10 +4,13 @@ import javax.persistence.EntityNotFoundException;
 
 import org.springframework.core.Ordered;
 import org.springframework.core.annotation.Order;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
+import org.springframework.web.context.request.WebRequest;
 import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
 import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExceptionHandler;
 
@@ -49,5 +52,12 @@ public class RestExceptionHandler extends ResponseEntityExceptionHandler {
 	@ExceptionHandler(InvalidParamsException.class)
 	protected ResponseEntity<Object> handleInvalidParams(InvalidParamsException e){
 		return ResponseEntity.badRequest().body("400 BAD REQUEST: Invalid params");
+	}
+	
+//	@ExceptionHandler(MethodArgumentNotValidException.class)
+	@Override
+	protected ResponseEntity<Object> handleMethodArgumentNotValid(MethodArgumentNotValidException ex,
+            HttpHeaders headers, HttpStatus status, WebRequest request){
+		return ResponseEntity.badRequest().body("400 BAD REQUEST: Validation failed");
 	}
 }
