@@ -13,8 +13,7 @@ import javax.persistence.Table;
 import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
 
-import org.hibernate.annotations.Fetch;
-import org.hibernate.annotations.FetchMode;
+import com.simplecrmapi.validation.AlphabetOnly;
 
 @Entity
 @Table(name="customer")
@@ -24,6 +23,7 @@ public class Customer extends Person {
 	private String prefComms;
 	
 	@Column(name="occupation")
+	@AlphabetOnly
 	private String occupation;
 	
 	@Column(name="industry")

@@ -11,6 +11,8 @@ import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Past;
 
+import com.simplecrmapi.validation.AlphabetOnly;
+
 //For extension only
 @MappedSuperclass //means this is NOT an table entity
 //https://www.baeldung.com/hibernate-inheritance
@@ -25,14 +27,17 @@ public class Person {
 	@Column(name="first_name")
 	@NotNull
 	@NotEmpty
+	@AlphabetOnly
 	private String firstName;
 	
 	@Column(name="middle_name")
+	@AlphabetOnly
 	private String middleName;
 	
 	@Column(name="last_name")
 	@NotNull
 	@NotEmpty
+	@AlphabetOnly
 	private String lastName;
 	
 	@Column(name="date_of_birth")
