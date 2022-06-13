@@ -1,18 +1,19 @@
 package com.simplecrmapi.test;
 
+import static org.hamcrest.CoreMatchers.containsString;
 import static org.hamcrest.CoreMatchers.is;
-import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.contains;
 import static org.mockito.Mockito.verify;
+import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Set;
 
-import javax.validation.ConstraintViolation;
 import javax.validation.Validator;
 
 import org.junit.jupiter.api.BeforeEach;
@@ -27,9 +28,9 @@ import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.ResultMatcher;
 import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
-import org.springframework.web.bind.MethodArgumentNotValidException;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.simplecrmapi.dao.CustomerDAO;
@@ -165,9 +166,9 @@ public class CustomerControllerValidationTest {
 	void saveFullCustomerFailed() throws Exception{
 		Customer cus = finalTestingSet.get(1);
 		cus.setFirstName("John123");
-		cus.setMiddleName("Sam123");
+		cus.setMiddleName("Sam123"); //Validation error if field empty
 		cus.setLastName("Smith123");
-				String expectedBody = mapper.writeValueAsString(cus);
+		String expectedBody = mapper.writeValueAsString(cus);
 		
 		MockHttpServletRequestBuilder mockRequest = MockMvcRequestBuilders.post("/customers")
 													.contentType(MediaType.APPLICATION_JSON)
@@ -175,7 +176,95 @@ public class CustomerControllerValidationTest {
 													.accept(MediaType.APPLICATION_JSON);
 		
 		mockMvc.perform(mockRequest)
+				.andDo(print())
 				.andExpect(status().isBadRequest())
-				.andExpect(jsonPath("$", is("400 BAD REQUEST: Validation failed")));
+				.andExpect(jsonPath("$", containsString("Input error in field lastName with value Smith123. Please use alphabetical characters only")))
+				.andExpect(jsonPath("$", containsString("Input error in field middleName with value Sam123. Please use alphabetical characters only")))
+				.andExpect(jsonPath("$", containsString("Input error in field firstName with value John123. Please use alphabetical characters only")));
+	}
+	
+	@Test
+	@WithMockUser(username="john", roles= {"CUSTOMER"})
+	void saveFullCustomerFailedDate() throws Exception{
+		Customer cus = finalTestingSet.get(0);
+		cus.setDateOfBirth(LocalDate.now());
+		
+		String body = mapper.writeValueAsString(cus);
+		
+		MockHttpServletRequestBuilder mockRequest = MockMvcRequestBuilders.post("/customers")
+																	.contentType(MediaType.APPLICATION_JSON)
+																	.content(body)
+																	.accept(MediaType.APPLICATION_JSON);
+		
+		mockMvc.perform(mockRequest)
+				.andDo(print())
+				.andExpect(status().isBadRequest())
+				.andExpect(jsonPath("$", is("400 BAD REQUEST: Validation failed due to: [Input error in field dateOfBirth with value 2022-06-13. Date has to be in the past]")));
+	}
+	
+	@Test
+	@WithMockUser(username="john", roles= {"CUSTOMER"})
+	void saveFullCustomerFailedPhoneNumberType() throws Exception{
+		Customer cus = finalTestingSet.get(0);
+		cus.setPhoneNumber("aaaaaaaaaaaa");
+		String body = mapper.writeValueAsString(cus);
+		
+		MockHttpServletRequestBuilder mockRequest = MockMvcRequestBuilders.post("/customers")
+																	.contentType(MediaType.APPLICATION_JSON)
+																	.content(body)
+																	.accept(MediaType.APPLICATION_JSON);
+		
+		mockMvc.perform(mockRequest)
+				.andDo(print())
+				.andExpect(jsonPath("$", is("400 BAD REQUEST: Validation failed due to: [Input error in field phoneNumber with value aaaaaaaaaaaa. Please use numbers only]")));
+	}
+	
+	@Test
+	@WithMockUser(username="john", roles= {"CUSTOMER"})
+	void saveFullCustomerFailedEmail() throws Exception{
+		Customer cus =  finalTestingSet.get(1);
+		cus.setEmailAddress("test");
+		String body = mapper.writeValueAsString(cus);
+		
+		MockHttpServletRequestBuilder mockRequest = MockMvcRequestBuilders.post("/customers")
+																	.contentType(MediaType.APPLICATION_JSON)
+																	.content(body)
+																	.accept(MediaType.APPLICATION_JSON);
+		
+		mockMvc.perform(mockRequest)
+				.andDo(print())
+				.andExpect(jsonPath("$", is("400 BAD REQUEST: Validation failed due to: [Input error in field emailAddress with value test. Please input a valid email address]")));
+	}
+	
+	@Test
+	@WithMockUser(username="john", roles= {"CUSTOMER"})
+	void saveFullCustomerFailedOccupationAlphabet() throws Exception{
+		Customer cus = finalTestingSet.get(0);
+		cus.setOccupation("test123");
+		String body = mapper.writeValueAsString(cus);
+		MockHttpServletRequestBuilder mockRequest = MockMvcRequestBuilders.post("/customers")
+																		.contentType(MediaType.APPLICATION_JSON)
+																		.content(body)
+																		.accept(MediaType.APPLICATION_JSON);
+		
+		mockMvc.perform(mockRequest)
+				.andDo(print())
+				.andExpect(jsonPath("$", is("400 BAD REQUEST: Validation failed due to: [Input error in field occupation with value test123. Only letters are allowed]")));
+	}
+	
+	@Test
+	@WithMockUser(username="john", roles= {"CUSTOMER"})
+	void saveFullCustomerFailedIndustryAlphabet() throws Exception{
+		Customer cus = finalTestingSet.get(0);
+		cus.setIndustry("test123");
+		String body = mapper.writeValueAsString(cus);
+		MockHttpServletRequestBuilder mockRequest = MockMvcRequestBuilders.post("/customers")
+																		.contentType(MediaType.APPLICATION_JSON)
+																		.content(body)
+																		.accept(MediaType.APPLICATION_JSON);
+		
+		mockMvc.perform(mockRequest)
+				.andDo(print())
+				.andExpect(jsonPath("$", is("400 BAD REQUEST: Validation failed due to: [Input error in field industry with value test123. Only letters are allowed]")));
 	}
 }
