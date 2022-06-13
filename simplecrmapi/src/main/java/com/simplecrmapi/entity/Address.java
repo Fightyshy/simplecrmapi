@@ -14,6 +14,9 @@ import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.simplecrmapi.validation.AlphabetOnly;
+import com.simplecrmapi.validation.Alphanumeric;
+import com.simplecrmapi.validation.NumbersInStringOnly;
 
 @Entity
 @Table(name="address")
@@ -42,11 +45,13 @@ public class Address {
 	@Column(name="postcode")
 	@NotNull
 	@NotEmpty
+	@Alphanumeric
 	private String postcode;
 	
 	@Column(name="country")
 	@NotNull
 	@NotEmpty
+	@AlphabetOnly
 	private String country;
 	
 	@Column(name="province")
@@ -59,9 +64,11 @@ public class Address {
 	
 	@Column(name="phone_number")
 	@NotNull
+	@NumbersInStringOnly
 	private String phoneNumber;
 	
 	@Column(name="fax")
+	@NumbersInStringOnly
 	private String faxNumber;
 	
 	//TODO elegant solution, unidrectional required

@@ -27,6 +27,7 @@ public class Customer extends Person {
 	private String occupation;
 	
 	@Column(name="industry")
+	@AlphabetOnly
 	private String industry;
 	
 	//Back to limited cascade

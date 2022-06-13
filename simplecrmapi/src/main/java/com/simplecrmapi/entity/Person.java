@@ -7,11 +7,13 @@ import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.MappedSuperclass;
+import javax.validation.constraints.Email;
 import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Past;
 
 import com.simplecrmapi.validation.AlphabetOnly;
+import com.simplecrmapi.validation.NumbersInStringOnly;
 
 //For extension only
 @MappedSuperclass //means this is NOT an table entity
@@ -27,29 +29,31 @@ public class Person {
 	@Column(name="first_name")
 	@NotNull
 	@NotEmpty
-	@AlphabetOnly
+	@AlphabetOnly(message="Please use alphabetical characters only")
 	private String firstName;
 	
 	@Column(name="middle_name")
-	@AlphabetOnly
+	@AlphabetOnly(message="Please use alphabetical characters only")
 	private String middleName;
 	
 	@Column(name="last_name")
 	@NotNull
 	@NotEmpty
-	@AlphabetOnly
+	@AlphabetOnly(message="Please use alphabetical characters only")
 	private String lastName;
 	
 	@Column(name="date_of_birth")
 	@NotNull
-	@Past
+	@Past(message="Date has to be in the past")
 	private LocalDate dateOfBirth; //use this instead of java.Date.util (depreciated)
 	//sauce https://stackoverflow.com/questions/43039614/insert-fetch-java-time-localdate-objects-to-from-an-sql-database-such-as-h2
 	
 	@Column(name="phone_number")
+	@NumbersInStringOnly(message="Please use numbers only")
 	private String phoneNumber;
 	
 	@Column(name="email_address")
+	@Email(message="Please input a valid email address")
 	private String emailAddress;
 	
 	public Person() {

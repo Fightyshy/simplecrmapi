@@ -117,4 +117,13 @@ public class SocialMedia {
 	public void setWhatsappHandle(String whatsappHandle) {
 		this.whatsappHandle = whatsappHandle;
 	}
+	
+	public boolean validSMChecker(String input) {
+		for(SocialMediaNames names:SocialMediaNames.values()) {
+			if(names.toString().equals(input)) {
+				return true;
+			}
+		}
+		return false;
+	}
 }
