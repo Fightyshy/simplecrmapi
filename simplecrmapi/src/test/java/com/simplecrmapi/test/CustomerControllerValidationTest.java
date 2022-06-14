@@ -199,7 +199,8 @@ public class CustomerControllerValidationTest {
 		mockMvc.perform(mockRequest)
 				.andDo(print())
 				.andExpect(status().isBadRequest())
-				.andExpect(jsonPath("$", is("400 BAD REQUEST: Validation failed due to: [Input error in field dateOfBirth with value 2022-06-13. Date has to be in the past]")));
+				.andExpect(jsonPath("$", containsString("400 BAD REQUEST: Validation failed due to: [Input error in field dateOfBirth with value")))
+				.andExpect(jsonPath("$", containsString(". Date has to be in the past]")));
 	}
 	
 	@Test

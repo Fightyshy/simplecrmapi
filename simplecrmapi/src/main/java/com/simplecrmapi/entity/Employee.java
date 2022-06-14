@@ -24,19 +24,19 @@ public class Employee extends Person{
 	
 	//Metrics below
 	@Column(name="cases_active")
-	@PositiveOrZero
+	@PositiveOrZero(message="Please input a number greater than or equal to 0")
 	private Integer casesActive;
 	
 	@Column(name="cases_pending")
-	@PositiveOrZero
+	@PositiveOrZero(message="Please input a number greater than or equal to 0")
 	private Integer casesPending;
 	
 	@Column(name="cases_resolved")
-	@PositiveOrZero
+	@PositiveOrZero(message="Please input a number greater than or equal to 0")
 	private Integer casesResolved;
 	
 	@Column(name="cases_closed")
-	@PositiveOrZero
+	@PositiveOrZero(message="Please input a number greater than or equal to 0")
 	private Integer casesClosed;
 	
 	@OneToMany(mappedBy="employee",cascade= {CascadeType.DETACH, CascadeType.REFRESH, CascadeType.REMOVE})
