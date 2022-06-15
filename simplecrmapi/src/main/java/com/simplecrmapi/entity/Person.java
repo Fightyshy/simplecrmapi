@@ -1,12 +1,17 @@
 package com.simplecrmapi.entity;
 
 import java.time.LocalDate;
+import java.util.List;
 
+import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
+import javax.persistence.JoinColumn;
 import javax.persistence.MappedSuperclass;
+import javax.persistence.OneToMany;
+import javax.persistence.OneToOne;
 import javax.validation.constraints.Email;
 import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
@@ -56,15 +61,25 @@ public class Person {
 	@Email(message="Please input a valid email address")
 	private String emailAddress;
 	
+	@OneToMany(mappedBy="employee",cascade= {CascadeType.DETACH, CascadeType.REFRESH, CascadeType.REMOVE})
+	private List<Address> address;
+	
+	@OneToOne(cascade=CascadeType.ALL)
+	@JoinColumn(name="social_media_id")
+	private SocialMedia socialMedia;
+	
 	public Person() {
 		this.firstName = "";
 		this.lastName = "";
 		this.dateOfBirth = LocalDate.now();
 	}
 
-	public Person(@NotNull @NotEmpty String firstName, String middleName, @NotNull @NotEmpty String lastName,
-			@NotNull @NotEmpty LocalDate dateOfBirth, String phoneNumber, String emailAddress) {
+	public Person(Integer id, @NotNull @NotEmpty String firstName, String middleName,
+			@NotNull @NotEmpty String lastName,
+			@NotNull @Past(message = "Date has to be in the past") LocalDate dateOfBirth, String phoneNumber,
+			@Email(message = "Please input a valid email address") String emailAddress) {
 		super();
+		this.id = id;
 		this.firstName = firstName;
 		this.middleName = middleName;
 		this.lastName = lastName;
@@ -128,5 +143,20 @@ public class Person {
 	public void setEmailAddress(String emailAddress) {
 		this.emailAddress = emailAddress;
 	}
-	
+
+	public List<Address> getAddress() {
+		return address;
+	}
+
+	public void setAddress(List<Address> address) {
+		this.address = address;
+	}
+
+	public SocialMedia getSocialMedia() {
+		return socialMedia;
+	}
+
+	public void setSocialMedia(SocialMedia socialMedia) {
+		this.socialMedia = socialMedia;
+	}
 }
