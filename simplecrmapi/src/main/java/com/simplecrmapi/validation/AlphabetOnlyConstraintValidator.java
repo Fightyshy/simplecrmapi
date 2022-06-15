@@ -12,7 +12,7 @@ public class AlphabetOnlyConstraintValidator implements ConstraintValidator<Alph
 	
 	@Override
 	public boolean isValid(String fieldInput, ConstraintValidatorContext context) {
-		return fieldInput.matches("[a-zA-Z ]+");
+		return fieldInput.matches("[a-zA-Z ]+")||fieldInput==null||fieldInput.isEmpty();
 	}
 	
 }

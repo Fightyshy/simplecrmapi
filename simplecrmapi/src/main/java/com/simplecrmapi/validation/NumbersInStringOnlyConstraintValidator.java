@@ -12,7 +12,7 @@ public class NumbersInStringOnlyConstraintValidator implements ConstraintValidat
 	
 	@Override
 	public boolean isValid(String fieldInput, ConstraintValidatorContext context) {
-		return fieldInput.matches("[0-9 ]+");
+		return fieldInput==null||fieldInput.isEmpty()||fieldInput.matches("[0-9 ]+");
 	}
 	
 }
