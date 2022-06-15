@@ -13,9 +13,12 @@ import javax.persistence.JoinTable;
 import javax.persistence.ManyToMany;
 import javax.persistence.OneToOne;
 import javax.persistence.Table;
+import javax.validation.constraints.Future;
+import javax.validation.constraints.FutureOrPresent;
 import javax.validation.constraints.NotNull;
 
 import com.simplecrmapi.enums.CaseStatus;
+import com.simplecrmapi.validation.Alphanumeric;
 
 @Entity
 @Table(name="cases")
@@ -33,10 +36,13 @@ public class Cases {
 	@NotNull
 	private LocalDateTime startDate; //Not null
 	
+	//No validator because set by app and not human
+
 	@Column(name="end_date")
 	private LocalDateTime endDate;
 	
 	@Column(name="product")
+	@Alphanumeric(message="Please input only alphanumeric characters")
 	private String product;
 	
 	//TODO get this working
