@@ -2,12 +2,14 @@ package com.simplecrmapi.rest;
 
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.security.Principal;
 import java.util.List;
 
 import javax.validation.Valid;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -22,6 +24,7 @@ import com.simplecrmapi.entity.Cases;
 import com.simplecrmapi.entity.Customer;
 import com.simplecrmapi.entity.Employee;
 import com.simplecrmapi.entity.SocialMedia;
+import com.simplecrmapi.entity.User;
 import com.simplecrmapi.service.EmployeeService;
 import com.simplecrmapi.util.EntityNotFound;
 
@@ -47,6 +50,11 @@ public class EmployeeController {
 			throw new EntityNotFound(); //temp
 //			return ResponseEntity.status(HttpStatus.NOT_FOUND).body("404 NOT FOUND: Entity not found with parameters"); //Is ideal, not working atm
 		}
+	}
+	@GetMapping("/id/users")
+	public ResponseEntity<Object> getEmployeeByUserSession(Principal principal){
+		User user = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+		return ResponseEntity.ok(employeeService.getEmployeeByID(user.getEmployeeID()));
 	}
 	
 	@GetMapping("/id/cases")
