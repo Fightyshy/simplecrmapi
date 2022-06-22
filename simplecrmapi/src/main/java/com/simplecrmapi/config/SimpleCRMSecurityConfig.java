@@ -1,10 +1,10 @@
 package com.simplecrmapi.config;
 
-import javax.annotation.Resource;
-
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.config.annotation.method.configuration.EnableGlobalMethodSecurity;
@@ -23,9 +23,9 @@ import com.simplecrmapi.util.UnauthorizedEntryPoint;
 @EnableWebSecurity
 @EnableGlobalMethodSecurity(prePostEnabled=true)
 public class SimpleCRMSecurityConfig extends WebSecurityConfigurerAdapter {
-	@Resource(name="userService")
-//	@Autowired
-//	@Qualifier("userService")
+//	@Resource(name="userService")
+	@Autowired
+	@Qualifier("userDetailsService")
 	private UserDetailsService userDetailsService;
 	
 	@Autowired
@@ -54,6 +54,16 @@ public class SimpleCRMSecurityConfig extends WebSecurityConfigurerAdapter {
         http.cors().and().csrf().disable() 
                 .authorizeRequests()
                 .antMatchers("/users/authenticate", "/users/register").permitAll()
+                .antMatchers(HttpMethod.GET,"/customers/**", "/customers", "/customers/id", "/customers/id/**").hasAnyRole("EMPLOYEE","ADMIN","MANAGER")
+                .antMatchers(HttpMethod.POST,"/customers/**", "/customers", "/customers/id", "/customers/id/**").hasAnyRole("EMPLOYEE","ADMIN","MANAGER")
+                .antMatchers(HttpMethod.PUT,"/customers/**", "/customers", "/customers/id", "/customers/id/**").hasAnyRole("EMPLOYEE","ADMIN","MANAGER")
+                .antMatchers(HttpMethod.DELETE,"/customers/**", "/customers", "/customers/id", "/customers/id/**").hasAnyRole("ADMIN","MANAGER")
+                .antMatchers(HttpMethod.GET,"/employees/id/users").authenticated()
+                .antMatchers(HttpMethod.GET,"/employees/id/**").hasAnyRole("MANAGER","ADMIN")
+                .antMatchers(HttpMethod.GET,"/employees/id/users/**").hasAnyRole("EMPLOYEE","MANAGER","ADMIN")
+                .antMatchers(HttpMethod.POST,"/employees/id","/employees").hasAnyRole("MANAGER","ADMIN")
+                .antMatchers(HttpMethod.PUT,"/employees","employees/id").hasAnyRole("MANAGER","ADMIN")
+                .antMatchers(HttpMethod.DELETE,"/employees","/employees/**").hasAnyRole("EMPLOYEE","ADMIN","MANAGER")
                 .anyRequest().authenticated()
                 .and()
                 .exceptionHandling().authenticationEntryPoint(unauthorizedEntryPoint).and()
