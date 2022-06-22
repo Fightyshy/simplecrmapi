@@ -11,12 +11,13 @@ import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import com.simplecrmapi.dao.UserDAO;
-import com.simplecrmapi.entity.User;
 import com.simplecrmapi.entity.Role;
+import com.simplecrmapi.entity.User;
 
-@Service(value="userService")
+@Service("userDetailsService")
 public class UserServiceImpl implements UserService, UserDetailsService {
 
 	@Autowired
@@ -28,14 +29,16 @@ public class UserServiceImpl implements UserService, UserDetailsService {
 //	@Autowired
 	private BCryptPasswordEncoder passwordEncoder;
 	
+	@Override
+	@Transactional
 	public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException{
 		User user = userDAO.findByUsername(username);
 		if(user==null) {
 			throw new UsernameNotFoundException("Invalid username or password");
 		}
 		//Because user implements userdetails, can directly return
+//		user.setAuthorities(getAuthority(user));
 		return user;
-		
 //		return new org.springframework.security.core.userdetails.User(user.getUsername(), user.getPassword(), getAuthority(user));
 	}
 	
@@ -50,6 +53,7 @@ public class UserServiceImpl implements UserService, UserDetailsService {
     
     
 	@Override
+	@Transactional
 	public User saveUser(User user) {
 		User newUser = user;
 		
@@ -64,11 +68,13 @@ public class UserServiceImpl implements UserService, UserDetailsService {
 	}
 
 	@Override
+	@Transactional
 	public List<User> findAllUsers() {
 		return userDAO.findAll();
 	}
 
 	@Override
+	@Transactional
 	public User fineUsername(String username) {
 		return userDAO.findByUsername(username);
 	}
