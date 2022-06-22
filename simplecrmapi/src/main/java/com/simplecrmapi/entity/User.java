@@ -38,8 +38,6 @@ public class User implements UserDetails{
 	@Column
 	private int employeeID;
 	
-	
-	
 	@ManyToMany(fetch = FetchType.EAGER, cascade = CascadeType.ALL)
 	@JoinTable(name = "USER_ROLES",
 				joinColumns = {
@@ -49,21 +47,19 @@ public class User implements UserDetails{
 						@JoinColumn(name="ROLE_ID")
 				})
 	private Set<Role> roles;
+	
+	@Column
+	private boolean enabled = true;
 
 	public User() {
-		super();
+		
 	}
 	
-	
-
 	public User(String username, String password, Set<Role> roles) {
-		super();
 		this.username = username;
 		this.password = password;
 		this.roles = roles;
 	}
-
-
 
 	public int getId() {
 		return id;
@@ -104,6 +100,15 @@ public class User implements UserDetails{
 	public void setRoles(Set<Role> roles) {
 		this.roles = roles;
 	}
+	
+	@Override
+	public boolean isEnabled() {
+		return enabled;
+	}
+
+	public void setEnabled(boolean enabled) {
+		this.enabled = enabled;
+	}
 
 	@Override
 	public Collection<? extends GrantedAuthority> getAuthorities() {
@@ -111,7 +116,7 @@ public class User implements UserDetails{
 		
 		if(roles!=null) {
 			for(Role role:this.roles) {
-				auths.add(new SimpleGrantedAuthority(role.getName()));
+				auths.add(new SimpleGrantedAuthority("ROLE_"+role.getName()));
 			}
 		}
 		
@@ -119,28 +124,22 @@ public class User implements UserDetails{
 
 	}
 
+	//Force true for now, db fields later
 	@Override
 	public boolean isAccountNonExpired() {
 		// TODO Auto-generated method stub
-		return false;
+		return true;
 	}
 
 	@Override
 	public boolean isAccountNonLocked() {
 		// TODO Auto-generated method stub
-		return false;
+		return true;
 	}
 
 	@Override
 	public boolean isCredentialsNonExpired() {
 		// TODO Auto-generated method stub
-		return false;
+		return true;
 	}
-
-	@Override
-	public boolean isEnabled() {
-		// TODO Auto-generated method stub
-		return false;
-	}
-	
 }
