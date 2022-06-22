@@ -4,6 +4,7 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.security.Principal;
 import java.util.List;
+import java.util.Set;
 
 import javax.validation.Valid;
 
@@ -55,6 +56,27 @@ public class EmployeeController {
 	public ResponseEntity<Object> getEmployeeByUserSession(Principal principal){
 		User user = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
 		return ResponseEntity.ok(employeeService.getEmployeeByID(user.getEmployeeID()));
+	}
+	
+	@GetMapping("/id/users/cases")
+	public ResponseEntity<Object> getCasesAssignedToUserEmployee(Principal principal){
+		User user = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+		Employee tempEmp = employeeService.getEmployeeByID(user.getEmployeeID());
+		Set<Cases> retrievedCases = tempEmp.getCases();
+		return ResponseEntity.ok(retrievedCases);
+	}
+	@GetMapping("/id/users/customers")
+	public ResponseEntity<Object> getCustomersAssignedToUserEmployee(Principal principal){
+		User user = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+		List<Customer> cus = employeeService.getCustomersAssignedToEmployee(user.getEmployeeID());
+		return ResponseEntity.ok(cus);
+	}
+	
+	@GetMapping("/id/users/cases/customer")
+	public ResponseEntity<Object> getCustomerAssignedToUserEmployeeCase(Principal principal, @RequestParam("caseId") int caseID){
+		User user = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+		Customer cus = employeeService.getCustomerFromEmployeeAssignedCase(user.getEmployeeID(), caseID);
+		return ResponseEntity.ok(cus);
 	}
 	
 	@GetMapping("/id/cases")
@@ -116,6 +138,13 @@ public class EmployeeController {
 	public ResponseEntity<Object> updateEmployeeSocialMedia(@Valid @RequestBody SocialMedia socialMedia, @RequestParam("id") int ID){
 		SocialMedia updatedSocialMedia = employeeService.updateEmployeeSocialMedia(socialMedia, ID);
 		return ResponseEntity.ok(updatedSocialMedia);
+	}
+	
+	@PutMapping("/users/id/addresses")
+	public ResponseEntity<Object> updateAddressUserEmployee(@Valid @RequestBody Address address, Principal principal) throws URISyntaxException{
+		User user = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+		Address updatedAddress = employeeService.updateEmployeeAddressByID(address, user.getEmployeeID());
+		return ResponseEntity.ok(updatedAddress);
 	}
 	
 	@DeleteMapping("/id")
