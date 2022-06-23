@@ -62,15 +62,15 @@ public class Cases {
 		this.casesStatus = CaseStatus.PENDING.toString();
 		this.startDate = LocalDateTime.now();
 	}
-
-	public Cases(@NotNull String casesStatus, @NotNull LocalDateTime startDate, LocalDateTime endDate, String product, Customer customer) {
-		super();
+	
+	public Cases(@NotNull String casesStatus, String product, Customer customer) {
 		this.casesStatus = casesStatus;
-		this.startDate = startDate;
-		this.endDate = endDate;
-		this.product = product;
+		this.startDate = LocalDateTime.now();
+		this.endDate = null;
+		this.product  = product;
 		this.customer = customer;
 	}
+	
 
 	public Integer getId() {
 		return id;
@@ -127,5 +127,33 @@ public class Cases {
 	public void setCustomer(Customer customer) {
 		this.customer = customer;
 	}
-	
+
+	@Override
+	public boolean equals(Object cases) {
+		if(cases.getClass()!=this.getClass()) {
+			return false;
+		}
+		
+		Cases cased = (Cases) cases;
+		
+		if(cased.casesStatus!=this.casesStatus) {
+			return false;
+		}
+		if(cased.startDate!=this.startDate) {
+			return false;
+		}
+		if(cased.endDate!=this.endDate) {
+			return false;
+		}
+		if(cased.product!=this.product) {
+			return false;
+		}
+		if(!cased.customer.equals(this.customer)) {
+			return false;
+		}
+		if(!cased.employee.equals(this.employee)) {
+			return false;
+		}
+		return true;
+	}
 }
