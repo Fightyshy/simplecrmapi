@@ -1,7 +1,9 @@
 package com.simplecrmapi.service;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import javax.validation.Valid;
 
@@ -75,12 +77,42 @@ public class EmployeeServiceImpl implements EmployeeService {
 	}
 	
 	@Override
+	@Transactional
+	public List<Customer> getCustomersAssignedToEmployee(Employee emp){
+		List<Customer> customers = new ArrayList<Customer>();
+		
+		emp.getCases().stream().forEach(cases->{
+			if(!customers.contains(cases.getCustomer())) {
+				customers.add(cases.getCustomer());
+			}
+		});
+		
+		return customers;
+	}
+	
+	@Override
+	@Transactional
 	public Customer getCustomerFromEmployeeAssignedCase(int empID, int caseID) {
 		//Trade cumbersome set iteration for 2 queries and comparator?
 		try {
 			Employee emp = employeeDAO.getEmployeeByID(empID);
 			Cases cases = casesDAO.getCaseByID(caseID);
 			//Check if cases is part of emp set
+			if(emp.getCases().contains(cases)) {
+				return cases.getCustomer();
+			}else {
+				return null;
+			}
+		}catch(Exception e) {
+			throw new EntityNotFound();
+		}
+	}
+	
+	@Override
+	@Transactional
+	public Customer getCustomerFromEmployeeAssignedCase(Employee emp, int caseID) {
+		try {
+			Cases cases = casesDAO.getCaseByID(caseID);
 			if(emp.getCases().contains(cases)) {
 				return cases.getCustomer();
 			}else {
@@ -122,24 +154,53 @@ public class EmployeeServiceImpl implements EmployeeService {
 	@Override
 	@Transactional
 	public Address saveNewAddressToEmployee(Address address, Integer ID) {
-		Employee addAddress = getEmployeeByID(ID);
+		Employee emp = getEmployeeByID(ID);
 		address.setId(0);
-		addAddress.getAddress().add(address);
+		emp.getAddress().add(address);
 		
-		employeeDAO.saveEmployee(addAddress);
-		addressDAO.save(address);
-		return address;
+		employeeDAO.saveEmployee(emp);
+		Address add = addressDAO.save(address);
+		return add;
+	}
+	
+	@Override
+	@Transactional
+	public Address saveNewAddressToEmployee(Address address, Employee emp) {
+		address.setId(0);
+		emp.getAddress().add(address);
+		
+		employeeDAO.saveEmployee(emp);
+		Address add = addressDAO.save(address);
+		return add;
 	}
 	
 	@Override
 	@Transactional
 	public Cases saveNewCaseToEmployee(Cases cases, Integer ID) {
-		Employee addCase = getEmployeeByID(ID);
+		Employee emp = getEmployeeByID(ID);
 		cases.setId(0);
-		addCase.getCases().add(cases);
 		
-		employeeDAO.saveEmployee(addCase);
-		return cases;
+		cases.setEmployee(new HashSet<Employee>());
+		cases.getEmployee().add(emp);
+		Cases cased = casesDAO.saveCase(cases);
+		
+		emp.getCases().add(cased);
+		employeeDAO.saveEmployee(emp);
+		return cased;
+	}
+	
+	@Override
+	@Transactional
+	public Cases saveNewCaseToEmployee(Cases cases, Employee emp) {
+		cases.setId(0);
+		
+		cases.setEmployee(new HashSet<Employee>());
+		cases.getEmployee().add(emp);
+		Cases cased = casesDAO.saveCase(cases);
+		
+		emp.getCases().add(cased);
+		employeeDAO.saveEmployee(emp);
+		return cased;
 	}
 
 	@Override
@@ -147,24 +208,60 @@ public class EmployeeServiceImpl implements EmployeeService {
 	public Address updateEmployeeAddressByID(Address address, Integer ID) {
 		return addressDAO.save(address);
 	}
-
+	
 	@Override
-	public Cases updateEmployeeAssignedCaseByID(Cases cases, Integer ID) {
-		Employee addCase = getEmployeeByID(ID);
-		addCase.getCases().add(cases);
-		
-		employeeDAO.saveEmployee(addCase);
-		return cases;
+	@Transactional
+	public Address updateEmployeeAddressByID(Address address, Employee emp) {
+		return addressDAO.save(address);
 	}
 
 	@Override
+	@Transactional
+	public Cases updateEmployeeAssignedCaseByID(Cases cases, Integer ID) {
+		Employee emp = getEmployeeByID(ID);
+		cases.setEmployee(new HashSet<Employee>());
+		cases.getEmployee().add(emp);
+		Cases cased = casesDAO.saveCase(cases);
+		
+		emp.getCases().add(cased);
+		employeeDAO.saveEmployee(emp);
+		return cased;
+	}
+	
+	@Override
+	@Transactional
+	public Cases updateEmployeeAssignedCaseByID(Cases cases, Employee emp) {
+		cases.setEmployee(new HashSet<Employee>());
+		cases.getEmployee().add(emp);
+		Cases cased = casesDAO.saveCase(cases);
+		
+		emp.getCases().add(cased);
+		employeeDAO.saveEmployee(emp);
+		return cased;
+	}
+
+	@Override
+	@Transactional
 	public SocialMedia updateEmployeeSocialMedia(@Valid SocialMedia socialMedia, Integer ID) {
 		try {
-			Employee getEmployeeFromID = getEmployeeByID(ID);
-			getEmployeeFromID.setSocialMedia(socialMedia);
-			getEmployeeFromID = employeeDAO.saveEmployee(getEmployeeFromID);
-			return getEmployeeFromID.getSocialMedia();
+			Employee emp = getEmployeeByID(ID);
+			emp.setSocialMedia(socialMedia);
+			emp = employeeDAO.saveEmployee(emp);
+			return emp.getSocialMedia();
 		}catch(NullPointerException e){
+			System.out.println("Null pointer exception: "+e);
+			return null;
+		}
+	}
+	
+	@Override
+	@Transactional
+	public SocialMedia updateEmployeeSocialMedia(@Valid SocialMedia socialMedia, Employee emp) {
+		try {
+			emp.setSocialMedia(socialMedia);
+			return emp.getSocialMedia();
+		}catch(NullPointerException e) {
+			System.out.println("Null pointer exception: "+e);
 			return null;
 		}
 	}
@@ -178,6 +275,11 @@ public class EmployeeServiceImpl implements EmployeeService {
 	@Override
 	public void deleteEmployeeAddressByIDs(int employeeID, int addressID) {
 		employeeDAO.deleteEmployeeAddressByIDs(employeeID, addressID);
+	}
+	
+	@Override
+	public void deleteEmployeeAddressByIDs(Employee emp, int addressID) {
+		employeeDAO.deleteEmployeeAddressByIDs(emp.getId(), addressID);
 	}
 
 	@Override

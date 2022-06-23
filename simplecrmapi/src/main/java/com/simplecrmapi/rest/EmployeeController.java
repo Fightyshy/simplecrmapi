@@ -52,32 +52,6 @@ public class EmployeeController {
 //			return ResponseEntity.status(HttpStatus.NOT_FOUND).body("404 NOT FOUND: Entity not found with parameters"); //Is ideal, not working atm
 		}
 	}
-	@GetMapping("/id/users")
-	public ResponseEntity<Object> getEmployeeByUserSession(Principal principal){
-		User user = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-		return ResponseEntity.ok(employeeService.getEmployeeByID(user.getEmployeeID()));
-	}
-	
-	@GetMapping("/id/users/cases")
-	public ResponseEntity<Object> getCasesAssignedToUserEmployee(Principal principal){
-		User user = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-		Employee tempEmp = employeeService.getEmployeeByID(user.getEmployeeID());
-		Set<Cases> retrievedCases = tempEmp.getCases();
-		return ResponseEntity.ok(retrievedCases);
-	}
-	@GetMapping("/id/users/customers")
-	public ResponseEntity<Object> getCustomersAssignedToUserEmployee(Principal principal){
-		User user = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-		List<Customer> cus = employeeService.getCustomersAssignedToEmployee(user.getEmployeeID());
-		return ResponseEntity.ok(cus);
-	}
-	
-	@GetMapping("/id/users/cases/customer")
-	public ResponseEntity<Object> getCustomerAssignedToUserEmployeeCase(Principal principal, @RequestParam("caseId") int caseID){
-		User user = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-		Customer cus = employeeService.getCustomerFromEmployeeAssignedCase(user.getEmployeeID(), caseID);
-		return ResponseEntity.ok(cus);
-	}
 	
 	@GetMapping("/id/cases")
 	public ResponseEntity<Object> getEmployeeCasesByID(@RequestParam("id") int ID){
@@ -97,6 +71,27 @@ public class EmployeeController {
 		return ResponseEntity.ok(customer);
 	}
 	
+	//Principal-based GET
+	@GetMapping("/users")
+	public ResponseEntity<Object> getEmployeeByUserSession(){
+		return ResponseEntity.ok(getEmployeeFromSession());
+	}
+	
+	@GetMapping("/users/cases")
+	public ResponseEntity<Object> getCasesAssignedToUserEmployee(){
+		return ResponseEntity.ok(getEmployeeFromSession().getCases());
+	}
+	@GetMapping("/users/customers")
+	public ResponseEntity<Object> getCustomersAssignedToUserEmployee(){
+		return ResponseEntity.ok(employeeService.getCustomersAssignedToEmployee(getEmployeeFromSession()));
+	}
+	
+	@GetMapping("/users/cases/customer")
+	public ResponseEntity<Object> getCustomerAssignedToUserEmployeeCase(@RequestParam("caseId") int caseID){
+		Customer cus = employeeService.getCustomerFromEmployeeAssignedCase(getEmployeeFromSession(), caseID);
+		return ResponseEntity.ok(cus);
+	}
+	
 	@PostMapping("")
 	public ResponseEntity<Object> saveNewEmployee(@Valid @RequestBody Employee employee) throws Exception {
 		employee.setId(0);
@@ -114,6 +109,19 @@ public class EmployeeController {
 	public ResponseEntity<Object> saveNewCaseToEmployee(@Valid @RequestBody Cases cases, @RequestParam("id") int ID) throws URISyntaxException{
 		Cases newCase = employeeService.saveNewCaseToEmployee(cases, ID);
 		return ResponseEntity.created(new URI("/employees/id/cases/"+newCase.getId())).body(newCase);
+	}
+	
+	//Principal-based POST
+	@PostMapping("/users/addresses")
+	public ResponseEntity<Object> saveNewAddressToUserEmployee(@Valid @RequestBody Address address) throws URISyntaxException{
+		Address newAddress = employeeService.saveNewAddressToEmployee(address, getEmployeeFromSession());
+		return ResponseEntity.created(new URI("/employees/id/addresses/"+newAddress.getId())).body(newAddress);
+	}
+	
+	@PostMapping("/users/cases")
+	public ResponseEntity<Object>saveNewCaseToUserEmployee(@Valid @RequestBody Cases cases) throws URISyntaxException{
+		Cases newCase = employeeService.saveNewCaseToEmployee(cases, getEmployeeFromSession());
+		return ResponseEntity.created(new URI("/employees/id/cases"+newCase.getId())).body(newCase);
 	}
 	
 	@PutMapping("")
@@ -142,9 +150,27 @@ public class EmployeeController {
 	
 	@PutMapping("/users/id/addresses")
 	public ResponseEntity<Object> updateAddressUserEmployee(@Valid @RequestBody Address address, Principal principal) throws URISyntaxException{
-		User user = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-		Address updatedAddress = employeeService.updateEmployeeAddressByID(address, user.getEmployeeID());
+		Address updatedAddress = employeeService.updateEmployeeAddressByID(address, getEmployeeFromSession());
 		return ResponseEntity.ok(updatedAddress);
+	}
+	
+	//Principal-based PUT
+	@PutMapping("/users/addresses")
+	public ResponseEntity<Object> updateUserEmployeeAddress(@Valid @RequestBody Address address){
+		Address updatedAddress = employeeService.updateEmployeeAddressByID(address, getEmployeeFromSession());
+		return ResponseEntity.ok(updatedAddress);
+	}
+	
+	@PutMapping("/users/cases")
+	public ResponseEntity<Object> updateUserEmployeeAssignedCase(@Valid @RequestBody Cases cases){
+		Cases updatedCase = employeeService.updateEmployeeAssignedCaseByID(cases, getEmployeeFromSession());
+		return ResponseEntity.ok(updatedCase);
+	}
+	
+	@PutMapping("/users/socialmedia")
+	public ResponseEntity<Object> updateUserEmployeeSocialMedia(@Valid @RequestBody SocialMedia socialMedia){
+		SocialMedia updatedSocialMedia = employeeService.updateEmployeeSocialMedia(socialMedia, getEmployeeFromSession());
+		return ResponseEntity.ok(updatedSocialMedia);
 	}
 	
 	@DeleteMapping("/id")
@@ -154,7 +180,7 @@ public class EmployeeController {
 	}
 	
 	@DeleteMapping("/id/addresses")
-	public ResponseEntity<Object> deleteCustomerAddressByIDs(@RequestParam("employeeId") int employeeID, @RequestParam("addressId") int addressID){
+	public ResponseEntity<Object> deleteEmployeeAddressByIDs(@RequestParam("employeeId") int employeeID, @RequestParam("addressId") int addressID){
 		employeeService.deleteEmployeeAddressByIDs(employeeID, addressID);
 		return ResponseEntity.noContent().build();
 	}
@@ -163,5 +189,17 @@ public class EmployeeController {
 	public ResponseEntity<Object> removeEmployeeAssignedCase(@RequestParam("employeeId") int employeeID, @RequestParam("caseId") int caseID){
 		employeeService.removeEmployeeAssignedCase(employeeID, caseID);
 		return ResponseEntity.noContent().build();
+	}
+	
+	//Principal-based DELETE
+	@DeleteMapping("/users/addresses")
+	public ResponseEntity<Object> deleteUserEmployeeAddress(@RequestParam("addressId") int addressID){
+		employeeService.deleteEmployeeAddressByIDs(getEmployeeFromSession(), addressID);
+		return ResponseEntity.noContent().build();
+	}
+	
+	private Employee getEmployeeFromSession() {
+		User user = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+		return employeeService.getEmployeeByID(user.getEmployeeID());
 	}
 }

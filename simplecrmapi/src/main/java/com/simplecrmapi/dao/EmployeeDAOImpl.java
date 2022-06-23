@@ -47,7 +47,6 @@ public class EmployeeDAOImpl implements EmployeeDAO {
 		//set arg id to db id for save/update ops
 //		employee.setId(dbCustomer.getId());
 //		return employee;
-		Employee dbEmployee;
 		try {
 			//merge to save new/update old
 //			if(employee.getId()==0) {
@@ -59,13 +58,14 @@ public class EmployeeDAOImpl implements EmployeeDAO {
 //				return dbEmployee;
 //			}
 			
-			dbEmployee = entityManager.merge(employee);
+			Employee dbEmployee = entityManager.merge(employee);
 			return dbEmployee;
 			
 //			return null;
 		}catch(NullPointerException npe) {
-			throw new EntityNotFound();
+			throw new NullPointerException();
 		}catch(EntityNotFoundException enfe) {
+			System.out.println(enfe);
 			throw new EntityNotFound();
 		}
 	}
