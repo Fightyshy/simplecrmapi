@@ -8,6 +8,11 @@ public class Login {
 	
 	}
 
+	public Login(String username, String password) {
+		this.username = username;
+		this.password = password;
+	}
+
 	public String getUsername() {
 		return username;
 	}
