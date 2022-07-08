@@ -17,7 +17,9 @@ import com.simplecrmapi.dao.UserDAO;
 import com.simplecrmapi.entity.Role;
 import com.simplecrmapi.entity.User;
 
-@Service("userDetailsService")
+import ch.qos.logback.classic.Logger;
+
+@Service("userService")
 public class UserServiceImpl implements UserService, UserDetailsService {
 
 	@Autowired
@@ -75,7 +77,7 @@ public class UserServiceImpl implements UserService, UserDetailsService {
 
 	@Override
 	@Transactional
-	public User fineUsername(String username) {
+	public User findUsername(String username) {
 		return userDAO.findByUsername(username);
 	}
 

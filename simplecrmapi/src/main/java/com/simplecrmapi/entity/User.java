@@ -55,9 +55,19 @@ public class User implements UserDetails{
 		
 	}
 	
-	public User(String username, String password, Set<Role> roles) {
+	public User(String username, String password, int employeeID, Set<Role> roles) {
 		this.username = username;
 		this.password = password;
+		this.employeeID = employeeID;
+		this.roles = roles;
+	}
+	
+	//Test constructor please ignore
+	public User(int id, String username, String password, int employeeID, Set<Role> roles) {
+		this.id = id;
+		this.username = username;
+		this.password = password;
+		this.employeeID = employeeID;
 		this.roles = roles;
 	}
 

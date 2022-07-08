@@ -31,7 +31,7 @@ public class UserController {
     private UserService userService;
     
     @PostMapping("/authenticate")
-    public ResponseEntity<?> generateToken(@RequestBody Login login) throws AuthenticationException {
+    public ResponseEntity<Object> generateToken(@RequestBody Login login) throws AuthenticationException {
 
         final Authentication authentication = authenticationManager.authenticate(
                 new UsernamePasswordAuthenticationToken(

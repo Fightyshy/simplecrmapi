@@ -3,6 +3,7 @@ package com.simplecrmapi.test;
 import static org.hamcrest.CoreMatchers.containsString;
 import static org.hamcrest.CoreMatchers.is;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
@@ -25,6 +26,10 @@ import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMock
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContext;
+import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder;
@@ -38,13 +43,18 @@ import com.simplecrmapi.entity.Customer;
 import com.simplecrmapi.entity.Employee;
 import com.simplecrmapi.entity.SocialMedia;
 import com.simplecrmapi.rest.EmployeeController;
+import com.simplecrmapi.rest.UserController;
 import com.simplecrmapi.service.EmployeeService;
+import com.simplecrmapi.service.UserService;
 import com.simplecrmapi.test.util.CSVParser;
+import com.simplecrmapi.util.JwtAuthenticationFilter;
+import com.simplecrmapi.util.TokenProvider;
+import com.simplecrmapi.util.UnauthorizedEntryPoint;
 
-//@WebMvcTest(EmployeeController.class)
 @SpringBootTest
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 @AutoConfigureMockMvc
+//If it works for these things, then the validation works for ther rest since they share pojos
 public class EmployeeControllerValidationTest {
 	@Autowired
 	private MockMvc mockMvc;
@@ -63,9 +73,32 @@ public class EmployeeControllerValidationTest {
 	
 	private List<Employee> employeeTestingSet = new ArrayList<>();
 	
+	@InjectMocks
+	private UserController userController;
+	
+	@MockBean(name="userDetailsService")
+	private UserDetailsService userDetailsService;
+	
+	@MockBean
+	private UnauthorizedEntryPoint unAuthorizedEntryPoint;
+	
+	@MockBean
+	private TokenProvider token;
+	
+	@Autowired
+	private JwtAuthenticationFilter fliter;
+	
+	@MockBean
+    private AuthenticationManager authenticationManager;
+	
+	@MockBean
+	private UserService userService;
+	
 //	@BeforeAll //once before all tests
 	@BeforeEach //once before every test
 	void init() {
+	    Authentication authentication = mock(Authentication.class);
+	    SecurityContext securityContext = mock(SecurityContext.class);
 		employeeTestingSet = new ArrayList<>(); //clear to reset
 		CSVParser parser = new CSVParser();
 		List<String[]> employeeFile = parser.readLine("Employee.txt");
@@ -220,8 +253,8 @@ public class EmployeeControllerValidationTest {
 	}
 	
 	@Test
-	@WithMockUser(username="john", roles= {"CUSTOMER"})
-	void saveFullCustomerSuccess() throws Exception{
+	@WithMockUser(username="employee2", password="test123", roles= {"MANAGER"})
+	void saveFullEmployeeSuccess() throws Exception{
 		Employee emp = employeeTestingSet.get(1);
 		emp.setFirstName("John");
 		emp.setMiddleName("Sam");
@@ -243,7 +276,7 @@ public class EmployeeControllerValidationTest {
 	}
 	
 	@Test
-	@WithMockUser(username="john", roles= {"CUSTOMER"})
+	@WithMockUser(username="employee2", password="test123", roles= {"MANAGER"})
 	void saveFullEmployeeFailed() throws Exception{
 		Employee emp = employeeTestingSet.get(1);
 		emp.setFirstName("John123");
@@ -267,7 +300,7 @@ public class EmployeeControllerValidationTest {
 	}
 	
 	@Test
-	@WithMockUser(username="john", roles= {"CUSTOMER"})
+	@WithMockUser(username="employee2", password="test123", roles= {"MANAGER"})
 	void saveFullEmployeeFailedDate() throws Exception{
 		Employee emp = employeeTestingSet.get(0);
 		emp.setDateOfBirth(LocalDate.now());
@@ -289,7 +322,7 @@ public class EmployeeControllerValidationTest {
 	}
 	
 	@Test
-	@WithMockUser(username="john", roles= {"CUSTOMER"})
+	@WithMockUser(username="employee2", password="test123", roles= {"MANAGER"})
 	void saveFullEmployeeFailedPhoneNumberType() throws Exception{
 		Employee emp = employeeTestingSet.get(0);
 		emp.setPhoneNumber("aaaaaaaaaaaa");
@@ -306,7 +339,7 @@ public class EmployeeControllerValidationTest {
 	}
 	
 	@Test
-	@WithMockUser(username="john", roles= {"CUSTOMER"})
+	@WithMockUser(username="employee2", password="test123", roles= {"MANAGER"})
 	void saveFullEmployeeFailedEmail() throws Exception{
 		Employee emp =  employeeTestingSet.get(1);
 		emp.setEmailAddress("test");
@@ -323,7 +356,7 @@ public class EmployeeControllerValidationTest {
 	}
 	
 	@Test
-	@WithMockUser(username="john", roles= {"CUSTOMER"})
+	@WithMockUser(username="employee2", password="test123", roles= {"MANAGER"})
 	void saveFullEmployeeCaseNumbersValidation() throws Exception{
 		Employee emp = employeeTestingSet.get(1);
 		emp.setCasesActive(1);

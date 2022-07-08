@@ -4,8 +4,10 @@ import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.notNullValue;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
+import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.user;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 //import static org.springframework.test.web.client.match.MockRestRequestMatchers.content;
@@ -28,24 +30,40 @@ import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMock
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContext;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.UserDetailsService;
+import org.springframework.security.test.context.support.TestExecutionEvent;
 import org.springframework.security.test.context.support.WithMockUser;
+import org.springframework.security.test.context.support.WithUserDetails;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.simplecrmapi.dao.EmployeeDAO;
+import com.simplecrmapi.dao.UserDAO;
 import com.simplecrmapi.entity.Address;
 import com.simplecrmapi.entity.Cases;
 import com.simplecrmapi.entity.Customer;
 import com.simplecrmapi.entity.Employee;
+import com.simplecrmapi.entity.Role;
 import com.simplecrmapi.entity.SocialMedia;
+import com.simplecrmapi.entity.User;
 import com.simplecrmapi.enums.CaseStatus;
 import com.simplecrmapi.rest.EmployeeController;
+import com.simplecrmapi.rest.UserController;
 import com.simplecrmapi.service.EmployeeService;
+import com.simplecrmapi.service.UserService;
 import com.simplecrmapi.test.util.CSVParser;
 import com.simplecrmapi.util.EntityNotFound;
 import com.simplecrmapi.util.InvalidParamsException;
+import com.simplecrmapi.util.JwtAuthenticationFilter;
+import com.simplecrmapi.util.TokenProvider;
+import com.simplecrmapi.util.UnauthorizedEntryPoint;
 
 @SpringBootTest
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
@@ -66,11 +84,46 @@ public class EmployeeControllerLiveTest {
 	@InjectMocks
 	private EmployeeController employeeController;
 	
+	@InjectMocks
+	private UserController userController;
+	
+	@MockBean(name="userService")
+	private UserDetailsService userDetailsService;
+	
+	@MockBean
+	private UserService userService;
+	
+	@MockBean
+	private UserDAO userDAO;
+	
+	@MockBean
+	private UnauthorizedEntryPoint unAuthorizedEntryPoint;
+	
+	@MockBean
+	private TokenProvider token;
+	
+	@Autowired
+	private JwtAuthenticationFilter fliter;
+	
+	@MockBean
+    private AuthenticationManager authenticationManager;
+	
 	private List<Employee> employeeTestingSet = new ArrayList<>();
 	
-//	@BeforeAll //once before all tests
+	private String genToken;
+	
+	private User emp1;
+	
+	private User emp2;
+	
 	@BeforeEach //once before every test
 	void init() {
+		//Smoking gun https://stackoverflow.com/questions/44849827/mock-securitycontextholder-authentication-always-returning-null
+	    Authentication authentication = mock(Authentication.class);
+	    SecurityContext securityContext = mock(SecurityContext.class);
+	    
+	    genToken = token.generateToken(SecurityContextHolder.getContext().getAuthentication());
+	    
 		employeeTestingSet = new ArrayList<>(); //clear to reset
 		CSVParser parser = new CSVParser();
 		List<String[]> employeeFile = parser.readLine("Employee.txt");
@@ -78,18 +131,15 @@ public class EmployeeControllerLiveTest {
 		
 		List<String[]> customerFile = parser.readLine("Customer.txt");
 		List<Customer> testCustomers = parser.customerParser(customerFile);
-//		System.out.println(testCustomers.toString());
 		
 		List<String[]> CasesFile = parser.readLine("Cases.txt");
 		List<Cases> testCases = parser.caseParser(CasesFile);
 		
 		List<String[]> addressFile = parser.readLine("Address.txt");
 		List<Address> testAddresses = parser.addressParser(addressFile);
-//		System.out.println(testAddresses.toString());
 		
 		List<String[]> socialMedia = parser.readLine("SocialMedia.txt");
 		List<SocialMedia> testSocialMedia = parser.socialMediaParser(socialMedia);
-//		System.out.println(testSocialMedia.toString());
 		
 		ArrayList<Address> address1 = new ArrayList<Address>();
 		address1.add(testAddresses.get(0));
@@ -226,13 +276,15 @@ public class EmployeeControllerLiveTest {
 	
 //	//GET
 	@Test
-	@WithMockUser(username="john", roles= {"CUSTOMER"})
+	@WithMockUser(username="employee1", password="test123", roles= {"EMPLOYEE"})
 	void getEmployees() throws Exception{
 		Mockito.when(employeeService.getEmployees()).thenReturn(employeeTestingSet);
 		
 		mockMvc.perform(MockMvcRequestBuilders
 						.get("/employees")
-						.contentType(MediaType.APPLICATION_JSON))
+						.contentType(MediaType.APPLICATION_JSON)
+						.header("Authorization", "Bearer "+genToken))
+						.andDo(print())
 						.andExpect(status().isOk())
 						.andExpect(jsonPath("$", hasSize(5)))
 						.andExpect(content().json(mapper.writeValueAsString(employeeTestingSet)));
@@ -241,13 +293,15 @@ public class EmployeeControllerLiveTest {
 	}
 	
 	@Test
-	@WithMockUser(username="john", roles= {"CUSTOMER"})
+	@WithMockUser(username="employee1", password="test123", roles= {"EMPLOYEE"})
 	void getEmployeesEmptyList() throws Exception {
 		List<Employee> emptyList = new ArrayList<Employee>();
 		
 		Mockito.when(employeeService.getEmployees()).thenReturn(emptyList);
 		
-		mockMvc.perform(MockMvcRequestBuilders.get("/employees").contentType(MediaType.APPLICATION_JSON))
+		mockMvc.perform(MockMvcRequestBuilders.get("/employees")
+				.contentType(MediaType.APPLICATION_JSON)
+				.header("Authorization", "Bearer "+genToken))
 				.andExpect(status().isOk())
 				.andExpect(jsonPath("$", hasSize(0)))
 				.andExpect(content().json(mapper.writeValueAsString(emptyList)));
@@ -256,13 +310,14 @@ public class EmployeeControllerLiveTest {
 	}
 	
 	@Test
-	@WithMockUser(username="john", roles= {"CUSTOMER"})
+	@WithMockUser(username="employee1", password="test123", roles= {"EMPLOYEE"})
 	void getEmployeeByID() throws Exception{
 		Mockito.when(employeeService.getEmployeeByID(1)).thenReturn(employeeTestingSet.get(0));
 		
 		mockMvc.perform(MockMvcRequestBuilders
 						.get("/employees/id").param("id", "1")
-						.contentType(MediaType.APPLICATION_JSON))
+						.contentType(MediaType.APPLICATION_JSON)
+						.header("Authorization", "Bearer "+genToken))
 						.andExpect(status().isOk())
 						.andExpect(jsonPath("$", notNullValue()))
 						.andExpect(jsonPath("$.firstName", is("Benjamin")));
@@ -271,11 +326,11 @@ public class EmployeeControllerLiveTest {
 	}
 	
 	@Test
-	@WithMockUser(username="john", roles= {"CUSTOMER"})
+	@WithMockUser(username="employee1", password="test123", roles= {"EMPLOYEE"})
 	void getEmployeeByIDNullParams() throws Exception{
 		Mockito.when(employeeService.getEmployeeByID(null)).thenThrow(new EntityNotFound());
 		
-		mockMvc.perform(MockMvcRequestBuilders.get("/employees/id").param("id", "").contentType(MediaType.APPLICATION_JSON))
+		mockMvc.perform(MockMvcRequestBuilders.get("/employees/id").param("id", "").contentType(MediaType.APPLICATION_JSON).header("Authorization", "Bearer "+genToken))
 			.andExpect(status().isBadRequest())
 			.andExpect(jsonPath("$", is("400 BAD REQUEST: Invalid params")));
 		
@@ -284,11 +339,11 @@ public class EmployeeControllerLiveTest {
 	}
 	
 	@Test
-	@WithMockUser(username="john", roles= {"CUSTOMER"})
+	@WithMockUser(username="employee1", password="test123", roles= {"EMPLOYEE"})
 	void getEmployeeByInvalidParams() throws Exception {
 		Mockito.when(employeeService.getEmployeeByID(55)).thenThrow(new EntityNotFound());
 		
-		mockMvc.perform(MockMvcRequestBuilders.get("/employees/id").param("id", "55").contentType(MediaType.APPLICATION_JSON))
+		mockMvc.perform(MockMvcRequestBuilders.get("/employees/id").param("id", "55").contentType(MediaType.APPLICATION_JSON).header("Authorization", "Bearer "+genToken))
 			.andExpect(status().isNotFound())
 			.andExpect(jsonPath("$", is("404 NOT FOUND: Entity not found due to invalid ID")));
 		
@@ -296,23 +351,23 @@ public class EmployeeControllerLiveTest {
 	}
 	
 	@Test
-	@WithMockUser(username="john", roles= {"CUSTOMER"})
+	@WithMockUser(username="employee1", password="test123", roles= {"EMPLOYEE"})
 	void getEmployeeAssignedCases() throws Exception{
 		Mockito.when(employeeService.getEmployeeCasesByID(employeeTestingSet.get(2).getId())).thenReturn(new ArrayList<Cases>(employeeTestingSet.get(2).getCases()));
 		
-		mockMvc.perform(MockMvcRequestBuilders.get("/employees/id/cases").param("id","3").contentType(MediaType.APPLICATION_JSON))
+		mockMvc.perform(MockMvcRequestBuilders.get("/employees/id/cases").param("id","3").contentType(MediaType.APPLICATION_JSON).header("Authorization", "Bearer "+genToken))
 			.andExpect(status().isOk())
 			.andExpect(jsonPath("$", hasSize(3)));
 		
 		Mockito.when(employeeService.getEmployeeCasesByID(employeeTestingSet.get(1).getId())).thenReturn(new ArrayList<Cases>(employeeTestingSet.get(1).getCases()));
 		
-		mockMvc.perform(MockMvcRequestBuilders.get("/employees/id/cases").param("id","2").contentType(MediaType.APPLICATION_JSON))
+		mockMvc.perform(MockMvcRequestBuilders.get("/employees/id/cases").param("id","2").contentType(MediaType.APPLICATION_JSON).header("Authorization", "Bearer "+genToken))
 			.andExpect(status().isOk())
 			.andExpect(jsonPath("$", hasSize(2)));
 		
 		Mockito.when(employeeService.getEmployeeCasesByID(employeeTestingSet.get(0).getId())).thenReturn(new ArrayList<Cases>(employeeTestingSet.get(0).getCases()));
 		
-		mockMvc.perform(MockMvcRequestBuilders.get("/employees/id/cases").param("id","1").contentType(MediaType.APPLICATION_JSON))
+		mockMvc.perform(MockMvcRequestBuilders.get("/employees/id/cases").param("id","1").contentType(MediaType.APPLICATION_JSON).header("Authorization", "Bearer "+genToken))
 			.andExpect(status().isOk())
 			.andExpect(jsonPath("$", hasSize(2)));
 		
@@ -320,14 +375,14 @@ public class EmployeeControllerLiveTest {
 	}
 	
 	@Test
-	@WithMockUser(username="john", roles= {"CUSTOMER"})
+	@WithMockUser(username="employee1", password="test123", roles= {"EMPLOYEE"})
 	void getEmployeeAssignedCasesEmptyList() throws Exception {
 		Employee emp = employeeTestingSet.get(0);
 		emp.setCases(new HashSet<Cases>());
 		
 		Mockito.when(employeeService.getEmployeeCasesByID(emp.getId())).thenReturn(new ArrayList<Cases>());
 		
-		mockMvc.perform(MockMvcRequestBuilders.get("/employees/id/cases").param("id", "1").contentType(MediaType.APPLICATION_JSON))
+		mockMvc.perform(MockMvcRequestBuilders.get("/employees/id/cases").param("id", "1").contentType(MediaType.APPLICATION_JSON).header("Authorization", "Bearer "+genToken))
 				.andExpect(status().isOk())
 				.andExpect(jsonPath("$", hasSize(0)));
 		
@@ -335,7 +390,7 @@ public class EmployeeControllerLiveTest {
 	}
 	
 	@Test
-	@WithMockUser(username="john", roles= {"CUSTOMER"})
+	@WithMockUser(username="employee1", password="test123", roles= {"EMPLOYEE"})
 	void getEmployeeAssignedCustomers() throws Exception{
 		List<Customer> customers = new ArrayList<Customer>();
 
@@ -346,21 +401,24 @@ public class EmployeeControllerLiveTest {
 			}
 		});
 		Mockito.when(employeeService.getCustomersAssignedToEmployee(employeeTestingSet.get(2).getId())).thenReturn(customers);
-		mockMvc.perform((MockMvcRequestBuilders.get("/employees/id/customers").param("id", "3").contentType(MediaType.APPLICATION_JSON)))
+		mockMvc.perform((MockMvcRequestBuilders.get("/employees/id/customers").param("id", "3").contentType(MediaType.APPLICATION_JSON).header("Authorization", "Bearer "+genToken)))
 			.andExpect(status().isOk())
 			.andExpect(jsonPath("$", hasSize(3)));
 		
 		verify(employeeService, times(1)).getCustomersAssignedToEmployee(3);
 	}
+
+	
+	
 	
 	@Test
-	@WithMockUser(username="john", roles= {"CUSTOMER"})
+	@WithMockUser(username="employee1", password="test123", roles= {"EMPLOYEE"})
 	void getEmployeeAssignedCustomersEmptyList() throws Exception {
 		Employee emp = employeeTestingSet.get(0);
 		emp.setCases(new HashSet<Cases>());
 		Mockito.when(employeeService.getCustomersAssignedToEmployee(emp.getId())).thenReturn(new ArrayList<Customer>());
 		
-		mockMvc.perform(MockMvcRequestBuilders.get("/employees/id/customers").param("id", "1").contentType(MediaType.APPLICATION_JSON))
+		mockMvc.perform(MockMvcRequestBuilders.get("/employees/id/customers").param("id", "1").contentType(MediaType.APPLICATION_JSON).header("Authorization", "Bearer "+genToken))
 			.andExpect(status().isOk())
 			.andExpect(jsonPath("$", hasSize(0)));
 		
@@ -368,13 +426,13 @@ public class EmployeeControllerLiveTest {
 	}
 	
 	@Test
-	@WithMockUser(username="john", roles= {"CUSTOMER"})
+	@WithMockUser(username="employee1", password="test123", roles= {"EMPLOYEE"})
 	void getEmployeeAssignedCustomersInvalidParam() throws Exception {
 		Employee emp = employeeTestingSet.get(0);
 		
 		Mockito.when(employeeService.getCustomersAssignedToEmployee(55)).thenThrow(new InvalidParamsException());
 		
-		mockMvc.perform(MockMvcRequestBuilders.get("/employees/id/customers").param("id", "55").contentType(MediaType.APPLICATION_JSON))
+		mockMvc.perform(MockMvcRequestBuilders.get("/employees/id/customers").param("id", "55").contentType(MediaType.APPLICATION_JSON).header("Authorization", "Bearer "+genToken))
 				.andExpect(status().isBadRequest())
 				.andExpect(jsonPath("$", is("400 BAD REQUEST: Invalid params")));
 		
@@ -383,7 +441,7 @@ public class EmployeeControllerLiveTest {
 	
 	//employee->case->customer
 	@Test
-	@WithMockUser(username="john", roles= {"CUSTOMER"})
+	@WithMockUser(username="employee1", password="test123", roles= {"EMPLOYEE"})
 	void getCustomerFromEmployeeAssignedCase() throws Exception {
 		//culprit
 		Cases exCase = new Cases();
@@ -395,7 +453,7 @@ public class EmployeeControllerLiveTest {
 		}
 		Mockito.when(employeeService.getCustomerFromEmployeeAssignedCase(3, 2)).thenReturn(exCase.getCustomer());
 		
-		mockMvc.perform(MockMvcRequestBuilders.get("/employees/id/cases/customer").param("empId", "3").param("caseId", "2").contentType(MediaType.APPLICATION_JSON))
+		mockMvc.perform(MockMvcRequestBuilders.get("/employees/id/cases/customer").param("empId", "3").param("caseId", "2").contentType(MediaType.APPLICATION_JSON).header("Authorization", "Bearer "+genToken))
 				.andExpect(status().isOk())
 				.andExpect(jsonPath("$.id", is(2)));
 		
@@ -403,20 +461,101 @@ public class EmployeeControllerLiveTest {
 	}
 	
 	@Test
-	@WithMockUser(username="john", roles= {"CUSTOMER"})
+	@WithMockUser(username="employee1", password="test123", roles= {"EMPLOYEE"})
 	void getCustomerFromEmployeeAssignedCaseInvalidParam() throws Exception {
 		Mockito.when(employeeService.getCustomerFromEmployeeAssignedCase(321, 55)).thenThrow(new InvalidParamsException());
 		
-		mockMvc.perform((MockMvcRequestBuilders.get("/employees/id/cases/customer").param("empId", "321").param("caseId", "55").contentType(MediaType.APPLICATION_JSON)))
+		mockMvc.perform((MockMvcRequestBuilders.get("/employees/id/cases/customer").param("empId", "321").param("caseId", "55").contentType(MediaType.APPLICATION_JSON).header("Authorization", "Bearer "+genToken)))
 				.andExpect(status().isBadRequest())
 				.andExpect(jsonPath("$", is("400 BAD REQUEST: Invalid params")));
 		
 		verify(employeeService, times(1)).getCustomerFromEmployeeAssignedCase(321, 55);
 	}
 	
+	//Principal-GET
+	
+	@Test
+	@WithUserDetails(value="employee1", userDetailsServiceBeanName="testEmployeeDetails")
+	void getEmployeeFromUserDetails() throws Exception{
+		Employee emp = employeeTestingSet.get(0);
+
+		Mockito.when(employeeService.getEmployeeByID(any(Integer.class))).thenReturn(emp);
+		String expected = mapper.writeValueAsString(emp);
+		
+		MockHttpServletRequestBuilder request = MockMvcRequestBuilders.get("/employees/users").contentType(MediaType.APPLICATION_JSON)
+				.header("Authorization", "Bearer" + genToken);//.with(user(emp1));
+		
+		mockMvc.perform(request)
+		.andExpect(status().isOk())
+		.andExpect(content().json(expected));
+		
+		verify(employeeService, times(1)).getEmployeeByID(any(Integer.class));
+	}
+	
+	@Test
+	@WithUserDetails(value="employee1", userDetailsServiceBeanName="testEmployeeDetails")
+	void getEmployeeAssignedCasesFromUserDetails() throws Exception{
+		Employee emp = employeeTestingSet.get(0);
+
+		Mockito.when(employeeService.getEmployeeByID(any(Integer.class))).thenReturn(emp);
+		String expected = mapper.writeValueAsString(emp.getCases());
+		
+		MockHttpServletRequestBuilder request = MockMvcRequestBuilders.get("/employees/users/cases").contentType(MediaType.APPLICATION_JSON)
+				.header("Authorization", "Bearer" + genToken);//.with(user(emp1));
+		
+		mockMvc.perform(request)
+		.andExpect(status().isOk())
+		.andExpect(content().json(expected));
+		
+		verify(employeeService, times(1)).getEmployeeByID(any(Integer.class));
+	}
+	
+	@Test
+	@WithUserDetails(value="employee1", userDetailsServiceBeanName="testEmployeeDetails")
+	void getEmployeeAssignedCustomersFromUserDetails() throws Exception{
+		Employee emp = employeeTestingSet.get(0);
+		
+		Mockito.when(employeeService.getEmployeeByID(any(Integer.class))).thenReturn(emp);
+		
+		List<Customer> customers = new ArrayList<Customer>();
+
+		emp.getCases().stream().forEach(cases->{
+			if(!customers.contains(cases.getCustomer())) {
+				customers.add(cases.getCustomer());
+			}
+		});
+		String expected = mapper.writeValueAsString(customers);
+		Mockito.when(employeeService.getCustomersAssignedToEmployee(emp)).thenReturn(customers);
+		mockMvc.perform((MockMvcRequestBuilders.get("/employees/users/customers").contentType(MediaType.APPLICATION_JSON).header("Authorization", "Bearer "+genToken)))
+			.andExpect(status().isOk())
+			.andExpect(content().json(expected));
+		
+		verify(employeeService, times(1)).getEmployeeByID(any(Integer.class));
+		verify(employeeService, times(1)).getCustomersAssignedToEmployee(any(Employee.class));
+	}
+	
+	@Test
+	@WithUserDetails(value="employee1", userDetailsServiceBeanName="testEmployeeDetails")
+	void getEmployeeAssignedToUserEmployeCase() throws Exception{
+		Employee emp = employeeTestingSet.get(0);
+		Customer cus = emp.getCases().iterator().next().getCustomer();
+		
+		Mockito.when(employeeService.getEmployeeByID(any(Integer.class))).thenReturn(emp);
+		Mockito.when(employeeService.getCustomerFromEmployeeAssignedCase(any(Employee.class),any(Integer.class))).thenReturn(cus);
+		
+		String expected = mapper.writeValueAsString(cus);
+		
+		mockMvc.perform(MockMvcRequestBuilders.get("/employees/users/cases/customer").param("caseId", "1").contentType(MediaType.APPLICATION_JSON).header("Authorization", "Bearer "+genToken))
+		.andExpect(status().isOk())
+		.andExpect(content().json(expected));
+		
+		verify(employeeService, times(1)).getEmployeeByID(any(Integer.class));
+		verify(employeeService, times(1)).getCustomerFromEmployeeAssignedCase(any(Employee.class), any(Integer.class));
+	}
+	
 	//POST
 	@Test
-	@WithMockUser(username="john", roles= {"CUSTOMER"})
+	@WithMockUser(username="employee2", password="test123", roles= {"MANAGER"})
 	void saveNewEmployee() throws Exception {
 		Employee emp = new Employee();
 		emp.setFirstName("John");
@@ -441,6 +580,7 @@ public class EmployeeControllerLiveTest {
 		MockHttpServletRequestBuilder mockRequest = MockMvcRequestBuilders.post("/employees")
 													.contentType(MediaType.APPLICATION_JSON)
 													.content(expectedBody)
+													.header("Authorization", "Bearer "+genToken)
 													.accept(MediaType.APPLICATION_JSON);
 		
         mockMvc.perform(mockRequest)
@@ -452,7 +592,7 @@ public class EmployeeControllerLiveTest {
 	}
 	
 	@Test
-	@WithMockUser(username="john", roles= {"CUSTOMER"})
+	@WithMockUser(username="employee2", password="test123", roles= {"MANAGER"})
 	void saveNewAddressToEmployee() throws Exception {
 		Address add = employeeTestingSet.get(1).getAddress().get(0);
 		add.setId(0);
@@ -463,6 +603,7 @@ public class EmployeeControllerLiveTest {
 		MockHttpServletRequestBuilder mockRequest = MockMvcRequestBuilders.post("/employees/id/addresses").param("id", "1")
 																		.contentType(MediaType.APPLICATION_JSON)
 																		.content(expectedBody)
+																		.header("Authorization", "Bearer "+genToken)
 																		.accept(MediaType.APPLICATION_JSON);
 		
 		mockMvc.perform(mockRequest)
@@ -473,7 +614,7 @@ public class EmployeeControllerLiveTest {
 	}
 	
 	@Test
-	@WithMockUser(username="john", roles= {"CUSTOMER"})
+	@WithMockUser(username="employee2", password="test123", roles= {"MANAGER"})
 	void saveNewCaseToEmployee() throws Exception {
 		Cases testCase = employeeTestingSet.get(4).getCases().iterator().next();
 		testCase.setId(0);
@@ -483,6 +624,7 @@ public class EmployeeControllerLiveTest {
 		MockHttpServletRequestBuilder mockRequest = MockMvcRequestBuilders.post("/employees/id/cases").param("id", "1")
 																			.contentType(MediaType.APPLICATION_JSON)
 																			.content(expectedBody)
+																			.header("Authorization", "Bearer "+genToken)
 																			.accept(MediaType.APPLICATION_JSON);
 		
 		mockMvc.perform(mockRequest)
@@ -492,10 +634,61 @@ public class EmployeeControllerLiveTest {
 		verify(employeeService,times(1)).saveNewCaseToEmployee(any(Cases.class), any(int.class));
 	}
 	
+	//Principal-based POST
+	
+	@Test
+	@WithUserDetails(value="employee1", userDetailsServiceBeanName="testEmployeeDetails")
+	void saveNewAddressToUserEmployee() throws Exception{
+		Employee emp = employeeTestingSet.get(0);
+		Address add = employeeTestingSet.get(1).getAddress().get(0);
+		add.setId(0);
+		
+		Mockito.when(employeeService.getEmployeeByID(any(Integer.class))).thenReturn(emp);
+		String expected = mapper.writeValueAsString(add);
+		Mockito.when(employeeService.saveNewAddressToEmployee(any(Address.class), any(Employee.class))).thenReturn(add);
+		
+		MockHttpServletRequestBuilder mockRequest = MockMvcRequestBuilders.post("/employees/users/addresses")
+																			.contentType(MediaType.APPLICATION_JSON)
+																			.content(expected)
+																			.header("Authorization", "Bearer "+genToken)
+																			.accept(MediaType.APPLICATION_JSON);
+		
+		mockMvc.perform(mockRequest)
+				.andExpect(status().isCreated())
+				.andExpect(content().json(expected));
+		
+		verify(employeeService, times(1)).getEmployeeByID(any(Integer.class));
+		verify(employeeService, times(1)).saveNewAddressToEmployee(any(Address.class), any(Employee.class));
+	}
+	
+	@Test
+	@WithUserDetails(value="employee1", userDetailsServiceBeanName="testEmployeeDetails")
+	void saveNewCaseToUserEmployee() throws Exception{
+		Employee emp = employeeTestingSet.get(0);
+		Cases testCase = employeeTestingSet.get(4).getCases().iterator().next();
+		testCase.setId(0);
+		
+		Mockito.when(employeeService.getEmployeeByID(any(Integer.class))).thenReturn(emp);
+		Mockito.when(employeeService.saveNewCaseToEmployee(any(Cases.class), any(Employee.class))).thenReturn(testCase);
+		String expectedBody = mapper.writeValueAsString(testCase);
+		MockHttpServletRequestBuilder mockRequest = MockMvcRequestBuilders.post("/employees/users/cases")
+																			.contentType(MediaType.APPLICATION_JSON)
+																			.content(expectedBody)
+																			.header("Authorization", "Bearer "+genToken)
+																			.accept(MediaType.APPLICATION_JSON);
+		
+		mockMvc.perform(mockRequest)
+				.andExpect(status().isCreated())
+				.andExpect(content().json(expectedBody));
+		
+		verify(employeeService, times(1)).getEmployeeByID(any(Integer.class));
+		verify(employeeService,times(1)).saveNewCaseToEmployee(any(Cases.class), any(Employee.class));
+	}
+	
 	//PUT
 	
 	@Test
-	@WithMockUser(username="john", roles= {"CUSTOMER"})
+	@WithMockUser(username="employee2", password="test123", roles= {"MANAGER"})
 	void updateFullEmployee() throws Exception {
 		Employee emp = employeeTestingSet.get(2);
 		emp.setFirstName("John");
@@ -507,6 +700,7 @@ public class EmployeeControllerLiveTest {
 		MockHttpServletRequestBuilder mockRequest = MockMvcRequestBuilders.put("/employees")
 																			.contentType(MediaType.APPLICATION_JSON)
 																			.content(expectedBody)
+																			.header("Authorization", "Bearer "+genToken)
 																			.accept(MediaType.APPLICATION_JSON);
 		
 		mockMvc.perform(mockRequest)
@@ -516,7 +710,7 @@ public class EmployeeControllerLiveTest {
 	}
 	
 	@Test
-	@WithMockUser(username="john", roles= {"CUSTOMER"})
+	@WithMockUser(username="employee2", password="test123", roles= {"MANAGER"})
 	void updateEmployeeAddressByID() throws Exception {
 		Address add = employeeTestingSet.get(1).getAddress().get(0);
 		add.setCity("SomewhereElse");
@@ -527,6 +721,7 @@ public class EmployeeControllerLiveTest {
 		MockHttpServletRequestBuilder MockRequest = MockMvcRequestBuilders.put("/employees/id/addresses").param("id", "2")
 																			.contentType(MediaType.APPLICATION_JSON)
 																			.content(expectedBody)
+																			.header("Authorization", "Bearer "+genToken)
 																			.accept(MediaType.APPLICATION_JSON);
 		
 		mockMvc.perform(MockRequest)
@@ -537,12 +732,13 @@ public class EmployeeControllerLiveTest {
 	}
 	
 	@Test
-	@WithMockUser(username="john", roles= {"CUSTOMER"})
+	@WithMockUser(username="employee2", password="test123", roles= {"MANAGER"})
 	void updateEmployeeAddressByIDInvalidID() throws Exception {
 		Mockito.when(employeeService.updateEmployeeAddressByID(any(Address.class), any(int.class))).thenThrow(new InvalidParamsException());
 		mockMvc.perform(MockMvcRequestBuilders.put("/employees/id/addresses").param("id", "555")
 											.contentType(MediaType.APPLICATION_JSON)
 											.content(mapper.writeValueAsString(employeeTestingSet.get(0).getAddress().get(0)))
+											.header("Authorization", "Bearer "+genToken)
 											.accept(MediaType.APPLICATION_JSON))
 			.andExpect(status().isBadRequest())
 			.andExpect(jsonPath("$", is("400 BAD REQUEST: Invalid params")));
@@ -551,7 +747,7 @@ public class EmployeeControllerLiveTest {
 	}
 	
 	@Test
-	@WithMockUser(username="john", roles= {"CUSTOMER"})
+	@WithMockUser(username="employee2", password="test123", roles= {"MANAGER"})
 	void updateEmployeeAssignedCaseByID() throws Exception {
 		Cases cases = employeeTestingSet.get(0).getCases().iterator().next();
 		cases.setCasesStatus(CaseStatus.RESOLVED.toString());
@@ -562,6 +758,7 @@ public class EmployeeControllerLiveTest {
 		MockHttpServletRequestBuilder MockRequest = MockMvcRequestBuilders.put("/employees/id/cases").param("id", "1")
 																			.contentType(MediaType.APPLICATION_JSON)
 																			.content(expectedBody)
+																			.header("Authorization", "Bearer "+genToken)
 																			.contentType(MediaType.APPLICATION_JSON);
 		
 		mockMvc.perform(MockRequest)
@@ -572,12 +769,13 @@ public class EmployeeControllerLiveTest {
 	}
 	
 	@Test
-	@WithMockUser(username="john", roles= {"CUSTOMER"})
+	@WithMockUser(username="employee2", password="test123", roles= {"MANAGER"})
 	void updateEmployeeAssignedCaseByIDInvalidID() throws Exception {
 		Mockito.when(employeeService.updateEmployeeAssignedCaseByID(any(Cases.class), any(int.class))).thenThrow(new InvalidParamsException());
 		mockMvc.perform(MockMvcRequestBuilders.put("/employees/id/cases").param("id", "555")
 											.contentType(MediaType.APPLICATION_JSON)
 											.content(mapper.writeValueAsString(employeeTestingSet.get(0).getCases().iterator().next()))
+											.header("Authorization", "Bearer "+genToken)
 											.accept(MediaType.APPLICATION_JSON))
 			.andExpect(status().isBadRequest())
 			.andExpect(jsonPath("$", is("400 BAD REQUEST: Invalid params")));
@@ -586,7 +784,7 @@ public class EmployeeControllerLiveTest {
 	}
 	
 	@Test
-	@WithMockUser(username="john", roles= {"CUSTOMER"})
+	@WithMockUser(username="employee2", password="test123", roles= {"MANAGER"})
 	void updateEmployeeSocialMedia() throws Exception{
 		Employee emp = employeeTestingSet.get(0);
 		emp.setSocialMedia(new SocialMedia());
@@ -596,6 +794,7 @@ public class EmployeeControllerLiveTest {
 		MockHttpServletRequestBuilder MockRequest = MockMvcRequestBuilders.put("/employees/id/socialmedia").param("id", "1")
 																			.contentType(MediaType.APPLICATION_JSON)
 																			.content(expectedBody)
+																			.header("Authorization", "Bearer "+genToken)
 																			.accept(MediaType.APPLICATION_JSON);
 		
 		mockMvc.perform(MockRequest)
@@ -606,12 +805,13 @@ public class EmployeeControllerLiveTest {
 	}
 	
 	@Test
-	@WithMockUser(username="john", roles= {"CUSTOMER"})
+	@WithMockUser(username="employee2", password="test123", roles= {"MANAGER"})
 	void updateEmployeeSocialMediaInvalidID() throws Exception {
 		Mockito.when(employeeService.updateEmployeeSocialMedia(any(SocialMedia.class), any(int.class))).thenThrow(new InvalidParamsException());
 		mockMvc.perform(MockMvcRequestBuilders.put("/employees/id/socialmedia").param("id", "555")
 											.contentType(MediaType.APPLICATION_JSON)
 											.content(mapper.writeValueAsString(employeeTestingSet.get(0).getSocialMedia()))
+											.header("Authorization", "Bearer "+genToken)
 											.accept(MediaType.APPLICATION_JSON))
 			.andExpect(status().isBadRequest())
 			.andExpect(jsonPath("$", is("400 BAD REQUEST: Invalid params")));
@@ -619,22 +819,15 @@ public class EmployeeControllerLiveTest {
 		verify(employeeService, times(1)).updateEmployeeSocialMedia(any(SocialMedia.class), any(int.class));
 	}
 	
-	//TODO Need to think
-	//Concept depreciated, can update via full employee endpoints /w validation support
-//	@Test
-//	@WithMockUser(username="john", roles= {"CUSTOMER"})
-//	void updateEmployeeStats() {
-//		
-//	}
-	
 	//DELETE
 	@Test
-	@WithMockUser(username="john", roles= {"CUSTOMER"})
+	@WithMockUser(username="employee2", password="test123", roles= {"MANAGER"})
 	void deleteEmployee() throws Exception {
 		Mockito.doNothing().when(employeeService).deleteEmployeeByID(employeeTestingSet.get(0).getId());
 		
 		MockHttpServletRequestBuilder mockRequest = MockMvcRequestBuilders.delete("/employees/id").param("id", "1")
-																		.contentType(MediaType.APPLICATION_JSON);
+																		.contentType(MediaType.APPLICATION_JSON)
+																		.header("Authorization", "Bearer "+genToken);
 		mockMvc.perform(mockRequest)
 				.andDo(print())
 				.andExpect(status().isNoContent());
@@ -643,24 +836,24 @@ public class EmployeeControllerLiveTest {
 	}
 	
 	@Test
-	@WithMockUser(username="john", roles= {"CUSTOMER"})
+	@WithMockUser(username="employee2", password="test123", roles= {"MANAGER"})
 	void deleteEmployeeInvalidParams() throws Exception {
 		Mockito.doThrow(new InvalidParamsException()).when(employeeService).deleteEmployeeByID(555);
-		mockMvc.perform(MockMvcRequestBuilders.delete("/employees/id").param("id", "555").contentType(MediaType.APPLICATION_JSON))
+		mockMvc.perform(MockMvcRequestBuilders.delete("/employees/id").param("id", "555").contentType(MediaType.APPLICATION_JSON).header("Authorization", "Bearer "+genToken))
 				.andExpect(status().isBadRequest());
 		
 		verify(employeeService, times(1)).deleteEmployeeByID(555);
 	}
 	
 	@Test
-	@WithMockUser(username="john", roles= {"CUSTOMER"})
+	@WithMockUser(username="employee2", password="test123", roles= {"MANAGER"})
 	void deleteEmployeeCase() throws Exception {
 		//id=1 case of id=1 employee
-//		Mockito.doNothing().when(employeeService).removeEmployeeAssignedCase(employeeTestingSet.get(0).getId(), employeeTestingSet.get(0).getCases().iterator().next().getId());
 		Mockito.doNothing().when(employeeService).removeEmployeeAssignedCase(1, 3);
 		
 		MockHttpServletRequestBuilder mockRequest = MockMvcRequestBuilders.delete("/employees/id/cases").param("employeeId", "1").param("caseId", "3")
-																		.contentType(MediaType.APPLICATION_JSON);
+																		.contentType(MediaType.APPLICATION_JSON)
+																		.header("Authorization", "Bearer "+genToken);
 		
 		mockMvc.perform(mockRequest)
 				.andExpect(status().isNoContent());
@@ -669,22 +862,23 @@ public class EmployeeControllerLiveTest {
 	}
 	
 	@Test
-	@WithMockUser(username="john", roles= {"CUSTOMER"})
+	@WithMockUser(username="employee2", password="test123", roles= {"MANAGER"})
 	void deleteEmployeeCaseInvalidParams() throws Exception {
 		Mockito.doThrow(new InvalidParamsException()).when(employeeService).removeEmployeeAssignedCase(555, 555);
-		mockMvc.perform(MockMvcRequestBuilders.delete("/employees/id/cases").param("employeeId", "555").param("caseId", "555").contentType(MediaType.APPLICATION_JSON))
+		mockMvc.perform(MockMvcRequestBuilders.delete("/employees/id/cases").param("employeeId", "555").param("caseId", "555").contentType(MediaType.APPLICATION_JSON).header("Authorization", "Bearer "+genToken))
 				.andExpect(status().isBadRequest());
 		
 		verify(employeeService, times(1)).removeEmployeeAssignedCase(555,555);
 	}
 	
 	@Test
-	@WithMockUser(username="john", roles= {"CUSTOMER"})
+	@WithMockUser(username="employee2", password="test123", roles= {"MANAGER"})
 	void deleteEmployeeAddress() throws Exception{
 		Mockito.doNothing().when(employeeService).deleteEmployeeAddressByIDs(employeeTestingSet.get(1).getId(),employeeTestingSet.get(1).getAddress().get(0).getId());
 		
 		MockHttpServletRequestBuilder mockRequest = MockMvcRequestBuilders.delete("/employees/id/addresses").param("employeeId", "2").param("addressId", "1")
-																			.contentType(MediaType.APPLICATION_JSON);
+																			.contentType(MediaType.APPLICATION_JSON)
+																			.header("Authorization", "Bearer "+genToken);
 		
 		mockMvc.perform(mockRequest)
 				.andDo(print())
@@ -694,10 +888,10 @@ public class EmployeeControllerLiveTest {
 	}
 	
 	@Test
-	@WithMockUser(username="john", roles= {"CUSTOMER"})
+	@WithMockUser(username="employee2", password="test123", roles= {"MANAGER"})
 	void deleteEmployeeAddressInvalidParams() throws Exception {
 		Mockito.doThrow(new InvalidParamsException()).when(employeeService).deleteEmployeeAddressByIDs(555, 555);
-		mockMvc.perform(MockMvcRequestBuilders.delete("/employees/id/addresses").param("employeeId", "555").param("addressId", "555").contentType(MediaType.APPLICATION_JSON))
+		mockMvc.perform(MockMvcRequestBuilders.delete("/employees/id/addresses").param("employeeId", "555").param("addressId", "555").contentType(MediaType.APPLICATION_JSON).header("Authorization", "Bearer "+genToken))
 				.andExpect(status().isBadRequest());
 		
 		verify(employeeService, times(1)).deleteEmployeeAddressByIDs(555,555);
