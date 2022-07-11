@@ -819,6 +819,80 @@ public class EmployeeControllerLiveTest {
 		verify(employeeService, times(1)).updateEmployeeSocialMedia(any(SocialMedia.class), any(int.class));
 	}
 	
+	//Principal-based PUT
+	@Test
+	@WithUserDetails(value="employee1", userDetailsServiceBeanName="testEmployeeDetails")
+	void updateUserEmployeeAddress() throws Exception {
+		Employee emp = employeeTestingSet.get(0);
+		Mockito.when(employeeService.getEmployeeByID(any(Integer.class))).thenReturn(emp);
+		
+		Address add = emp.getAddress().get(0);
+		add.setCity("Another city");
+
+		Mockito.when(employeeService.updateEmployeeAddressByID(any(Address.class), any(Employee.class))).thenReturn(add);
+		
+		MockHttpServletRequestBuilder mockRequest = MockMvcRequestBuilders.put("/employees/users/addresses")
+																		.contentType(MediaType.APPLICATION_JSON)
+																		.content(mapper.writeValueAsString(add))
+																		.header("Authorization", "Bearer "+genToken)
+																		.accept(MediaType.APPLICATION_JSON);
+		
+		mockMvc.perform(mockRequest)
+				.andExpect(status().isOk())
+				.andExpect(content().json(mapper.writeValueAsString(add)));
+		
+		verify(employeeService, times(1)).updateEmployeeAddressByID(any(Address.class), any(Employee.class));
+	}
+	
+	@Test
+	@WithUserDetails(value="employee1", userDetailsServiceBeanName="testEmployeeDetails")
+	void updateUserEmployeeAssignedCase() throws Exception {
+		Employee emp = employeeTestingSet.get(0);
+		Mockito.when(employeeService.getEmployeeByID(any(Integer.class))).thenReturn(emp);
+		
+		Cases cased = emp.getCases().iterator().next();
+		String expected = mapper.writeValueAsString(cased);
+		
+		Mockito.when(employeeService.updateEmployeeAssignedCaseByID(any(Cases.class), any(Employee.class))).thenReturn(cased);
+		
+		MockHttpServletRequestBuilder mockRequest = MockMvcRequestBuilders.put("/employees/users/cases")
+																		.contentType(MediaType.APPLICATION_JSON)
+																		.content(expected)
+																		.header("Authorization", "Bearer "+genToken)
+																		.accept(MediaType.APPLICATION_JSON);
+		
+		mockMvc.perform(mockRequest)
+				.andExpect(status().isOk())
+				.andExpect(content().json(expected));
+		
+		verify(employeeService, times(1)).updateEmployeeAssignedCaseByID(any(Cases.class), any(Employee.class));
+	}
+	
+	@Test
+	@WithUserDetails(value="employee1", userDetailsServiceBeanName="testEmployeeDetails")
+	void updateUserEmployeeSocialMedia() throws Exception {
+		Employee emp = employeeTestingSet.get(0);
+		Mockito.when(employeeService.getEmployeeByID(any(Integer.class))).thenReturn(emp);
+		
+		SocialMedia sm = emp.getSocialMedia();
+		String expected = mapper.writeValueAsString(sm);
+		
+		Mockito.when(employeeService.updateEmployeeSocialMedia(any(SocialMedia.class), any(Employee.class))).thenReturn(sm);
+		
+		MockHttpServletRequestBuilder mockRequest = MockMvcRequestBuilders.put("/employees/users/socialmedia")
+																		.contentType(MediaType.APPLICATION_JSON)
+																		.content(expected)
+																		.header("Authorization", "Bearer "+genToken)
+																		.accept(MediaType.APPLICATION_JSON);
+		
+		mockMvc.perform(mockRequest)
+				.andExpect(status().isOk())
+				.andExpect(content().json(expected));
+		
+		verify(employeeService, times(1)).updateEmployeeSocialMedia(any(SocialMedia.class), any(Employee.class));
+	}
+	
+	
 	//DELETE
 	@Test
 	@WithMockUser(username="employee2", password="test123", roles= {"MANAGER"})
@@ -895,5 +969,27 @@ public class EmployeeControllerLiveTest {
 				.andExpect(status().isBadRequest());
 		
 		verify(employeeService, times(1)).deleteEmployeeAddressByIDs(555,555);
+	}
+	
+	//Principal-Based DELETE
+	
+	@Test
+	@WithUserDetails(value="employee1", userDetailsServiceBeanName="testEmployeeDetails")
+	void deleteUserEmployeeAddress() throws Exception {
+		Employee emp = employeeTestingSet.get(0);
+		Mockito.when(employeeService.getEmployeeByID(any(Integer.class))).thenReturn(emp);
+		
+		Mockito.doNothing().when(employeeService).deleteEmployeeAddressByIDs(any(Employee.class), any(Integer.class));
+		
+		MockHttpServletRequestBuilder mockRequest = MockMvcRequestBuilders.delete("/employees/users/addresses")
+																		.param("addressId", "1")
+																		.contentType(MediaType.APPLICATION_JSON)
+																		.header("Authorization", "Bearer "+genToken);
+		
+		mockMvc.perform(mockRequest)
+				.andDo(print())
+				.andExpect(status().isNoContent());
+		
+		verify(employeeService, times(1)).deleteEmployeeAddressByIDs(any(Employee.class), any(Integer.class));
 	}
 }
