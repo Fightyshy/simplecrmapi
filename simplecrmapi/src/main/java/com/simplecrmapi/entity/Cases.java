@@ -156,4 +156,12 @@ public class Cases {
 		}
 		return true;
 	}
+	
+	public boolean equalsID(Cases cases) {
+		if(cases.getId()==this.id) {
+			return true;
+		}else {
+			return false;
+		}
+	}
 }

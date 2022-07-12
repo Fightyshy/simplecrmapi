@@ -2,12 +2,14 @@ package com.simplecrmapi.rest;
 
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.util.ArrayList;
 import java.util.List;
 
 import javax.validation.Valid;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -18,7 +20,10 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.simplecrmapi.entity.Cases;
+import com.simplecrmapi.entity.Employee;
+import com.simplecrmapi.entity.User;
 import com.simplecrmapi.service.CasesService;
+import com.simplecrmapi.service.EmployeeService;
 
 @RestController
 @RequestMapping("/cases")
@@ -27,6 +32,8 @@ public class CaseController {
 	@Autowired
 	private CasesService casesService;
 	
+	@Autowired
+	private EmployeeService employeeService;
 	
 	@GetMapping("")
 	public ResponseEntity<List<Cases>> getAllCases() {
@@ -48,9 +55,20 @@ public class CaseController {
 		return ResponseEntity.ok(casesService.getCaseByID(ID));
 	}
 	
+	@GetMapping("/users")
+	public ResponseEntity<List<Cases>> getAllEmployeeUserCases(){
+		return ResponseEntity.ok(new ArrayList<>(getEmployeeFromSession().getCases()));
+	}
+	
 	@PostMapping("")
 	public ResponseEntity<Object> saveNewCase(@Valid @RequestBody Cases cases, @RequestParam("empId") int empID) throws URISyntaxException{
 		Cases newCase = casesService.saveNewCase(cases, empID);
+		return ResponseEntity.created(new URI("/cases/id/"+newCase.getId())).body(newCase);
+	}
+	
+	@PostMapping("/users")
+	public ResponseEntity<Object> saveNewCaseToUser(@Valid @RequestBody Cases cases) throws URISyntaxException{
+		Cases newCase = casesService.saveNewCase(cases, getEmployeeFromSession().getId());
 		return ResponseEntity.created(new URI("/cases/id/"+newCase.getId())).body(newCase);
 	}
 	
@@ -68,6 +86,11 @@ public class CaseController {
 		return ResponseEntity.ok(casesService.updateCase(cases));
 	}
 	
+	@PutMapping("/users")
+	public ResponseEntity<Object> updateUserCaes(@Valid @RequestBody Cases cases){
+		return ResponseEntity.ok(casesService.updateCase(cases, getEmployeeFromSession()));
+	}
+	
 	@DeleteMapping("/id")
 	public ResponseEntity<Object> deleteCaseByID(@RequestParam("id") int ID){
 		casesService.deleteCaseByID(ID);
@@ -80,4 +103,12 @@ public class CaseController {
 		casesService.deleteEmployeeFromCase(ID, empID);
 		return ResponseEntity.noContent().build();
 	}
+
+	//Add user style controls
+	private Employee getEmployeeFromSession() {
+		User user = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+		return employeeService.getEmployeeByID(user.getEmployeeID());
+	}
+	
+	//No user delete endpoint, user shouldn't be allowed to delete case without manager consent (archive under status is different)
 }

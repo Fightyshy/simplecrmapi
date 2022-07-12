@@ -11,6 +11,7 @@ import com.simplecrmapi.dao.CasesDAO;
 import com.simplecrmapi.dao.EmployeeDAO;
 import com.simplecrmapi.entity.Cases;
 import com.simplecrmapi.entity.Employee;
+import com.simplecrmapi.util.EntityNotFound;
 
 @Service
 public class CasesServiceImpl implements CasesService {
@@ -68,6 +69,17 @@ public class CasesServiceImpl implements CasesService {
 	public Cases updateCase(Cases cases) {
 		Cases updatedCase = casesDAO.saveCase(cases);
 		return updatedCase;
+	}
+	
+	@Override
+	@Transactional
+	public Cases updateCase(Cases cases, Employee employee) {
+		for(Cases empCase: employee.getCases()) {
+			if(empCase.equalsID(cases)) {
+				return casesDAO.saveCase(cases);
+			}
+		}
+		throw new EntityNotFound();
 	}
 	
 	@Override
