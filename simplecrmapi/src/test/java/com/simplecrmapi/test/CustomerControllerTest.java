@@ -4,6 +4,7 @@ import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.notNullValue;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
@@ -25,6 +26,11 @@ import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMock
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContext;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder;
@@ -32,16 +38,22 @@ import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.simplecrmapi.dao.CustomerDAO;
+import com.simplecrmapi.dao.UserDAO;
 import com.simplecrmapi.entity.Address;
 import com.simplecrmapi.entity.Customer;
 import com.simplecrmapi.entity.SocialMedia;
 import com.simplecrmapi.rest.CustomerController;
 import com.simplecrmapi.service.CustomerService;
+import com.simplecrmapi.service.EmployeeService;
+import com.simplecrmapi.service.UserService;
 import com.simplecrmapi.test.util.CSVParser;
 import com.simplecrmapi.util.CustomerInvalidAddressException;
 import com.simplecrmapi.util.CustomerInvalidObjectsException;
 import com.simplecrmapi.util.CustomerInvalidSocialMediaException;
 import com.simplecrmapi.util.EntityNotFound;
+import com.simplecrmapi.util.JwtAuthenticationFilter;
+import com.simplecrmapi.util.TokenProvider;
+import com.simplecrmapi.util.UnauthorizedEntryPoint;
 
 //https://stackabuse.com/guide-to-unit-testing-spring-boot-rest-apis/
 //https://stackoverflow.com/questions/65520264/how-to-test-json-structure-in-spring-boot
@@ -63,6 +75,32 @@ class CustomerControllerTest {
 	@MockBean
 	private CustomerService customerService;
 	
+	@MockBean
+	private EmployeeService employeeService;
+	
+	@MockBean(name="userService")
+	private UserDetailsService userDetailsService;
+	
+	@MockBean
+	private UserService userService;
+	
+	@MockBean
+	private UserDAO userDAO;
+	
+	@MockBean
+	private UnauthorizedEntryPoint unAuthorizedEntryPoint;
+	
+	@MockBean
+	private TokenProvider token;
+	
+	@Autowired
+	private JwtAuthenticationFilter fliter;
+	
+	@MockBean
+    private AuthenticationManager authenticationManager;
+	
+	private String genToken;
+	
 	@InjectMocks
 	private CustomerController customerController;
 	
@@ -71,6 +109,11 @@ class CustomerControllerTest {
 //	@BeforeAll //once before all tests
 	@BeforeEach //once before every test
 	void init() {
+	    Authentication authentication = mock(Authentication.class);
+	    SecurityContext securityContext = mock(SecurityContext.class);
+	    
+	    genToken = token.generateToken(SecurityContextHolder.getContext().getAuthentication());
+		
 		finalTestingSet = new ArrayList<Customer>();
 		//parse data into pojos, 5x each
 		CSVParser parser = new CSVParser();
@@ -144,14 +187,15 @@ class CustomerControllerTest {
 	
 	//Working example
 	@Test
-	@WithMockUser(username="john", roles= {"CUSTOMER"})
+	@WithMockUser(username="employee1", password="test123", roles= {"EMPLOYEE"})
 	//https://docs.spring.io/spring-security/site/docs/4.2.x/reference/html/test-method.html
 	void getCustomerList() throws Exception{
 		Mockito.when(customerService.getCustomers()).thenReturn(finalTestingSet);
 		
 		mockMvc.perform(MockMvcRequestBuilders
 						.get("/customers")
-						.contentType(MediaType.APPLICATION_JSON))
+						.contentType(MediaType.APPLICATION_JSON)
+						.header("Authorization", "Bearer "+genToken))
 						.andExpect(status().isOk())
 						.andExpect(jsonPath("$", hasSize(5)))
 						.andExpect(jsonPath("$[0].firstName", is("Myrtle")))
@@ -164,13 +208,14 @@ class CustomerControllerTest {
 	}
 	
 	@Test
-	@WithMockUser(username="john", roles= {"CUSTOMER"})
+	@WithMockUser(username="employee1", password="test123", roles= {"EMPLOYEE"})
 	void getCustomerListEmpty() throws Exception{
 		List<Customer> emptyList = new ArrayList<>();
 		
 		Mockito.when(customerService.getCustomers()).thenReturn(emptyList);
 		
-		mockMvc.perform(MockMvcRequestBuilders.get("/customers").contentType(MediaType.APPLICATION_JSON))
+		mockMvc.perform(MockMvcRequestBuilders.get("/customers").contentType(MediaType.APPLICATION_JSON)
+																.header("Authorization", "Bearer "+genToken))
 												.andExpect(status().isOk())
 												.andExpect(content().json(mapper.writeValueAsString(emptyList)));
 		
@@ -178,13 +223,14 @@ class CustomerControllerTest {
 	}
 
 	@Test
-	@WithMockUser(username="john", roles= {"CUSTOMER"})
+	@WithMockUser(username="employee1", password="test123", roles= {"EMPLOYEE"})
 	void getCustomerByID() throws Exception{
 		Mockito.when(customerService.getCustomerByID(finalTestingSet.get(0).getId())).thenReturn(finalTestingSet.get(0));
 		
 		mockMvc.perform(MockMvcRequestBuilders
 						.get("/customers/id").param("id", "1")
-						.contentType(MediaType.APPLICATION_JSON))
+						.contentType(MediaType.APPLICATION_JSON)
+						.header("Authorization", "Bearer "+genToken))
 						.andExpect(status().isOk())
 						.andExpect(jsonPath("$", notNullValue()))
 						.andExpect(jsonPath("$.firstName", is("Myrtle")));
@@ -193,25 +239,28 @@ class CustomerControllerTest {
 	}
 
 	@Test
-	@WithMockUser(username="john", roles= {"CUSTOMER"})
+	@WithMockUser(username="employee1", password="test123", roles= {"EMPLOYEE"})
 	void getCustomerByIDNullIDParams() throws Exception{
 		Mockito.when(customerService.getCustomerByID(null)).thenThrow(new EntityNotFound());
 		
-		mockMvc.perform(MockMvcRequestBuilders.get("/customers/id").param("id", "").contentType(MediaType.APPLICATION_JSON))
+		mockMvc.perform(MockMvcRequestBuilders.get("/customers/id").param("id", "")
+																.contentType(MediaType.APPLICATION_JSON)
+																.header("Authorization", "Bearer "+genToken))
 		
 												.andExpect(status().isBadRequest())
 												.andExpect(jsonPath("$", is("400 BAD REQUEST: Invalid params")));
 	}
 	
 	@Test
-	@WithMockUser(username="john", roles= {"CUSTOMER"})
+	@WithMockUser(username="employee1", password="test123", roles= {"EMPLOYEE"})
 	void getCustomerByIDInvalidIDParams() throws Exception{
 		Mockito.when(customerService.getCustomerByID(55)).thenThrow(new EntityNotFound());
 		
 		mockMvc.perform(MockMvcRequestBuilders
 				.get("/customers/id")
 				.param("id", "55")
-				.contentType(MediaType.APPLICATION_JSON))
+				.contentType(MediaType.APPLICATION_JSON)
+				.header("Authorization", "Bearer "+genToken))
 				.andExpect(status().isNotFound())
 				.andExpect(jsonPath("$", is("404 NOT FOUND: Entity not found due to invalid ID")));
 
@@ -219,7 +268,7 @@ class CustomerControllerTest {
 	}
 	
 	@Test
-	@WithMockUser(username="john", roles= {"CUSTOMER"})
+	@WithMockUser(username="employee1", password="test123", roles= {"EMPLOYEE"})
 	void getCustomerByLastName() throws Exception{
 		List<Customer> dupeSet = new ArrayList<>();
 		dupeSet.add(finalTestingSet.get(0));
@@ -235,7 +284,7 @@ class CustomerControllerTest {
 	}
 	
 	@Test
-	@WithMockUser(username="john", roles= {"CUSTOMER"})
+	@WithMockUser(username="employee1", password="test123", roles= {"EMPLOYEE"})
 	void getCustomerByFirstName() throws Exception{
 		List<Customer> dupeSet = new ArrayList<>();
 		dupeSet.add(finalTestingSet.get(0));
@@ -243,7 +292,10 @@ class CustomerControllerTest {
 		dupeSet.add(finalTestingSet.get(0));
 		Mockito.when(customerService.getCustomerByLastName("Myrtle")).thenReturn(dupeSet);
 		
-		mockMvc.perform(MockMvcRequestBuilders.get("/customers/firstname").param("firstname", "Myrtle").contentType(MediaType.APPLICATION_JSON))
+		mockMvc.perform(MockMvcRequestBuilders.get("/customers/firstname")
+											.param("firstname", "Myrtle")
+											.contentType(MediaType.APPLICATION_JSON)
+											.header("Authorization", "Bearer "+genToken))
 												.andExpect(status().isOk())
 												.andExpect(jsonPath("$", hasSize(3)));
 		
@@ -251,7 +303,7 @@ class CustomerControllerTest {
 	}
 	
 	@Test
-	@WithMockUser(username="john", roles= {"CUSTOMER"})
+	@WithMockUser(username="employee1", password="test123", roles= {"EMPLOYEE"})
 	//Combination of the two below
 	//https://stackoverflow.com/questions/68194612/how-to-debug-the-error-java-lang-assertionerror-no-value-at-json-path-name
 	//https://stackoverflow.com/questions/65520264/how-to-test-json-structure-in-spring-boot
@@ -269,6 +321,7 @@ class CustomerControllerTest {
 		MockHttpServletRequestBuilder mockRequest = MockMvcRequestBuilders.post("/customers")
 													.contentType(MediaType.APPLICATION_JSON)
 													.content(expectedBody)
+													.header("Authorization", "Bearer "+genToken)
 													.accept(MediaType.APPLICATION_JSON);
 		
         mockMvc.perform(mockRequest)
@@ -279,7 +332,7 @@ class CustomerControllerTest {
 	}
 	
 	@Test
-	@WithMockUser(username="john", roles= {"CUSTOMER"})
+	@WithMockUser(username="employee1", password="test123", roles= {"EMPLOYEE"})
 	void saveFullCustomerOnePlusAddressYesSM() throws Exception{
 		Customer cus = finalTestingSet.get(1);
 		
@@ -289,6 +342,7 @@ class CustomerControllerTest {
 		MockHttpServletRequestBuilder mockRequest = MockMvcRequestBuilders.post("/customers")
 													.contentType(MediaType.APPLICATION_JSON)
 													.content(expectedBody)
+													.header("Authorization", "Bearer "+genToken)
 													.accept(MediaType.APPLICATION_JSON);
 		
 		mockMvc.perform(mockRequest)
@@ -300,7 +354,7 @@ class CustomerControllerTest {
 	
 	//Assume working for 1 or more addresses
 	@Test
-	@WithMockUser(username="john", roles= {"CUSTOMER"})
+	@WithMockUser(username="employee1", password="test123", roles= {"EMPLOYEE"})
 	void saveFullCustomerOneAddressNoSM() throws Exception{
 		Customer cus = finalTestingSet.get(0);
 		cus.setSocialMedia(null);
@@ -311,6 +365,7 @@ class CustomerControllerTest {
 		MockHttpServletRequestBuilder mockRequest = MockMvcRequestBuilders.post("/customers")
 													.contentType(MediaType.APPLICATION_JSON)
 													.content(expectedBody)
+													.header("Authorization", "Bearer "+genToken)
 													.accept(MediaType.APPLICATION_JSON);
 		
 		mockMvc.perform(mockRequest)
@@ -321,7 +376,7 @@ class CustomerControllerTest {
 	}
 	
 	@Test
-	@WithMockUser(username="john", roles= {"CUSTOMER"})
+	@WithMockUser(username="employee1", password="test123", roles= {"EMPLOYEE"})
 	void saveFullCustomerNoAddressYesSMEmptyList() throws Exception{
 		Customer cus = finalTestingSet.get(0);
 		cus.setAddress(new ArrayList<Address>());
@@ -332,6 +387,7 @@ class CustomerControllerTest {
 		MockHttpServletRequestBuilder mockRequest = MockMvcRequestBuilders.post("/customers")
 													.contentType(MediaType.APPLICATION_JSON)
 													.content(expectedBody)
+													.header("Authorization", "Bearer "+genToken)
 													.accept(MediaType.APPLICATION_JSON);
 		
 		mockMvc.perform(mockRequest)
@@ -342,7 +398,7 @@ class CustomerControllerTest {
 	}
 	
 	@Test
-	@WithMockUser(username="john", roles= {"CUSTOMER"})
+	@WithMockUser(username="employee1", password="test123", roles= {"EMPLOYEE"})
 	void saveFullCustomerNoAddressYesSMNullList() throws Exception{
 		Customer cus = finalTestingSet.get(0);
 		cus.setAddress(null);
@@ -353,6 +409,7 @@ class CustomerControllerTest {
 		MockHttpServletRequestBuilder mockRequest = MockMvcRequestBuilders.post("/customers")
 													.contentType(MediaType.APPLICATION_JSON)
 													.content(expectedBody)
+													.header("Authorization", "Bearer "+genToken)
 													.accept(MediaType.APPLICATION_JSON);
 		
 		mockMvc.perform(mockRequest)
@@ -363,7 +420,7 @@ class CustomerControllerTest {
 	}
 	
 	@Test
-	@WithMockUser(username="john", roles= {"CUSTOMER"})
+	@WithMockUser(username="employee1", password="test123", roles= {"EMPLOYEE"})
 	void saveFullCustomerNoAddressNoSM() throws Exception{
 		Customer cus = finalTestingSet.get(0);
 		cus.setAddress(null);
@@ -375,6 +432,7 @@ class CustomerControllerTest {
 		MockHttpServletRequestBuilder mockRequest = MockMvcRequestBuilders.post("/customers")
 													.contentType(MediaType.APPLICATION_JSON)
 													.content(expectedBody)
+													.header("Authorization", "Bearer "+genToken)
 													.accept(MediaType.APPLICATION_JSON);
 		
 		mockMvc.perform(mockRequest)
@@ -385,7 +443,7 @@ class CustomerControllerTest {
 	}
 	
 	@Test
-	@WithMockUser(username="john", roles= {"CUSTOMER"})
+	@WithMockUser(username="employee1", password="test123", roles= {"EMPLOYEE"})
 	void saveAddressOnlyToCustomer() throws Exception{
 		Address add = finalTestingSet.get(3).getAddress().get(0);
 		
@@ -395,6 +453,7 @@ class CustomerControllerTest {
 		MockHttpServletRequestBuilder mockRequest = MockMvcRequestBuilders.post("/customers/id/addresses",add).param("id", "0")
 																		.contentType(MediaType.APPLICATION_JSON)
 																		.content(expectedBody)
+																		.header("Authorization", "Bearer "+genToken)
 																		.accept(MediaType.APPLICATION_JSON);
 		
 		mockMvc.perform(mockRequest)
@@ -413,7 +472,7 @@ class CustomerControllerTest {
 //	}
 
 	@Test
-	@WithMockUser(username="john", roles= {"CUSTOMER"})
+	@WithMockUser(username="employee1", password="test123", roles= {"EMPLOYEE"})
 	void updateAddressOnlyToCustomer() throws Exception{
 		Address add = finalTestingSet.get(1).getAddress().get(0);
 		add.setCity("Very cursed update here");
@@ -424,6 +483,7 @@ class CustomerControllerTest {
 		MockHttpServletRequestBuilder mockRequest = MockMvcRequestBuilders.put("/customers/id/addresses",add)
 																		.contentType(MediaType.APPLICATION_JSON)
 																		.content(expectedBody)
+																		.header("Authorization", "Bearer "+genToken)
 																		.accept(MediaType.APPLICATION_JSON);
 		
 		mockMvc.perform(mockRequest)
@@ -435,7 +495,7 @@ class CustomerControllerTest {
 	}
 	
 	@Test
-	@WithMockUser(username="john", roles= {"CUSTOMER"})
+	@WithMockUser(username="employee1", password="test123", roles= {"EMPLOYEE"})
 	void updateSocialMediaOnlyToCustomer() throws Exception{
 		SocialMedia sm = finalTestingSet.get(1).getSocialMedia();
 		sm.setPreferredSocialMedia("NO_PREFERENCE");
@@ -446,6 +506,7 @@ class CustomerControllerTest {
 		MockHttpServletRequestBuilder mockRequest = MockMvcRequestBuilders.put("/customers/id/socialmedia",sm).param("id", finalTestingSet.get(1).getId().toString())
 																		.contentType(MediaType.APPLICATION_JSON)
 																		.content(expectedBody)
+																		.header("Authorization", "Bearer "+genToken)
 																		.accept(MediaType.APPLICATION_JSON);
 		
 		mockMvc.perform(mockRequest)
@@ -457,7 +518,7 @@ class CustomerControllerTest {
 	}
 	
 	@Test
-	@WithMockUser(username="john", roles= {"CUSTOMER"})
+	@WithMockUser(username="employee1", password="test123", roles= {"EMPLOYEE"})
 	void updateSocialMediaOnlyToCustomerInvalidID() throws Exception{
 		SocialMedia sm = finalTestingSet.get(1).getSocialMedia();
 		sm.setPreferredSocialMedia("NO_PREFERENCE");
@@ -468,6 +529,7 @@ class CustomerControllerTest {
 		MockHttpServletRequestBuilder mockRequest = MockMvcRequestBuilders.put("/customers/id/socialmedia",sm).param("id", "55")
 																		.contentType(MediaType.APPLICATION_JSON)
 																		.content(expectedBody)
+																		.header("Authorization", "Bearer "+genToken)
 																		.accept(MediaType.APPLICATION_JSON);
 		
 		mockMvc.perform(mockRequest)
@@ -479,7 +541,7 @@ class CustomerControllerTest {
 	}
 	
 	@Test
-	@WithMockUser(username="john", roles= {"CUSTOMER"})
+	@WithMockUser(username="employee1", password="test123", roles= {"EMPLOYEE"})
 	void updateSocialMediaOnlyToCustomerNullID() throws Exception{
 		SocialMedia sm = finalTestingSet.get(1).getSocialMedia();
 		sm.setPreferredSocialMedia("NO_PREFERENCE");
@@ -490,6 +552,7 @@ class CustomerControllerTest {
 		MockHttpServletRequestBuilder mockRequest = MockMvcRequestBuilders.put("/customers/id/socialmedia",sm).param("id", "")
 																		.contentType(MediaType.APPLICATION_JSON)
 																		.content(expectedBody)
+																		.header("Authorization", "Bearer "+genToken)
 																		.accept(MediaType.APPLICATION_JSON);
 		
 		mockMvc.perform(mockRequest)
@@ -499,7 +562,7 @@ class CustomerControllerTest {
 	}
 	
 	@Test
-	@WithMockUser(username="john", roles= {"CUSTOMER"})
+	@WithMockUser(username="employee1", password="test123", roles= {"EMPLOYEE"})
 	void updateFullCustomer() throws Exception{
 		Customer cus = finalTestingSet.get(0);
 		System.out.println(cus.getId());
@@ -514,6 +577,7 @@ class CustomerControllerTest {
 		MockHttpServletRequestBuilder mockRequest = MockMvcRequestBuilders.put("/customers")
 													.contentType(MediaType.APPLICATION_JSON)
 													.content(expectedBody)
+													.header("Authorization", "Bearer "+genToken)
 													.accept(MediaType.APPLICATION_JSON);
 		
         mockMvc.perform(mockRequest)
@@ -528,7 +592,7 @@ class CustomerControllerTest {
 	}
 	
 	@Test
-	@WithMockUser(username="john", roles= {"CUSTOMER"})
+	@WithMockUser(username="employee1", password="test123", roles= {"EMPLOYEE"})
 	void updateFullCustomerNullID() throws Exception{
 		Customer cus = finalTestingSet.get(0);
 		cus.setId(null);
@@ -543,6 +607,7 @@ class CustomerControllerTest {
 		MockHttpServletRequestBuilder mockRequest = MockMvcRequestBuilders.put("/customers",cus)
 				.contentType(MediaType.APPLICATION_JSON)
 				.content(expectedBody)
+				.header("Authorization", "Bearer "+genToken)
 				.accept(MediaType.APPLICATION_JSON);
 		
 		mockMvc.perform(mockRequest)
@@ -554,7 +619,7 @@ class CustomerControllerTest {
 	}
 	
 	@Test
-	@WithMockUser(username="john", roles= {"CUSTOMER"})
+	@WithMockUser(username="employee1", password="test123", roles= {"EMPLOYEE"})
 	void updateFullCustomerInvalidID() throws Exception{
 		Customer cus = finalTestingSet.get(0);
 		cus.setId(55);
@@ -568,6 +633,7 @@ class CustomerControllerTest {
 		MockHttpServletRequestBuilder mockRequest = MockMvcRequestBuilders.put("/customers",cus)
 				.contentType(MediaType.APPLICATION_JSON)
 				.content(expectedBody)
+				.header("Authorization", "Bearer "+genToken)
 				.accept(MediaType.APPLICATION_JSON);
 		
 		mockMvc.perform(mockRequest)
@@ -581,13 +647,14 @@ class CustomerControllerTest {
 	//TODO move validation to seperate controller for clutter
 	
 	@Test
-	@WithMockUser(username="john", roles= {"CUSTOMER"})
+	@WithMockUser(username="employee2", password="test123", roles= {"MANAGER"})
 	//https://medium.com/swlh/https-medium-com-jet-cabral-testing-spring-boot-restful-apis-b84ea031973d
 	void deleteCustomerByID() throws Exception{
 		Mockito.doNothing().when(customerService).deleteCustomerByID(finalTestingSet.get(0).getId());
 		
 		MockHttpServletRequestBuilder mockRequest = MockMvcRequestBuilders.delete("/customers/id").param("id", "1")
-																		.contentType(MediaType.APPLICATION_JSON);
+																		.contentType(MediaType.APPLICATION_JSON)
+																		.header("Authorization", "Bearer "+genToken);
 		mockMvc.perform(mockRequest)
 				.andDo(print())
 				.andExpect(status().isNoContent());
@@ -596,12 +663,13 @@ class CustomerControllerTest {
 	}
 	
 	@Test
-	@WithMockUser(username="john", roles= {"CUSTOMER"})
+	@WithMockUser(username="employee2", password="test123", roles= {"MANAGER"})
 	void deleteCustomerByIDInvalidID() throws Exception{
 		Mockito.doThrow(new EntityNotFound()).when(customerService).deleteCustomerByID(55);
 		
 		MockHttpServletRequestBuilder mockRequest = MockMvcRequestBuilders.delete("/customers/id").param("id", "55")
-																		.contentType(MediaType.APPLICATION_JSON);
+																		.contentType(MediaType.APPLICATION_JSON)
+																		.header("Authorization", "Bearer "+genToken);
 		mockMvc.perform(mockRequest)
 				.andDo(print())
 				.andExpect(status().isNotFound())
@@ -611,12 +679,13 @@ class CustomerControllerTest {
 	}
 	
 	@Test
-	@WithMockUser(username="john", roles= {"CUSTOMER"})
+	@WithMockUser(username="employee2", password="test123", roles= {"MANAGER"})
 	void deleteCustomerAddressByIDs() throws Exception{
 		Mockito.doNothing().when(customerService).deleteCustomerAddressByID(finalTestingSet.get(1).getId(),finalTestingSet.get(1).getAddress().get(0).getId());
 		
 		MockHttpServletRequestBuilder mockRequest = MockMvcRequestBuilders.delete("/customers/id/addresses").param("customerid", "2").param("addressid", "1")
-																			.contentType(MediaType.APPLICATION_JSON);
+																			.contentType(MediaType.APPLICATION_JSON)
+																			.header("Authorization", "Bearer "+genToken);
 		
 		mockMvc.perform(mockRequest)
 				.andDo(print())
@@ -627,12 +696,14 @@ class CustomerControllerTest {
 	
 	//Not delete, but overwrite old object with new empty object and NONE
 	@Test
-	@WithMockUser(username="john", roles= {"CUSTOMER"})
+	@WithMockUser(username="employee2", password="test123", roles= {"MANAGER"})
 	void wipeCustomerSocialMedia() throws Exception{
 		Mockito.doNothing().when(customerService).deleteCustomerSocialMediaByID(finalTestingSet.get(0).getId());
 		
-		MockHttpServletRequestBuilder mockRequest = MockMvcRequestBuilders.delete("/customers/id/socialmedia").param("id", "1")
-				.contentType(MediaType.APPLICATION_JSON);
+		MockHttpServletRequestBuilder mockRequest = MockMvcRequestBuilders.delete("/customers/id/socialmedia")
+																		.param("id", "1")
+																		.contentType(MediaType.APPLICATION_JSON)
+																		.header("Authorization", "Bearer "+genToken);
 		
 		mockMvc.perform(mockRequest)
 		.andDo(print())

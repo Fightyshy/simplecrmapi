@@ -112,10 +112,6 @@ public class EmployeeControllerLiveTest {
 	
 	private String genToken;
 	
-	private User emp1;
-	
-	private User emp2;
-	
 	@BeforeEach //once before every test
 	void init() {
 		//Smoking gun https://stackoverflow.com/questions/44849827/mock-securitycontextholder-authentication-always-returning-null

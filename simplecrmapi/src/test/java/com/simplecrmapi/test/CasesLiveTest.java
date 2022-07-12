@@ -3,7 +3,6 @@ package com.simplecrmapi.test;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.is;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
@@ -22,13 +21,10 @@ import org.mockito.InjectMocks;
 import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
-import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
+import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
 import org.springframework.security.authentication.AuthenticationManager;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContext;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.security.test.context.support.WithUserDetails;
@@ -44,7 +40,6 @@ import com.simplecrmapi.entity.Cases;
 import com.simplecrmapi.entity.Customer;
 import com.simplecrmapi.entity.Employee;
 import com.simplecrmapi.entity.SocialMedia;
-import com.simplecrmapi.rest.CaseController;
 import com.simplecrmapi.rest.EmployeeController;
 import com.simplecrmapi.rest.UserController;
 import com.simplecrmapi.service.CasesService;
@@ -57,10 +52,10 @@ import com.simplecrmapi.util.JwtAuthenticationFilter;
 import com.simplecrmapi.util.TokenProvider;
 import com.simplecrmapi.util.UnauthorizedEntryPoint;
 
-@WebMvcTest(CaseController.class)
+@SpringBootTest
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 @AutoConfigureMockMvc
-public class CasesTest {
+public class CasesLiveTest {
 	@Autowired
 	private MockMvc mockMvc;
 	
@@ -111,12 +106,6 @@ public class CasesTest {
 	
 	@BeforeEach //once before every test
 	void init() {
-		
-	    Authentication authentication = mock(Authentication.class);
-	    SecurityContext securityContext = mock(SecurityContext.class);
-	    
-	    genToken = token.generateToken(SecurityContextHolder.getContext().getAuthentication());
-	    
 		employeeTestingSet = new ArrayList<>(); //clear to reset
 		casesTestingSet = new ArrayList<>();
 		
@@ -698,7 +687,7 @@ public class CasesTest {
 				.andExpect(content().json(expected));
 		
 		verify(employeeService, times(1)).getEmployeeByID(any(Integer.class));
-		verify(casesService, times(1)).updateCase(any(Cases.class), any(Employee.class));
+		verify(casesService, times(1)).updateCase(any(Cases.class),any(Employee.class));
 	}
 	
 	//DELETE
@@ -815,3 +804,4 @@ public class CasesTest {
 				.andExpect(jsonPath("$", is("400 BAD REQUEST: Invalid params")));
 	}
 }
+
