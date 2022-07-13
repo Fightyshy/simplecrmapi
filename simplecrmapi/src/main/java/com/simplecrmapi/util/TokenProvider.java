@@ -14,6 +14,8 @@ import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Component;
 
+import com.simplecrmapi.entity.User;
+
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jws;
 import io.jsonwebtoken.JwtParser;
@@ -69,6 +71,21 @@ public class TokenProvider{
                 .setExpiration(new Date(System.currentTimeMillis() + TOKEN_VALIDITY*1000))
                 .signWith(SignatureAlgorithm.HS256, SIGNING_KEY)
                 .compact();
+    }
+    
+    public String generatePWToken(User user) {
+    	String authorities = user.getAuthorities().stream()
+    			.map(GrantedAuthority::getAuthority)
+    			.collect(Collectors.joining(","));
+    	
+    	
+    	return Jwts.builder()
+    			.setSubject(user.getUsername())
+    			.claim(AUTHORITIES_KEY, authorities)
+    			.setIssuedAt(new Date(System.currentTimeMillis()))
+    			.setExpiration(new Date(System.currentTimeMillis()+TOKEN_VALIDITY*1000))
+    			.signWith(SignatureAlgorithm.HS256, SIGNING_KEY)
+    			.compact();
     }
 
     public Boolean validateToken(String token, UserDetails userDetails) {

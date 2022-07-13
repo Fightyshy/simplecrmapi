@@ -111,7 +111,6 @@ public class User implements UserDetails{
 		this.roles = roles;
 	}
 	
-	@Override
 	public boolean isEnabled() {
 		return enabled;
 	}

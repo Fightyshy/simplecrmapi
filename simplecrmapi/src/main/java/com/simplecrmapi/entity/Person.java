@@ -59,6 +59,7 @@ public class Person {
 	
 	@Column(name="email_address")
 	@Email(message="Please input a valid email address")
+	@NotNull
 	private String emailAddress;
 	
 	@OneToMany(mappedBy="employee",cascade= {CascadeType.DETACH, CascadeType.REFRESH, CascadeType.REMOVE})

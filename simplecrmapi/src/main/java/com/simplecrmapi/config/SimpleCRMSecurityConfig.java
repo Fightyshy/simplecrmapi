@@ -31,7 +31,7 @@ import com.simplecrmapi.util.UnauthorizedEntryPoint;
 
 @Configuration
 @EnableWebSecurity
-@EnableGlobalMethodSecurity(prePostEnabled=true)
+//@EnableGlobalMethodSecurity(prePostEnabled=true)
 public class SimpleCRMSecurityConfig extends WebSecurityConfigurerAdapter {
 	@Resource(name="userService")
 //	@Autowired
@@ -41,9 +41,12 @@ public class SimpleCRMSecurityConfig extends WebSecurityConfigurerAdapter {
 	@Autowired
 	 private UnauthorizedEntryPoint unauthorizedEntryPoint;
 	
+	@Autowired
+	private BCryptPasswordEncoder passwordEncoder;
+	
 	@Override
 	public void configure(AuthenticationManagerBuilder auth) throws Exception {
-		auth.userDetailsService(userDetailsService).passwordEncoder(passwordEncoder());
+		auth.userDetailsService(userDetailsService).passwordEncoder(passwordEncoder);
 	}
 
 	
@@ -79,10 +82,10 @@ public class SimpleCRMSecurityConfig extends WebSecurityConfigurerAdapter {
         http.addFilterBefore(authenticationTokenFilterBean(), UsernamePasswordAuthenticationFilter.class);
     }
 	
-	@Bean
-	public BCryptPasswordEncoder passwordEncoder() {
-		return new BCryptPasswordEncoder(10);
-	}
+//	@Bean
+//	public BCryptPasswordEncoder passwordEncoder() {
+//		return new BCryptPasswordEncoder(10);
+//	}
 	
     @Override
     @Bean

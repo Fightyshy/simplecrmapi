@@ -10,4 +10,8 @@ public interface UserService {
 	public List<User> findAllUsers();
 	
 	public User findUsername(String username);
+
+	public User updateUserPassword(User user, String password);
+
+	public User updateUserPassword(User user);
 }

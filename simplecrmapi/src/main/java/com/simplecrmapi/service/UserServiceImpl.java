@@ -31,6 +31,11 @@ public class UserServiceImpl implements UserService, UserDetailsService {
 //	@Autowired
 	private BCryptPasswordEncoder passwordEncoder;
 	
+	@Autowired
+	public void setPasswordEncoder(BCryptPasswordEncoder passwordEncoder) {
+		this.passwordEncoder=passwordEncoder;
+	}
+	
 	@Override
 	@Transactional
 	public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException{
@@ -58,7 +63,7 @@ public class UserServiceImpl implements UserService, UserDetailsService {
 	@Transactional
 	public User saveUser(User user) {
 		User newUser = user;
-		
+		newUser.setId(0);
 		user.setPassword(passwordEncoder.encode(user.getPassword()));
 		
 		Role role = roleService.findRoleByName("EMPLOYEE");
@@ -67,6 +72,22 @@ public class UserServiceImpl implements UserService, UserDetailsService {
 		
 		newUser.setRoles(roleSet);
 		return userDAO.save(newUser);
+	}
+	
+	@Override
+	@Transactional
+	public User updateUserPassword(User user) {
+		user.setEnabled(false);
+		user.setPassword(null);
+		return user;
+	}
+	
+	@Override
+	@Transactional
+	public User updateUserPassword(User user, String password) {
+		user.setPassword(passwordEncoder.encode(password));
+		user.setEnabled(true);
+		return userDAO.save(user);
 	}
 
 	@Override
@@ -81,4 +102,5 @@ public class UserServiceImpl implements UserService, UserDetailsService {
 		return userDAO.findByUsername(username);
 	}
 
+	
 }
