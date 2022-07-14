@@ -3,7 +3,6 @@ package com.simplecrmapi.service;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 
 import javax.validation.Valid;
 
@@ -22,7 +21,7 @@ import com.simplecrmapi.entity.SocialMedia;
 import com.simplecrmapi.util.CustomerInvalidAddressException;
 import com.simplecrmapi.util.CustomerInvalidSocialMediaException;
 import com.simplecrmapi.util.EntityNotFound;
-import com.simplecrmapi.util.InvalidParamsException;
+import com.simplecrmapi.util.IDComparator;
 
 @Service
 public class EmployeeServiceImpl implements EmployeeService {
@@ -35,6 +34,8 @@ public class EmployeeServiceImpl implements EmployeeService {
 	
 	@Autowired
 	private CasesDAO casesDAO;
+	
+	private IDComparator comparator;
 	
 	@Override
 	@Transactional
@@ -212,7 +213,12 @@ public class EmployeeServiceImpl implements EmployeeService {
 	@Override
 	@Transactional
 	public Address updateEmployeeAddressByID(Address address, Employee emp) {
-		return addressDAO.save(address);
+		for(Address add: emp.getAddress()) {
+			if(comparator.EqualsID(address, add)){
+				return addressDAO.save(address);
+			}
+		}
+		return null;
 	}
 
 	@Override
@@ -231,13 +237,18 @@ public class EmployeeServiceImpl implements EmployeeService {
 	@Override
 	@Transactional
 	public Cases updateEmployeeAssignedCaseByID(Cases cases, Employee emp) {
-		cases.setEmployee(new HashSet<Employee>());
-		cases.getEmployee().add(emp);
-		Cases cased = casesDAO.saveCase(cases);
 		
-		emp.getCases().add(cased);
-		employeeDAO.saveEmployee(emp);
-		return cased;
+		for(Cases cased:emp.getCases()) {
+			if(comparator.EqualsID(cased, cases)) {
+				cases.setEmployee(new HashSet<Employee>());
+				cases.getEmployee().add(emp);
+				Cases caser = casesDAO.saveCase(cases);
+				emp.getCases().add(caser);
+				employeeDAO.saveEmployee(emp);
+				return caser;
+			}
+		}
+		return null;
 	}
 
 	@Override
@@ -257,13 +268,12 @@ public class EmployeeServiceImpl implements EmployeeService {
 	@Override
 	@Transactional
 	public SocialMedia updateEmployeeSocialMedia(@Valid SocialMedia socialMedia, Employee emp) {
-		try {
+		if(comparator.EqualsID(socialMedia, emp.getSocialMedia())) {
 			emp.setSocialMedia(socialMedia);
+			emp = employeeDAO.saveEmployee(emp);
 			return emp.getSocialMedia();
-		}catch(NullPointerException e) {
-			System.out.println("Null pointer exception: "+e);
-			return null;
 		}
+		return null;
 	}
 
 	@Override

@@ -36,6 +36,7 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetailsService;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.test.context.support.TestExecutionEvent;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.security.test.context.support.WithUserDetails;
@@ -107,6 +108,9 @@ public class EmployeeControllerLiveTest {
 	
 	@MockBean
     private AuthenticationManager authenticationManager;
+	
+	@MockBean
+	private BCryptPasswordEncoder encoder;
 	
 	private List<Employee> employeeTestingSet = new ArrayList<>();
 	
@@ -888,7 +892,81 @@ public class EmployeeControllerLiveTest {
 		verify(employeeService, times(1)).updateEmployeeSocialMedia(any(SocialMedia.class), any(Employee.class));
 	}
 	
+	@Test
+	@WithUserDetails(value="employee1", userDetailsServiceBeanName="testEmployeeDetails")
+	void updateUserEmployeeAddressNonMatchingID() throws Exception {
+		Employee emp = employeeTestingSet.get(0);
+		Mockito.when(employeeService.getEmployeeByID(any(Integer.class))).thenReturn(emp);
+		
+		Address add = emp.getAddress().get(0);
+		add.setCity("Another city");
+
+		Mockito.when(employeeService.updateEmployeeAddressByID(any(Address.class), any(Employee.class))).thenReturn(null);
+		
+		MockHttpServletRequestBuilder mockRequest = MockMvcRequestBuilders.put("/employees/users/addresses")
+																		.contentType(MediaType.APPLICATION_JSON)
+																		.content(mapper.writeValueAsString(add))
+																		.header("Authorization", "Bearer "+genToken)
+																		.accept(MediaType.APPLICATION_JSON);
+		
+		mockMvc.perform(mockRequest)
+				.andExpect(status().isNotFound())
+				.andExpect(jsonPath("$").doesNotExist());
+		
+		verify(employeeService, times(1)).getEmployeeByID(any(Integer.class));
+		verify(employeeService, times(1)).updateEmployeeAddressByID(any(Address.class), any(Employee.class));
+	}
 	
+	@Test
+	@WithUserDetails(value="employee1", userDetailsServiceBeanName="testEmployeeDetails")
+	void updateUserEmployeeSocialMediaNonMatchingID() throws Exception {
+		Employee emp = employeeTestingSet.get(0);
+		Mockito.when(employeeService.getEmployeeByID(any(Integer.class))).thenReturn(emp);
+		
+		SocialMedia sm = emp.getSocialMedia();
+		String expected = mapper.writeValueAsString(sm);
+		
+		Mockito.when(employeeService.updateEmployeeSocialMedia(any(SocialMedia.class), any(Employee.class))).thenReturn(null);
+		
+		MockHttpServletRequestBuilder mockRequest = MockMvcRequestBuilders.put("/employees/users/socialmedia")
+																		.contentType(MediaType.APPLICATION_JSON)
+																		.content(expected)
+																		.header("Authorization", "Bearer "+genToken)
+																		.accept(MediaType.APPLICATION_JSON);
+		
+		mockMvc.perform(mockRequest)
+				.andExpect(status().isNotFound())
+				.andExpect(jsonPath("$").doesNotExist());
+
+		verify(employeeService, times(1)).getEmployeeByID(any(Integer.class));
+		verify(employeeService, times(1)).updateEmployeeSocialMedia(any(SocialMedia.class), any(Employee.class));
+	}
+	
+	
+	@Test
+	@WithUserDetails(value="employee1", userDetailsServiceBeanName="testEmployeeDetails")
+	void updateUserEmployeeAssignedCaseNonMatchingID() throws Exception {
+		Employee emp = employeeTestingSet.get(0);
+		Mockito.when(employeeService.getEmployeeByID(any(Integer.class))).thenReturn(emp);
+		
+		Cases cased = emp.getCases().iterator().next();
+		String expected = mapper.writeValueAsString(cased);
+		
+		Mockito.when(employeeService.updateEmployeeAssignedCaseByID(any(Cases.class), any(Employee.class))).thenReturn(null);
+		
+		MockHttpServletRequestBuilder mockRequest = MockMvcRequestBuilders.put("/employees/users/cases")
+																		.contentType(MediaType.APPLICATION_JSON)
+																		.content(expected)
+																		.header("Authorization", "Bearer "+genToken)
+																		.accept(MediaType.APPLICATION_JSON);
+		
+		mockMvc.perform(mockRequest)
+				.andExpect(status().isNotFound())
+				.andExpect(jsonPath("$").doesNotExist());
+		
+		verify(employeeService, times(1)).getEmployeeByID(any(Integer.class));
+		verify(employeeService, times(1)).updateEmployeeAssignedCaseByID(any(Cases.class), any(Employee.class));
+	}
 	//DELETE
 	@Test
 	@WithMockUser(username="employee2", password="test123", roles= {"MANAGER"})

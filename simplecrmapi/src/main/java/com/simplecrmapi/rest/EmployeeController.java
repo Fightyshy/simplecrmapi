@@ -130,6 +130,8 @@ public class EmployeeController {
 		return ResponseEntity.ok(updatedEmployee);
 	}
 	
+	//POST
+	
 	@PutMapping("/id/addresses")
 	public ResponseEntity<Object> updateEmployeeAddressByID(@Valid @RequestBody Address address, @RequestParam("id") int ID){
 		Address updatedAddress = employeeService.updateEmployeeAddressByID(address, ID);
@@ -148,30 +150,23 @@ public class EmployeeController {
 		return ResponseEntity.ok(updatedSocialMedia);
 	}
 	
-	//TODO ???
-	@PutMapping("/users/id/addresses")
-	public ResponseEntity<Object> updateAddressUserEmployee(@Valid @RequestBody Address address, Principal principal) throws URISyntaxException{
-		Address updatedAddress = employeeService.updateEmployeeAddressByID(address, getEmployeeFromSession());
-		return ResponseEntity.ok(updatedAddress);
-	}
-	
 	//Principal-based PUT
 	@PutMapping("/users/addresses")
 	public ResponseEntity<Object> updateUserEmployeeAddress(@Valid @RequestBody Address address){
 		Address updatedAddress = employeeService.updateEmployeeAddressByID(address, getEmployeeFromSession());
-		return ResponseEntity.ok(updatedAddress);
+		return updatedAddress==null?ResponseEntity.notFound().build():ResponseEntity.ok(updatedAddress);
 	}
 	
 	@PutMapping("/users/cases")
 	public ResponseEntity<Object> updateUserEmployeeAssignedCase(@Valid @RequestBody Cases cases){
 		Cases updatedCase = employeeService.updateEmployeeAssignedCaseByID(cases, getEmployeeFromSession());
-		return ResponseEntity.ok(updatedCase);
+		return updatedCase==null?ResponseEntity.notFound().build():ResponseEntity.ok(updatedCase);
 	}
 	
 	@PutMapping("/users/socialmedia")
 	public ResponseEntity<Object> updateUserEmployeeSocialMedia(@Valid @RequestBody SocialMedia socialMedia){
 		SocialMedia updatedSocialMedia = employeeService.updateEmployeeSocialMedia(socialMedia, getEmployeeFromSession());
-		return ResponseEntity.ok(updatedSocialMedia);
+		return updatedSocialMedia==null?ResponseEntity.notFound().build():ResponseEntity.ok(updatedSocialMedia);
 	}
 	
 	@DeleteMapping("/id")

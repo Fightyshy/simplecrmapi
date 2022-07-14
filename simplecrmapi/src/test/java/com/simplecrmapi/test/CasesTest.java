@@ -30,6 +30,7 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetailsService;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.security.test.context.support.WithUserDetails;
 import org.springframework.test.web.servlet.MockMvc;
@@ -102,6 +103,9 @@ public class CasesTest {
 	
 	@MockBean
     private AuthenticationManager authenticationManager;
+	
+	@MockBean
+	private BCryptPasswordEncoder encoder;
 	
 	private String genToken;
 	
@@ -696,6 +700,30 @@ public class CasesTest {
 		mockMvc.perform(mockRequest)
 				.andExpect(status().isOk())
 				.andExpect(content().json(expected));
+		
+		verify(employeeService, times(1)).getEmployeeByID(any(Integer.class));
+		verify(casesService, times(1)).updateCase(any(Cases.class), any(Employee.class));
+	}
+	
+	@Test
+	@WithUserDetails(value="employee1", userDetailsServiceBeanName="testEmployeeDetails")
+	void updateUserCasesNonMatchingBody() throws Exception{
+		Employee emp = employeeTestingSet.get(0);
+		Cases cases = emp.getCases().iterator().next();
+		cases.setId(99);
+		
+		Mockito.when(employeeService.getEmployeeByID(any(Integer.class))).thenReturn(emp);
+		String expected = mapper.writeValueAsString(cases);
+		Mockito.when(casesService.updateCase(any(Cases.class), any(Employee.class))).thenReturn(null);
+		
+		MockHttpServletRequestBuilder mockRequest = MockMvcRequestBuilders.put("/cases/users")
+																		.contentType(MediaType.APPLICATION_JSON)
+																		.content(expected)
+																		.header("Authorization", "Bearer "+genToken)
+																		.accept(MediaType.APPLICATION_JSON);
+		
+		mockMvc.perform(mockRequest)
+			.andExpect(status().isNotFound());
 		
 		verify(employeeService, times(1)).getEmployeeByID(any(Integer.class));
 		verify(casesService, times(1)).updateCase(any(Cases.class), any(Employee.class));

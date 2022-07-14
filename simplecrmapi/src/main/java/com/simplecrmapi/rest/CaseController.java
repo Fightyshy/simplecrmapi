@@ -87,8 +87,9 @@ public class CaseController {
 	}
 	
 	@PutMapping("/users")
-	public ResponseEntity<Object> updateUserCaes(@Valid @RequestBody Cases cases){
-		return ResponseEntity.ok(casesService.updateCase(cases, getEmployeeFromSession()));
+	public ResponseEntity<Object> updateUserCases(@Valid @RequestBody Cases cases){
+		Cases updatedCase = casesService.updateCase(cases, getEmployeeFromSession());
+		return updatedCase==null? ResponseEntity.notFound().build():ResponseEntity.ok(updatedCase);
 	}
 	
 	@DeleteMapping("/id")

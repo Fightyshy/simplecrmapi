@@ -12,6 +12,7 @@ import com.simplecrmapi.dao.EmployeeDAO;
 import com.simplecrmapi.entity.Cases;
 import com.simplecrmapi.entity.Employee;
 import com.simplecrmapi.util.EntityNotFound;
+import com.simplecrmapi.util.IDComparator;
 
 @Service
 public class CasesServiceImpl implements CasesService {
@@ -21,6 +22,8 @@ public class CasesServiceImpl implements CasesService {
 	
 	@Autowired
 	private EmployeeDAO employeeDAO;
+	
+	private IDComparator comparator;
 
 	@Override
 	@Transactional
@@ -75,11 +78,11 @@ public class CasesServiceImpl implements CasesService {
 	@Transactional
 	public Cases updateCase(Cases cases, Employee employee) {
 		for(Cases empCase: employee.getCases()) {
-			if(empCase.equalsID(cases)) {
+			if(comparator.EqualsID(cases, empCase)) {
 				return casesDAO.saveCase(cases);
 			}
 		}
-		throw new EntityNotFound();
+		return null;
 	}
 	
 	@Override

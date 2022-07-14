@@ -206,5 +206,7 @@ public class Address {
 		this.employee = employee;
 	}
 
-	
+	public boolean EqualsID(Address address) {
+		return this.id==address.id?true:false;
+	}
 }
