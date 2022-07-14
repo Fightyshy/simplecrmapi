@@ -205,8 +205,4 @@ public class Address {
 	public void setEmployee(Employee employee) {
 		this.employee = employee;
 	}
-
-	public boolean EqualsID(Address address) {
-		return this.id==address.id?true:false;
-	}
 }
