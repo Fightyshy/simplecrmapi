@@ -45,12 +45,13 @@ public class EmployeeController {
 	public ResponseEntity<Object> getEmployeeByID(@RequestParam("id") int ID) {
 		Employee emp = employeeService.getEmployeeByID(ID);
 		
-		if(emp!=null) {
-			return ResponseEntity.ok(emp);
-		}else {
-			throw new EntityNotFound(); //temp
-//			return ResponseEntity.status(HttpStatus.NOT_FOUND).body("404 NOT FOUND: Entity not found with parameters"); //Is ideal, not working atm
-		}
+		return emp==null?ResponseEntity.notFound().build():ResponseEntity.ok(emp);
+//		if(emp!=null) {
+//			return ResponseEntity.ok(emp);
+//		}else {
+//			throw new EntityNotFound(); //temp
+////			return ResponseEntity.status(HttpStatus.NOT_FOUND).body("404 NOT FOUND: Entity not found with parameters"); //Is ideal, not working atm
+//		}
 	}
 	
 	@GetMapping("/id/cases")

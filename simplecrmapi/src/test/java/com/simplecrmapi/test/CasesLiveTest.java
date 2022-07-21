@@ -280,6 +280,7 @@ public class CasesLiveTest {
 		mockMvc.perform(MockMvcRequestBuilders.get("/cases")
 												.contentType(MediaType.APPLICATION_JSON)
 												.header("Authorization", "Bearer "+genToken))
+		.andDo(print())
 				.andExpect(status().isOk())
 				.andExpect(jsonPath("$", hasSize(6)))
 				.andExpect(content().json(mapper.writeValueAsString(casesTestingSet)));

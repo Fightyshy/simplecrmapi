@@ -46,9 +46,6 @@ public class EmployeeServiceImpl implements EmployeeService {
 	@Override
 	@Transactional
 	public Employee getEmployeeByID(Integer ID) {
-		if(ID==null) {
-			throw new EntityNotFound();
-		}
 		return employeeDAO.getEmployeeByID(ID);
 	}
 	
