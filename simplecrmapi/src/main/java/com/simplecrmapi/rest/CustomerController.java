@@ -6,8 +6,8 @@ import java.util.List;
 import javax.validation.Valid;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -19,9 +19,11 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.simplecrmapi.entity.Address;
 import com.simplecrmapi.entity.Customer;
+import com.simplecrmapi.entity.Employee;
 import com.simplecrmapi.entity.SocialMedia;
+import com.simplecrmapi.entity.User;
 import com.simplecrmapi.service.CustomerService;
-import com.simplecrmapi.util.EntityNotFound;
+import com.simplecrmapi.service.EmployeeService;
 
 @RestController
 @RequestMapping("/customers")
@@ -30,40 +32,38 @@ public class CustomerController {
 	@Autowired
 	private CustomerService customerService;
 	
+	@Autowired
+	private EmployeeService employeeService;
+	
 	@GetMapping("")
 	public ResponseEntity<List<Customer>> getCustomers(){
 		return ResponseEntity.ok(customerService.getCustomers());
 	}
 	
-	@GetMapping("id")
+	@GetMapping("/id")
 	public ResponseEntity<Customer> getCustomerByID(@RequestParam(name="id") int ID) {
 		Customer retrieved = customerService.getCustomerByID(ID);
-		if(retrieved!=null) {
-			return ResponseEntity.ok(retrieved);
-		}else {
-			throw new EntityNotFound(); //temp
-		}
+		return retrieved==null?ResponseEntity.notFound().build():ResponseEntity.ok(retrieved);
 	}
 	
 	//LIST
-	@GetMapping("lastname")
+	@GetMapping("/lastname")
 	public ResponseEntity<Object> getCustomersByLastName(@RequestParam(name="lastname") String lastName){
 		List<Customer> lastNames = customerService.getCustomerByLastName(lastName);
-		if(lastNames==null||lastNames.isEmpty()) {
-			return ResponseEntity.status(HttpStatus.NOT_FOUND).body("No customers with matching parameter");
-		}else {
-			return ResponseEntity.ok(lastNames);
-		}
+		
+		return lastNames.isEmpty()||lastNames==null?ResponseEntity.notFound().build():ResponseEntity.ok(lastNames);
 	}
 	//LIST
-	@GetMapping("firstname")
+	@GetMapping("/firstname")
 	public ResponseEntity<Object> getCustomersByFirstName(@RequestParam(name="firstname") String firstName){
-		List<Customer> firstNames = customerService.getCustomerByLastName(firstName);
-		if(firstNames==null||firstNames.isEmpty()) {
-			return ResponseEntity.status(HttpStatus.NOT_FOUND).body("No customers with matching parameter");
-		}else {
-			return ResponseEntity.ok(firstNames);
-		}
+		List<Customer> firstNames = customerService.getCustomerByFirstName(firstName);
+		
+		return firstNames.isEmpty()||firstNames==null?ResponseEntity.notFound().build():ResponseEntity.ok(firstNames);
+	}
+	
+	@GetMapping("/users")
+	public ResponseEntity<Object> getUserCustomersFromCases(){
+		return ResponseEntity.ok(customerService.getUserCustomersFromCases(getEmployeeFromSession()));
 	}
 	
 	//Post/Put changed to response entity w/ bodies, more api like and works with testing
@@ -107,6 +107,24 @@ public class CustomerController {
 		return ResponseEntity.ok(updatedAddress);
 	}
 	
+	@PutMapping("/users")
+	public ResponseEntity<Object> updateUserAssignedCustomerByID(@Valid @RequestBody Customer customer){
+		Customer updatedCus = customerService.updateUserCustomerByID(customer, getEmployeeFromSession());
+		return updatedCus==null?ResponseEntity.notFound().build():ResponseEntity.ok(updatedCus);
+	}
+	
+	@PutMapping("/users/addresses")
+	public ResponseEntity<Object> updateUserAssignedCustomerAddressByID(@Valid @RequestBody Address address){
+		Address updatedAddress = customerService.updateUserAssignedAdressByID(address, getEmployeeFromSession());
+		return updatedAddress==null?ResponseEntity.notFound().build():ResponseEntity.ok(updatedAddress);
+	}
+	
+	@PutMapping("/users/socialmedia")
+	public ResponseEntity<Object> updateUserAssignedCustomerSocialMediaByID(@Valid @RequestBody SocialMedia socialMedia){
+		SocialMedia updatedMedia = customerService.updateUserAssignedSocialMediaByID(socialMedia, getEmployeeFromSession());
+		return updatedMedia==null?ResponseEntity.notFound().build():ResponseEntity.ok(updatedMedia);
+	}
+	
 	//204 for now, but who knows
 	@DeleteMapping("id")
 	public ResponseEntity<Object> deleteCustomerByID(@RequestParam(name="id") int ID) {
@@ -127,10 +145,12 @@ public class CustomerController {
 		return ResponseEntity.noContent().build();
 	}
 	
-	//TODO Advanced GET mappings - Maybe be moved to other controllers
+	private Employee getEmployeeFromSession() {
+		User user = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+		return employeeService.getEmployeeByID(user.getEmployeeID());
+	}
 	
-	//Retrieve customers managed by employee
-	//Moved to employee controller
+	//TODO Advanced GET mappings - Maybe be moved to other controllers
 	
 	//Retrieve customers by service/product(s)
 	//@GetMapping("/customers/products") and @RequestParam(name="product")

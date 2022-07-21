@@ -31,6 +31,7 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetailsService;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder;
@@ -98,6 +99,9 @@ class CustomerControllerTest {
 	
 	@MockBean
     private AuthenticationManager authenticationManager;
+	
+	@MockBean
+	private BCryptPasswordEncoder encoder;
 	
 	private String genToken;
 	
@@ -274,11 +278,14 @@ class CustomerControllerTest {
 		dupeSet.add(finalTestingSet.get(0));
 		dupeSet.add(finalTestingSet.get(0));
 		dupeSet.add(finalTestingSet.get(0));
+		
+		String expected = mapper.writeValueAsString(dupeSet);
+		
 		Mockito.when(customerService.getCustomerByLastName("Delvalle")).thenReturn(dupeSet);
 		
 		mockMvc.perform(MockMvcRequestBuilders.get("/customers/lastname").param("lastname", "Delvalle").contentType(MediaType.APPLICATION_JSON))
 												.andExpect(status().isOk())
-												.andExpect(jsonPath("$", hasSize(3)));
+												.andExpect(content().json(expected));
 		
 		verify(customerService).getCustomerByLastName("Delvalle");
 	}
@@ -290,16 +297,19 @@ class CustomerControllerTest {
 		dupeSet.add(finalTestingSet.get(0));
 		dupeSet.add(finalTestingSet.get(0));
 		dupeSet.add(finalTestingSet.get(0));
-		Mockito.when(customerService.getCustomerByLastName("Myrtle")).thenReturn(dupeSet);
+		
+		String expected = mapper.writeValueAsString(dupeSet);
+		
+		Mockito.when(customerService.getCustomerByFirstName("Myrtle")).thenReturn(dupeSet);
 		
 		mockMvc.perform(MockMvcRequestBuilders.get("/customers/firstname")
 											.param("firstname", "Myrtle")
 											.contentType(MediaType.APPLICATION_JSON)
 											.header("Authorization", "Bearer "+genToken))
 												.andExpect(status().isOk())
-												.andExpect(jsonPath("$", hasSize(3)));
+												.andExpect(content().json(expected));
 		
-		verify(customerService).getCustomerByLastName("Myrtle");
+		verify(customerService).getCustomerByFirstName("Myrtle");
 	}
 	
 	@Test
