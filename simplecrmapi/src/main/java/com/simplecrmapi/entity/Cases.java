@@ -3,6 +3,7 @@ package com.simplecrmapi.entity;
 import java.time.LocalDateTime;
 import java.util.Set;
 
+import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
@@ -11,6 +12,7 @@ import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.JoinTable;
 import javax.persistence.ManyToMany;
+import javax.persistence.OneToMany;
 import javax.persistence.OneToOne;
 import javax.persistence.Table;
 import javax.validation.constraints.Future;
@@ -41,9 +43,12 @@ public class Cases {
 	@Column(name="end_date")
 	private LocalDateTime endDate;
 	
-	@Column(name="product")
-	@Alphanumeric(message="Please input only alphanumeric characters")
-	private String product;
+//	@Column(name="product")
+//	@Alphanumeric(message="Please input only alphanumeric characters")
+//	private String product;
+	
+	@OneToMany(mappedBy="employee",cascade= {CascadeType.DETACH, CascadeType.REFRESH, CascadeType.REMOVE})
+	private Products product;
 	
 	//TODO get this working
 //	@JsonIgnore //Jsonview this so it doesn't show when querying employee
@@ -63,7 +68,7 @@ public class Cases {
 		this.startDate = LocalDateTime.now();
 	}
 	
-	public Cases(@NotNull String casesStatus, String product, Customer customer) {
+	public Cases(@NotNull String casesStatus, Products product, Customer customer) {
 		this.casesStatus = casesStatus;
 		this.startDate = LocalDateTime.now();
 		this.endDate = null;
@@ -104,11 +109,11 @@ public class Cases {
 		this.endDate = endDate;
 	}
 
-	public String getProduct() {
+	public Products getProduct() {
 		return product;
 	}
 
-	public void setProduct(String product) {
+	public void setProduct(Products product) {
 		this.product = product;
 	}
 

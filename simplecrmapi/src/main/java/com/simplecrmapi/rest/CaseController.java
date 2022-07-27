@@ -20,6 +20,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.simplecrmapi.entity.Cases;
+import com.simplecrmapi.entity.Customer;
 import com.simplecrmapi.entity.Employee;
 import com.simplecrmapi.entity.User;
 import com.simplecrmapi.service.CasesService;
@@ -48,6 +49,12 @@ public class CaseController {
 	@GetMapping("/firstname")
 	public ResponseEntity<List<Cases>> getCasesByFirstName(@RequestParam("firstname") String firstName){
 		return ResponseEntity.ok(casesService.getCasesByFirstName(firstName));
+	}
+	
+	@GetMapping("/products/customers")
+	public ResponseEntity<Object> getCustomersByProducts(@RequestParam(name="product") String product){
+		List<Customer> products = casesService.getCustomersFromCaseProducts(product);
+		return products.isEmpty()?ResponseEntity.notFound().build():ResponseEntity.ok(products);
 	}
 	
 	@GetMapping("/id")
@@ -102,6 +109,13 @@ public class CaseController {
 	@DeleteMapping("/id/employees")
 	public ResponseEntity<Object> deleteEmployeeFromCase(@RequestParam("id") int ID, @RequestParam("empId") int empID){
 		casesService.deleteEmployeeFromCase(ID, empID);
+		return ResponseEntity.noContent().build();
+	}
+	
+	//Ideally, this would archive all active cases into a archive repo before deleting
+	@DeleteMapping("/products/customers")
+	public ResponseEntity<Object> deleteCasesWithDiscontinuedProducts(@RequestParam("product") String product){
+		casesService.deleteCasesWithDiscontinuedProducts(product);
 		return ResponseEntity.noContent().build();
 	}
 

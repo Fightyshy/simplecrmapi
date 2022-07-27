@@ -44,6 +44,7 @@ import com.simplecrmapi.entity.Address;
 import com.simplecrmapi.entity.Cases;
 import com.simplecrmapi.entity.Customer;
 import com.simplecrmapi.entity.Employee;
+import com.simplecrmapi.entity.Products;
 import com.simplecrmapi.entity.SocialMedia;
 import com.simplecrmapi.rest.CaseController;
 import com.simplecrmapi.rest.EmployeeController;
@@ -474,7 +475,7 @@ public class CasesTest {
 	void saveNewCase() throws Exception{
 		Cases egCase = casesTestingSet.get(0);
 		egCase.setId(0);
-		egCase.setProduct("Altered example product name here");
+		egCase.setProduct(new Products("New product", "Altered example product name here"));
 		Mockito.when(casesService.saveNewCase(any(Cases.class),any(int.class))).thenReturn(egCase);
 		
 		String body = mapper.writeValueAsString(egCase);
@@ -496,7 +497,7 @@ public class CasesTest {
 	void saveNewCaseNullEmpID() throws Exception{
 		Cases egCase = casesTestingSet.get(0);
 		egCase.setId(0);
-		egCase.setProduct("Altered example product name here");
+		egCase.setProduct(new Products("New product", "Altered example product name here"));
 		Mockito.when(casesService.saveNewCase(any(Cases.class),any(int.class))).thenThrow(new InvalidParamsException());
 		
 		String body = mapper.writeValueAsString(egCase);
@@ -516,7 +517,7 @@ public class CasesTest {
 	void saveNewCaseInvalidEmpID() throws Exception{
 		Cases egCase = casesTestingSet.get(0);
 		egCase.setId(0);
-		egCase.setProduct("Altered example product name here");
+		egCase.setProduct(new Products("New product", "Altered example product name here"));
 		Mockito.when(casesService.saveNewCase(any(Cases.class),any(int.class))).thenThrow(new EntityNotFound());
 		
 		String body = mapper.writeValueAsString(egCase);
@@ -538,7 +539,7 @@ public class CasesTest {
 	void saveNewCaseInvalidEmpIDType() throws Exception{
 		Cases egCase = casesTestingSet.get(0);
 		egCase.setId(0);
-		egCase.setProduct("Altered example product name here");
+		egCase.setProduct(new Products("New product", "Altered example product name here"));
 		Mockito.when(casesService.saveNewCase(any(Cases.class),any(int.class))).thenThrow(new InvalidParamsException());
 		
 		String body = mapper.writeValueAsString(egCase);
@@ -561,7 +562,7 @@ public class CasesTest {
 		Employee emp = employeeTestingSet.get(0);
 		Cases egCase = casesTestingSet.get(2);
 		egCase.setId(0);
-		egCase.setProduct("Another different product");
+		egCase.setProduct(new Products("New product", "Altered example product name here"));
 		Mockito.when(employeeService.getEmployeeByID(any(Integer.class))).thenReturn(emp);
 		String expected = mapper.writeValueAsString(egCase);
 		Mockito.when(casesService.saveNewCase(any(Cases.class), any(Integer.class))).thenReturn(egCase);
@@ -586,7 +587,7 @@ public class CasesTest {
 	@WithMockUser(username="employee2", password="test123", roles= {"MANAGER"})
 	void updateCase() throws Exception{
 		Cases egCase = casesTestingSet.get(0);
-		egCase.setProduct("I only updated the product now");
+		egCase.setProduct(new Products("New product", "Altered example product name here"));
 		Mockito.when(casesService.updateCase(any(Cases.class))).thenReturn(egCase);
 		String body = mapper.writeValueAsString(egCase);
 		MockHttpServletRequestBuilder mockRequest = MockMvcRequestBuilders.put("/cases")
@@ -606,7 +607,7 @@ public class CasesTest {
 	@WithMockUser(username="employee2", password="test123", roles= {"MANAGER"})
 	void saveEmployeeToCase() throws Exception{
 		Cases egCase = casesTestingSet.get(0);
-		egCase.setProduct("I only updated the product now");
+		egCase.setProduct(new Products("New product", "Altered example product name here"));
 		Mockito.when(casesService.saveEmployeeToCase(any(Cases.class), any(int.class))).thenReturn(egCase);
 		String body = mapper.writeValueAsString(egCase);
 		MockHttpServletRequestBuilder mockRequest = MockMvcRequestBuilders.put("/cases/id/employees").param("empId", "4")
@@ -626,7 +627,7 @@ public class CasesTest {
 	@WithMockUser(username="employee2", password="test123", roles= {"MANAGER"})
 	void saveEmployeeToCaseNullParams() throws Exception{
 		Cases egCase = casesTestingSet.get(0);
-		egCase.setProduct("I only updated the product now");
+		egCase.setProduct(new Products("New product", "Altered example product name here"));
 		Mockito.when(casesService.saveEmployeeToCase(any(Cases.class), any(int.class))).thenThrow(new InvalidParamsException());
 		String body = mapper.writeValueAsString(egCase);
 		MockHttpServletRequestBuilder mockRequest = MockMvcRequestBuilders.put("/cases/id/employees").param("empId", "")
@@ -645,7 +646,7 @@ public class CasesTest {
 	@WithMockUser(username="employee2", password="test123", roles= {"MANAGER"})
 	void saveEmployeeToCaseInvalidParams() throws Exception{
 		Cases egCase = casesTestingSet.get(0);
-		egCase.setProduct("I only updated the product now");
+		egCase.setProduct(new Products("New product", "Altered example product name here"));
 		Mockito.when(casesService.saveEmployeeToCase(any(Cases.class), any(int.class))).thenThrow(new EntityNotFound());
 		String body = mapper.writeValueAsString(egCase);
 		MockHttpServletRequestBuilder mockRequest = MockMvcRequestBuilders.put("/cases/id/employees").param("empId", "55")
@@ -665,7 +666,7 @@ public class CasesTest {
 	@WithMockUser(username="employee2", password="test123", roles= {"MANAGER"})
 	void saveEmployeeToCaseInvalidParamsType() throws Exception{
 		Cases egCase = casesTestingSet.get(0);
-		egCase.setProduct("I only updated the product now");
+		egCase.setProduct(new Products("New product", "Altered example product name here"));
 		Mockito.when(casesService.saveEmployeeToCase(any(Cases.class), any(int.class))).thenThrow(new InvalidParamsException());
 		String body = mapper.writeValueAsString(egCase);
 		MockHttpServletRequestBuilder mockRequest = MockMvcRequestBuilders.put("/cases/id/employees").param("empId", "aaaa")

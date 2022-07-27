@@ -9,10 +9,11 @@ import java.util.List;
 import java.util.Scanner;
 
 import com.simplecrmapi.entity.Address;
+import com.simplecrmapi.entity.Cases;
 import com.simplecrmapi.entity.Customer;
 import com.simplecrmapi.entity.Employee;
+import com.simplecrmapi.entity.Products;
 import com.simplecrmapi.entity.SocialMedia;
-import com.simplecrmapi.entity.Cases;
 
 public class CSVParser {
 	
@@ -148,7 +149,8 @@ public class CSVParser {
 			}else {				
 				cases1.setEndDate(LocalDateTime.parse(csv[3]));
 			}
-			cases1.setProduct(csv[4]);
+			Products product = new Products(csv[4], csv[5]);
+			cases1.setProduct(product);
 			caseOut.add(cases1);
 		}
 		return caseOut;

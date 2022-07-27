@@ -1,5 +1,6 @@
 package com.simplecrmapi.service;
 
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 
@@ -10,8 +11,9 @@ import org.springframework.transaction.annotation.Transactional;
 import com.simplecrmapi.dao.CasesDAO;
 import com.simplecrmapi.dao.EmployeeDAO;
 import com.simplecrmapi.entity.Cases;
+import com.simplecrmapi.entity.Customer;
 import com.simplecrmapi.entity.Employee;
-import com.simplecrmapi.util.EntityNotFound;
+import com.simplecrmapi.rest.CaseController;
 import com.simplecrmapi.util.IDComparator;
 
 @Service
@@ -123,5 +125,25 @@ public class CasesServiceImpl implements CasesService {
 		}catch(Exception e) {
 			
 		}
+	}
+
+	@Override
+	public List<Customer> getCustomersFromCaseProducts(String product) {
+		List<Cases> cases = casesDAO.getCases();
+		List<Customer> cus = new ArrayList<>();
+		
+		for(Cases cased: cases) {
+			if(cased.getProduct().getName().equals(product)) {
+				cus.add(cased.getCustomer());
+			}
+		}
+		
+		return cus.isEmpty()?null:cus;
+		
+	}
+
+	@Override
+	public void deleteCasesWithDiscontinuedProducts(String product) {
+		casesDAO.deleteCaseByProducts(product);
 	}
 }

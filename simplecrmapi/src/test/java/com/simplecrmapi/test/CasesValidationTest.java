@@ -37,6 +37,7 @@ import com.simplecrmapi.entity.Address;
 import com.simplecrmapi.entity.Cases;
 import com.simplecrmapi.entity.Customer;
 import com.simplecrmapi.entity.Employee;
+import com.simplecrmapi.entity.Products;
 import com.simplecrmapi.entity.SocialMedia;
 import com.simplecrmapi.rest.EmployeeController;
 import com.simplecrmapi.service.CasesService;
@@ -233,7 +234,7 @@ public class CasesValidationTest {
 	@WithMockUser(username="john", roles= {"CUSTOMER"})
 	void saveFullCaseSuccess() throws Exception{
 		Cases cases = casesTestingSet.get(1);
-		cases.setProduct("Testing validation product");
+		cases.setProduct(new Products("New product", "Altered example product name here"));
 		
 		Mockito.when(casesService.saveNewCase(any(Cases.class),any(int.class))).thenReturn(cases);
 		String expectedBody = mapper.writeValueAsString(cases);
@@ -254,7 +255,7 @@ public class CasesValidationTest {
 	@WithMockUser(username="john", roles= {"CUSTOMER"})
 	void saveFullCaseFailed() throws Exception{
 		Cases cases = casesTestingSet.get(1);
-		cases.setProduct("test123!");
+		cases.setProduct(new Products("New product", "Altered example product name here"));
 		
 		Mockito.when(casesService.saveNewCase(any(Cases.class),any(int.class))).thenReturn(cases);
 		String expectedBody = mapper.writeValueAsString(cases);

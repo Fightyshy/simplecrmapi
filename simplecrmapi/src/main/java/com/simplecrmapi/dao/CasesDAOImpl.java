@@ -81,4 +81,13 @@ public class CasesDAOImpl implements CasesDAO {
 		deleteCustomer.executeUpdate();
 	}
 
+	@Override
+	public void deleteCaseByProducts(String product) {
+		Query deleteProducts = entityManager.createQuery("select id from Cases c left join fetch c.products where c.products.name=:productsID");
+		List<Integer> toDelete = deleteProducts.getResultList();
+		Query delete = entityManager.createQuery("delete from Cases where id=:casesID");
+		delete.setParameter("casesID", toDelete);
+		delete.executeUpdate();
+	}
+
 }

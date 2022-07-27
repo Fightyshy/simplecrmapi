@@ -20,4 +20,6 @@ public interface CasesDAO {
 	public List<Cases> getCasesByCustomerFirstName(String firstName);
 
 	public List<Cases> getCasesByCustomerLastName(String lastName);
+
+	public void deleteCaseByProducts(String product);
 }

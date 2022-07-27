@@ -150,11 +150,6 @@ public class CustomerController {
 		return employeeService.getEmployeeByID(user.getEmployeeID());
 	}
 	
-	//TODO Advanced GET mappings - Maybe be moved to other controllers
-	
-	//Retrieve customers by service/product(s)
-	//@GetMapping("/customers/products") and @RequestParam(name="product")
-	
 	//TODO Advanced DELETE mappings - may be moved to other controllers
 	
 	//Delete all of x product from customers (i.e product discontinuation/removal)

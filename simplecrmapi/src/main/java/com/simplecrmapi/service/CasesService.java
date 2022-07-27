@@ -3,6 +3,7 @@ package com.simplecrmapi.service;
 import java.util.List;
 
 import com.simplecrmapi.entity.Cases;
+import com.simplecrmapi.entity.Customer;
 import com.simplecrmapi.entity.Employee;
 
 public interface CasesService {
@@ -25,4 +26,8 @@ public interface CasesService {
 	public void deleteCaseByID(Integer ID);
 
 	public void deleteEmployeeFromCase(Integer ID, Integer empID);
+
+	public List<Customer> getCustomersFromCaseProducts(String product);
+
+	public void deleteCasesWithDiscontinuedProducts(String product);
 }
