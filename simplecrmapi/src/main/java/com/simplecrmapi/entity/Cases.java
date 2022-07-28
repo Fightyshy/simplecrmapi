@@ -34,20 +34,17 @@ public class Cases {
 	@NotNull
 	private String casesStatus; //Not null
 	
+	//No validator because set by app and not human
 	@Column(name="start_date")
 	@NotNull
 	private LocalDateTime startDate; //Not null
 	
-	//No validator because set by app and not human
-
+	//Should be set by computer
 	@Column(name="end_date")
 	private LocalDateTime endDate;
 	
-//	@Column(name="product")
-//	@Alphanumeric(message="Please input only alphanumeric characters")
-//	private String product;
-	
-	@OneToMany(mappedBy="employee",cascade= {CascadeType.DETACH, CascadeType.REFRESH, CascadeType.REMOVE})
+	@OneToOne(cascade=CascadeType.ALL)
+	@JoinColumn(name="products_id")
 	private Products product;
 	
 	//TODO get this working

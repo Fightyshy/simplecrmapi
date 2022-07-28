@@ -10,10 +10,10 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.simplecrmapi.dao.CasesDAO;
 import com.simplecrmapi.dao.EmployeeDAO;
+import com.simplecrmapi.dao.ProductsDAO;
 import com.simplecrmapi.entity.Cases;
 import com.simplecrmapi.entity.Customer;
 import com.simplecrmapi.entity.Employee;
-import com.simplecrmapi.rest.CaseController;
 import com.simplecrmapi.util.IDComparator;
 
 @Service
@@ -24,6 +24,9 @@ public class CasesServiceImpl implements CasesService {
 	
 	@Autowired
 	private EmployeeDAO employeeDAO;
+	
+	@Autowired
+	private ProductsDAO productDAO;
 	
 	private IDComparator comparator;
 
@@ -53,13 +56,14 @@ public class CasesServiceImpl implements CasesService {
 
 	@Override
 	@Transactional
-	public Cases saveNewCase(Cases cases, Integer empID) {
+	public Cases saveNewCase(Cases cases, String product, Integer empID) {
 		cases.setId(0);
 		
 		Employee creator = employeeDAO.getEmployeeByID(empID);
 		HashSet<Employee> emps = new HashSet<Employee>();
 		emps.add(creator);
 		cases.setEmployee(emps);
+		cases.setProduct(productDAO.findByName(product));
 		creator.getCases().add(cases);
 		Cases newCase = casesDAO.saveCase(cases);
 		employeeDAO.saveEmployee(creator);

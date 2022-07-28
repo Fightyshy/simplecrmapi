@@ -15,8 +15,6 @@ public interface CasesService {
 	
 	public Cases getCaseByID(Integer ID);
 	
-	public Cases saveNewCase(Cases cases, Integer empID);
-	
 	public Cases updateCase(Cases cases);
 
 	public Cases updateCase(Cases cases, Employee employee);
@@ -30,4 +28,6 @@ public interface CasesService {
 	public List<Customer> getCustomersFromCaseProducts(String product);
 
 	public void deleteCasesWithDiscontinuedProducts(String product);
+
+	public Cases saveNewCase(Cases cases, String product, Integer empID);
 }

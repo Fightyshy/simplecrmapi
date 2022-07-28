@@ -476,10 +476,11 @@ public class CasesTest {
 		Cases egCase = casesTestingSet.get(0);
 		egCase.setId(0);
 		egCase.setProduct(new Products("New product", "Altered example product name here"));
-		Mockito.when(casesService.saveNewCase(any(Cases.class),any(int.class))).thenReturn(egCase);
+		Mockito.when(casesService.saveNewCase(any(Cases.class), any(String.class), any(int.class))).thenReturn(egCase);
 		
 		String body = mapper.writeValueAsString(egCase);
 		MockHttpServletRequestBuilder mockRequest = MockMvcRequestBuilders.post("/cases").param("empId","1")
+																						.param("productName", "New product")
 																		.contentType(MediaType.APPLICATION_JSON)
 																		.content(body)
 																		.header("Authorization", "Bearer "+genToken)
@@ -489,7 +490,7 @@ public class CasesTest {
 				.andExpect(status().isCreated())
 				.andExpect(content().json(body));
 		
-		verify(casesService, times(1)).saveNewCase(any(Cases.class),any(int.class));
+		verify(casesService, times(1)).saveNewCase(any(Cases.class), any(String.class), any(int.class));
 	}
 	
 	@Test
@@ -498,10 +499,11 @@ public class CasesTest {
 		Cases egCase = casesTestingSet.get(0);
 		egCase.setId(0);
 		egCase.setProduct(new Products("New product", "Altered example product name here"));
-		Mockito.when(casesService.saveNewCase(any(Cases.class),any(int.class))).thenThrow(new InvalidParamsException());
+		Mockito.when(casesService.saveNewCase(any(Cases.class), any(String.class), any(int.class))).thenThrow(new InvalidParamsException());
 		
 		String body = mapper.writeValueAsString(egCase);
 		MockHttpServletRequestBuilder mockRequest = MockMvcRequestBuilders.post("/cases").param("empId","")
+																						.param("productName", "New product")
 																		.contentType(MediaType.APPLICATION_JSON)
 																		.content(body)
 																		.header("Authorization", "Bearer "+genToken)
@@ -518,10 +520,11 @@ public class CasesTest {
 		Cases egCase = casesTestingSet.get(0);
 		egCase.setId(0);
 		egCase.setProduct(new Products("New product", "Altered example product name here"));
-		Mockito.when(casesService.saveNewCase(any(Cases.class),any(int.class))).thenThrow(new EntityNotFound());
+		Mockito.when(casesService.saveNewCase(any(Cases.class), any(String.class), any(int.class))).thenThrow(new EntityNotFound());
 		
 		String body = mapper.writeValueAsString(egCase);
 		MockHttpServletRequestBuilder mockRequest = MockMvcRequestBuilders.post("/cases").param("empId","55")
+																						.param("productName", "New product")
 																		.contentType(MediaType.APPLICATION_JSON)
 																		.content(body)
 																		.header("Authorization", "Bearer "+genToken)
@@ -531,7 +534,7 @@ public class CasesTest {
 				.andExpect(status().isNotFound())
 				.andExpect(jsonPath("$", is("404 NOT FOUND: Entity not found due to invalid ID")));
 		
-		verify(casesService, times(1)).saveNewCase(any(Cases.class),any(int.class));
+		verify(casesService, times(1)).saveNewCase(any(Cases.class), any(String.class), any(int.class));
 	}
 	
 	@Test
@@ -540,10 +543,11 @@ public class CasesTest {
 		Cases egCase = casesTestingSet.get(0);
 		egCase.setId(0);
 		egCase.setProduct(new Products("New product", "Altered example product name here"));
-		Mockito.when(casesService.saveNewCase(any(Cases.class),any(int.class))).thenThrow(new InvalidParamsException());
+		Mockito.when(casesService.saveNewCase(any(Cases.class), any(String.class), any(int.class))).thenThrow(new InvalidParamsException());
 		
 		String body = mapper.writeValueAsString(egCase);
 		MockHttpServletRequestBuilder mockRequest = MockMvcRequestBuilders.post("/cases").param("empId","aaaa")
+																						.param("productName", "New product")
 																		.contentType(MediaType.APPLICATION_JSON)
 																		.content(body)
 																		.header("Authorization", "Bearer "+genToken)
@@ -565,9 +569,10 @@ public class CasesTest {
 		egCase.setProduct(new Products("New product", "Altered example product name here"));
 		Mockito.when(employeeService.getEmployeeByID(any(Integer.class))).thenReturn(emp);
 		String expected = mapper.writeValueAsString(egCase);
-		Mockito.when(casesService.saveNewCase(any(Cases.class), any(Integer.class))).thenReturn(egCase);
+		Mockito.when(casesService.saveNewCase(any(Cases.class), any(String.class), any(Integer.class))).thenReturn(egCase);
 		
 		MockHttpServletRequestBuilder mockRequest = MockMvcRequestBuilders.post("/cases/users")
+																	.param("productName", "New product")
 																	.contentType(MediaType.APPLICATION_JSON)
 																	.content(expected)
 																	.header("Authorization", "Bearer "+genToken)
@@ -578,7 +583,7 @@ public class CasesTest {
 				.andExpect(content().json(expected));
 		
 		verify(employeeService, times(1)).getEmployeeByID(any(Integer.class));
-		verify(casesService, times(1)).saveNewCase(any(Cases.class), any(Integer.class));
+		verify(casesService, times(1)).saveNewCase(any(Cases.class), any(String.class), any(Integer.class));
 	}
 	
 	//PUT
@@ -801,6 +806,22 @@ public class CasesTest {
 				.andExpect(status().isNoContent());
 		
 		verify(casesService, times(1)).deleteEmployeeFromCase(1,1);
+	}
+	
+	@Test
+	@WithMockUser(username="employee2", password="test123", roles={"MANAGER"})
+	void deleteCasesWithDiscontinuedProducts() throws Exception{
+		Mockito.doNothing().when(casesService).deleteCasesWithDiscontinuedProducts(any(String.class));
+		
+		MockHttpServletRequestBuilder mockRequest = MockMvcRequestBuilders.delete("/cases/products/customers")
+																			.param("product", "New Product")
+																			.contentType(MediaType.APPLICATION_JSON)
+																			.header("Authorization", "Bearer "+genToken);
+		
+		mockMvc.perform(mockRequest)
+				.andExpect(status().isNoContent());
+		
+		verify(casesService, times(1)).deleteCasesWithDiscontinuedProducts(any(String.class));
 	}
 	
 	@Test
