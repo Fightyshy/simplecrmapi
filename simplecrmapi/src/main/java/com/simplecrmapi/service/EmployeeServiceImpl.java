@@ -40,29 +40,36 @@ public class EmployeeServiceImpl implements EmployeeService {
 	@Override
 	@Transactional
 	public List<Employee> getEmployees() {
-		return employeeDAO.getEmployees();
+		return employeeDAO.findAll();
 	}
 
 	@Override
 	@Transactional
 	public Employee getEmployeeByID(Integer ID) {
-		return employeeDAO.getEmployeeByID(ID);
+		try {
+			return employeeDAO.findById(ID).orElseGet(null);
+		}catch(Exception e) {
+			return null;
+		}
 	}
 	
 	@Override
 	@Transactional
 	public List<Cases> getEmployeeCasesByID(int ID) {
-		Employee emp = employeeDAO.getEmployeeByID(ID);
-		List<Cases> cases = new ArrayList<Cases>(emp.getCases());
-		
-		return cases;
+		try {
+			Employee emp = employeeDAO.findById(ID).orElseGet(null);
+			List<Cases> cases = new ArrayList<Cases>(emp.getCases());
+			return cases;
+		}catch(Exception e) {
+			return null;
+		}
 	}
 
 	
 	@Override
 	@Transactional
 	public List<Customer> getCustomersAssignedToEmployee(int ID) {
-		Employee emp = employeeDAO.getEmployeeByID(ID);
+		Employee emp = employeeDAO.findById(ID).orElseGet(null);
 		List<Customer> customers = new ArrayList<Customer>();
 		
 		emp.getCases().stream().forEach(cases->{
@@ -93,7 +100,7 @@ public class EmployeeServiceImpl implements EmployeeService {
 	public Customer getCustomerFromEmployeeAssignedCase(int empID, int caseID) {
 		//Trade cumbersome set iteration for 2 queries and comparator?
 		try {
-			Employee emp = employeeDAO.getEmployeeByID(empID);
+			Employee emp = employeeDAO.findById(empID).orElseGet(null);
 			Cases cases = casesDAO.getCaseByID(caseID);
 			//Check if cases is part of emp set
 			if(emp.getCases().contains(cases)) {
@@ -136,7 +143,7 @@ public class EmployeeServiceImpl implements EmployeeService {
 		}
 		
 		employee.setId(0);
-		Employee newEmployee = employeeDAO.saveEmployee(employee);
+		Employee newEmployee = employeeDAO.saveAndFlush(employee);
 
 		if(employee.getAddress().isEmpty()||employee.getAddress()==null) {
 			return newEmployee; //TODO customer should be modified if needed			
@@ -156,7 +163,7 @@ public class EmployeeServiceImpl implements EmployeeService {
 		address.setId(0);
 		emp.getAddress().add(address);
 		
-		employeeDAO.saveEmployee(emp);
+		employeeDAO.saveAndFlush(emp);
 		Address add = addressDAO.save(address);
 		return add;
 	}
@@ -167,7 +174,7 @@ public class EmployeeServiceImpl implements EmployeeService {
 		address.setId(0);
 		emp.getAddress().add(address);
 		
-		employeeDAO.saveEmployee(emp);
+		employeeDAO.saveAndFlush(emp);
 		Address add = addressDAO.save(address);
 		return add;
 	}
@@ -183,7 +190,7 @@ public class EmployeeServiceImpl implements EmployeeService {
 		Cases cased = casesDAO.saveCase(cases);
 		
 		emp.getCases().add(cased);
-		employeeDAO.saveEmployee(emp);
+		employeeDAO.saveAndFlush(emp);
 		return cased;
 	}
 	
@@ -197,7 +204,7 @@ public class EmployeeServiceImpl implements EmployeeService {
 		Cases cased = casesDAO.saveCase(cases);
 		
 		emp.getCases().add(cased);
-		employeeDAO.saveEmployee(emp);
+		employeeDAO.saveAndFlush(emp);
 		return cased;
 	}
 
@@ -227,7 +234,7 @@ public class EmployeeServiceImpl implements EmployeeService {
 		Cases cased = casesDAO.saveCase(cases);
 		
 		emp.getCases().add(cased);
-		employeeDAO.saveEmployee(emp);
+		employeeDAO.saveAndFlush(emp);
 		return cased;
 	}
 	
@@ -241,7 +248,7 @@ public class EmployeeServiceImpl implements EmployeeService {
 				cases.getEmployee().add(emp);
 				Cases caser = casesDAO.saveCase(cases);
 				emp.getCases().add(caser);
-				employeeDAO.saveEmployee(emp);
+				employeeDAO.saveAndFlush(emp);
 				return caser;
 			}
 		}
@@ -254,7 +261,7 @@ public class EmployeeServiceImpl implements EmployeeService {
 		try {
 			Employee emp = getEmployeeByID(ID);
 			emp.setSocialMedia(socialMedia);
-			emp = employeeDAO.saveEmployee(emp);
+			emp = employeeDAO.saveAndFlush(emp);
 			return emp.getSocialMedia();
 		}catch(NullPointerException e){
 			System.out.println("Null pointer exception: "+e);
@@ -267,7 +274,7 @@ public class EmployeeServiceImpl implements EmployeeService {
 	public SocialMedia updateEmployeeSocialMedia(@Valid SocialMedia socialMedia, Employee emp) {
 		if(comparator.EqualsID(socialMedia, emp.getSocialMedia())) {
 			emp.setSocialMedia(socialMedia);
-			emp = employeeDAO.saveEmployee(emp);
+			emp = employeeDAO.saveAndFlush(emp);
 			return emp.getSocialMedia();
 		}
 		return null;
@@ -276,7 +283,7 @@ public class EmployeeServiceImpl implements EmployeeService {
 	@Override
 	@Transactional
 	public void deleteEmployeeByID(Integer ID) {
-		employeeDAO.deleteEmployee(ID);
+		employeeDAO.deleteById(ID);
 	}
 
 	@Override
@@ -303,7 +310,7 @@ public class EmployeeServiceImpl implements EmployeeService {
 			}
 		}
 		//save de-association for employee
-		employeeDAO.saveEmployee(emp);
+		employeeDAO.saveAndFlush(emp);
 		//save de-association for case
 		
 		//temp

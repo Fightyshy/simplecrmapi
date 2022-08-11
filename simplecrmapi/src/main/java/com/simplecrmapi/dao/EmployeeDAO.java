@@ -1,17 +1,12 @@
 package com.simplecrmapi.dao;
 
-import java.util.List;
+import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
 
 import com.simplecrmapi.entity.Employee;
 
-public interface EmployeeDAO {
-	public List<Employee> getEmployees();
-	
-	public Employee getEmployeeByID(Integer ID);
-	
-	public Employee saveEmployee(Employee employee);
+public interface EmployeeDAO extends JpaRepository<Employee, Integer>{
 
-	public void deleteEmployee(Integer ID);
-
+	@Query("DELETE FROM Address a WHERE a.id:=addressID AND a.employee.id:=employeeID")
 	public void deleteEmployeeAddressByIDs(int employeeID, int addressID);
 }

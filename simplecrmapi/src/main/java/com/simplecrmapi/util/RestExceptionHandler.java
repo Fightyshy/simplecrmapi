@@ -2,6 +2,7 @@ package com.simplecrmapi.util;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.NoSuchElementException;
 
 import javax.persistence.EntityNotFoundException;
 
@@ -56,6 +57,11 @@ public class RestExceptionHandler extends ResponseEntityExceptionHandler {
 	@ExceptionHandler(InvalidParamsException.class)
 	protected ResponseEntity<Object> handleInvalidParams(InvalidParamsException e){
 		return ResponseEntity.badRequest().body("400 BAD REQUEST: Invalid params");
+	}
+	
+	@ExceptionHandler(NoSuchElementException.class)
+	protected ResponseEntity<Object> handleNoSuchElementOptional(NoSuchElementException e){
+		return ResponseEntity.status(HttpStatus.NOT_FOUND).body("404 NOT FOUND: Failed to retrieve specified entity with given parameters from database");
 	}
 	
 //	@ExceptionHandler(MethodArgumentNotValidException.class)

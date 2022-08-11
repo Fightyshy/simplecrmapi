@@ -2,6 +2,8 @@ package com.simplecrmapi.service;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.NoSuchElementException;
+import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -34,40 +36,29 @@ public class CustomerServiceImpl implements CustomerService {
 	@Override
 	@Transactional
 	public List<Customer> getCustomers() {
-		return customerDAO.getCustomers();
+		return customerDAO.findAll();
 	}
 
 	@Override
 	@Transactional
 	public Customer getCustomerByID(Integer ID) {
-		if(ID==null) {
-			throw new EntityNotFound();
+		try {
+			return customerDAO.findById(ID).orElseGet(null);
+		}catch(Exception e) {
+			return null;
 		}
-		return customerDAO.getCustomerByID(ID);
 	}
 
 	@Override
 	@Transactional
 	public List<Customer> getCustomerByLastName(String lastName) {
-		try {
-			List<Customer> lastNames = customerDAO.getCustomerByLastName(lastName);
-			return lastNames;
-		}catch(Exception e){
-			System.out.println(">>> Last names not found or list broken, returning null");
-			return null; //temp measure
-		}
+		return customerDAO.findByLastName(lastName);
 	}
 
 	@Override
 	@Transactional
 	public List<Customer> getCustomerByFirstName(String firstName) {
-		try {
-			List<Customer> firstNames = customerDAO.getCustomerByFirstName(firstName);
-			return firstNames;
-		}catch(Exception e){
-			System.out.println(">>> First names not found or list broken, returning null");
-			return null; //temp measure
-		}
+		return customerDAO.findByFirstName(firstName);
 	}
 	
 	@Override
@@ -97,13 +88,13 @@ public class CustomerServiceImpl implements CustomerService {
 		
 		//TODO ????
 		if(customer.getAddress().isEmpty()||customer.getAddress()==null) {
-			newCustomer = customerDAO.saveCustomerDetails(customer);
+			newCustomer = customerDAO.saveAndFlush(customer);
 			return newCustomer; //TODO customer should be modified if needed			
 		}else {
-			newCustomer = customerDAO.saveCustomerDetails(customer);
+			newCustomer = customerDAO.saveAndFlush(customer);
 			for(Address add:customer.getAddress()) {
 				add.setCustomer(newCustomer); //It works shutup
-				addressDAO.save(add);
+				addressDAO.saveAndFlush(add);
 			}
 			return newCustomer;
 		}
@@ -115,8 +106,8 @@ public class CustomerServiceImpl implements CustomerService {
 		Customer addAddress = getCustomerByID(ID);
 		addAddress.getAddress().add(address);
 		
-		addAddress = customerDAO.saveCustomerDetails(addAddress);
-		addressDAO.save(address);
+		addAddress = customerDAO.saveAndFlush(addAddress);
+		addressDAO.saveAndFlush(address);
 		return address;
 	}
 	
@@ -125,7 +116,7 @@ public class CustomerServiceImpl implements CustomerService {
 	public Customer updateUserCustomerByID(Customer customer, Employee employee) {
 		for(Cases cases:employee.getCases()) {
 			if(comparator.EqualsID(cases.getCustomer(), customer)) {
-				return customerDAO.saveCustomerDetails(customer);
+				return customerDAO.saveAndFlush(customer);
 				
 			}
 		}
@@ -157,7 +148,7 @@ public class CustomerServiceImpl implements CustomerService {
 			Customer cus = cases.getCustomer();
 			if(cus.getSocialMedia().getId()==socialMedia.getId()) {
 				cus.setSocialMedia(socialMedia);
-				customerDAO.saveCustomerDetails(cus);
+				customerDAO.saveAndFlush(cus);
 				return socialMedia;
 			}
 		}
@@ -168,11 +159,14 @@ public class CustomerServiceImpl implements CustomerService {
 	@Transactional
 	public SocialMedia updateCustomerSocialMedia(SocialMedia socialMedia, Integer ID) {
 		try {
-		Customer getCustomerFromID = customerDAO.getCustomerByID(ID);
-		getCustomerFromID.setSocialMedia(socialMedia);
-		getCustomerFromID = customerDAO.saveCustomerDetails(getCustomerFromID);
-		return getCustomerFromID.getSocialMedia();
-		}catch(NullPointerException e){
+			Customer cus = customerDAO.findById(ID).orElseGet(null);
+			if(cus==null) {
+				throw new NoSuchElementException();
+			}
+			cus.setSocialMedia(socialMedia);
+			cus = customerDAO.saveAndFlush(cus);
+			return cus.getSocialMedia();
+		}catch(Exception e){
 			return null;
 		}
 	}
@@ -180,25 +174,35 @@ public class CustomerServiceImpl implements CustomerService {
 	@Override
 	@Transactional
 	public Address updateCustomerAddressByID(Address address) {
-		return addressDAO.save(address);
+		return addressDAO.saveAndFlush(address);
 	}
 	
 	@Override
 	@Transactional
 	public void deleteCustomerByID(Integer ID) {
-		customerDAO.deleteCustomerByID(ID);
+		customerDAO.deleteById(ID);
 	}
 	
 	@Override
 	@Transactional
 	public void deleteCustomerSocialMediaByID(Integer ID) {
-		customerDAO.deleteCustomerSocialMediaByID(ID);
+		try {
+			Customer cus = customerDAO.findById(ID).get();
+			cus.setSocialMedia(new SocialMedia());
+			customerDAO.saveAndFlush(cus);
+		}catch(NoSuchElementException e) {
+			System.out.println("ID of customer not found");
+		}
 	}
 	
 	@Override
 	@Transactional
 	public void deleteCustomerAddressByID(Integer CustomerID, Integer AddressID) {
-		customerDAO.deleteCustomerAddressByID(CustomerID, AddressID);
+		try {
+			customerDAO.deleteCustomerAddressByID(CustomerID, AddressID);
+		}catch(Exception e) {
+			
+		}
 	}
 
 }

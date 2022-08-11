@@ -1,13 +1,16 @@
 package com.simplecrmapi.rest;
 
 import java.net.URI;
+import java.util.ArrayList;
 import java.util.List;
 
 import javax.validation.Valid;
+import javax.validation.constraints.NotNull;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -37,11 +40,14 @@ public class CustomerController {
 	
 	@GetMapping("")
 	public ResponseEntity<List<Customer>> getCustomers(){
-		return ResponseEntity.ok(customerService.getCustomers());
+		List<Customer> retrieved = customerService.getCustomers();
+		//Emtpy list returns empty list
+		return retrieved.isEmpty()==false?ResponseEntity.ok(retrieved):ResponseEntity.ok(new ArrayList<Customer>());
 	}
 	
 	@GetMapping("/id")
-	public ResponseEntity<Customer> getCustomerByID(@RequestParam(name="id") int ID) {
+	@Validated
+	public ResponseEntity<Customer> getCustomerByID(@RequestParam(name="id") @NotNull int ID) {
 		Customer retrieved = customerService.getCustomerByID(ID);
 		return retrieved==null?ResponseEntity.notFound().build():ResponseEntity.ok(retrieved);
 	}
@@ -49,21 +55,20 @@ public class CustomerController {
 	//LIST
 	@GetMapping("/lastname")
 	public ResponseEntity<Object> getCustomersByLastName(@RequestParam(name="lastname") String lastName){
-		List<Customer> lastNames = customerService.getCustomerByLastName(lastName);
-		
-		return lastNames.isEmpty()||lastNames==null?ResponseEntity.notFound().build():ResponseEntity.ok(lastNames);
+		List<Customer> retrieved = customerService.getCustomerByLastName(lastName);
+		return retrieved.isEmpty()==false?ResponseEntity.ok(retrieved):ResponseEntity.ok(new ArrayList<Customer>());
 	}
 	//LIST
 	@GetMapping("/firstname")
 	public ResponseEntity<Object> getCustomersByFirstName(@RequestParam(name="firstname") String firstName){
-		List<Customer> firstNames = customerService.getCustomerByFirstName(firstName);
-		
-		return firstNames.isEmpty()||firstNames==null?ResponseEntity.notFound().build():ResponseEntity.ok(firstNames);
+		List<Customer> retrieved = customerService.getCustomerByFirstName(firstName);
+		return retrieved.isEmpty()==false?ResponseEntity.ok(retrieved):ResponseEntity.ok(new ArrayList<Customer>());
 	}
 	
 	@GetMapping("/users")
 	public ResponseEntity<Object> getUserCustomersFromCases(){
-		return ResponseEntity.ok(customerService.getUserCustomersFromCases(getEmployeeFromSession()));
+		List<Customer> retrieved = customerService.getUserCustomersFromCases(getEmployeeFromSession());
+		return retrieved.isEmpty()==false?ResponseEntity.ok(retrieved):ResponseEntity.ok(new ArrayList<Customer>());
 	}
 	
 	//Post/Put changed to response entity w/ bodies, more api like and works with testing
@@ -92,19 +97,13 @@ public class CustomerController {
 	@PutMapping("/id/socialmedia")
 	public ResponseEntity<Object> updateCustomerSocialMedia(@Valid @RequestBody SocialMedia socialMedia, @RequestParam(name="id") int ID){
 		SocialMedia sm = customerService.updateCustomerSocialMedia(socialMedia, ID);
-		if(sm==null) {
-			return ResponseEntity.badRequest().body("400 BAD REQUEST: Unable to update customer's social media");
-		}
-		return ResponseEntity.ok(sm);
+		return sm!=null?ResponseEntity.ok(sm):ResponseEntity.badRequest().body("400 BAD REQUEST: Unable to update customer's social media");
 	}
 	
 	@PutMapping("/id/addresses")
 	public ResponseEntity<Object> updateCustomerAddressByID(@Valid @RequestBody Address address){
 		Address updatedAddress = customerService.updateCustomerAddressByID(address);
-		if(updatedAddress==null) {
-			return ResponseEntity.badRequest().body("400 BAD REQUEST: Unable to update customer's address");
-		}
-		return ResponseEntity.ok(updatedAddress);
+		return updatedAddress!=null?ResponseEntity.ok(updatedAddress):ResponseEntity.badRequest().body("400 BAD REQUEST: Unable to update customer's address");
 	}
 	
 	@PutMapping("/users")
@@ -149,9 +148,4 @@ public class CustomerController {
 		User user = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
 		return employeeService.getEmployeeByID(user.getEmployeeID());
 	}
-	
-	//TODO Advanced DELETE mappings - may be moved to other controllers
-	
-	//Delete all of x product from customers (i.e product discontinuation/removal)
-	//@DeleteMapping("/customers/products/") and @RequestParam(name="product")
 }

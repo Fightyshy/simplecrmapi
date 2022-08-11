@@ -59,14 +59,14 @@ public class CasesServiceImpl implements CasesService {
 	public Cases saveNewCase(Cases cases, String product, Integer empID) {
 		cases.setId(0);
 		
-		Employee creator = employeeDAO.getEmployeeByID(empID);
+		Employee creator = employeeDAO.findById(empID).orElseGet(null);
 		HashSet<Employee> emps = new HashSet<Employee>();
 		emps.add(creator);
 		cases.setEmployee(emps);
 		cases.setProduct(productDAO.findByName(product));
 		creator.getCases().add(cases);
 		Cases newCase = casesDAO.saveCase(cases);
-		employeeDAO.saveEmployee(creator);
+		employeeDAO.saveAndFlush(creator);
 		
 		return newCase;
 	}
@@ -94,9 +94,9 @@ public class CasesServiceImpl implements CasesService {
 	@Override
 	@Transactional
 	public Cases saveEmployeeToCase(Cases cases, Integer empID) {
-		Employee toAdd = employeeDAO.getEmployeeByID(empID);
+		Employee toAdd = employeeDAO.findById(empID).orElseGet(null);
 		toAdd.getCases().add(cases);
-		employeeDAO.saveEmployee(toAdd);
+		employeeDAO.saveAndFlush(toAdd);
 		
 		cases.getEmployee().add(toAdd);
 		return casesDAO.saveCase(cases);
@@ -119,13 +119,13 @@ public class CasesServiceImpl implements CasesService {
 		try {
 			//temp loops
 			Cases temp = casesDAO.getCaseByID(ID);
-			Employee tempEmp = employeeDAO.getEmployeeByID(empID);
+			Employee tempEmp = employeeDAO.findById(empID).orElseGet(null);
 			
 			temp.getEmployee().remove(tempEmp);
 			tempEmp.getCases().remove(temp);
 			
 			casesDAO.saveCase(temp);
-			employeeDAO.saveEmployee(tempEmp);
+			employeeDAO.saveAndFlush(tempEmp);
 		}catch(Exception e) {
 			
 		}

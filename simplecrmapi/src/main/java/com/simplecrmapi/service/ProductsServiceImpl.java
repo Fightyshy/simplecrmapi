@@ -4,10 +4,12 @@ import java.util.List;
 import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
 
 import com.simplecrmapi.dao.ProductsDAO;
 import com.simplecrmapi.entity.Products;
 
+@Service
 public class ProductsServiceImpl implements ProductsService {
 
 	@Autowired
