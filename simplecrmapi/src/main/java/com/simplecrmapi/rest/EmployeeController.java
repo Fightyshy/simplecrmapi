@@ -2,15 +2,16 @@ package com.simplecrmapi.rest;
 
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.security.Principal;
+import java.util.ArrayList;
 import java.util.List;
-import java.util.Set;
 
 import javax.validation.Valid;
+import javax.validation.constraints.NotNull;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -27,7 +28,6 @@ import com.simplecrmapi.entity.Employee;
 import com.simplecrmapi.entity.SocialMedia;
 import com.simplecrmapi.entity.User;
 import com.simplecrmapi.service.EmployeeService;
-import com.simplecrmapi.util.EntityNotFound;
 
 @RestController
 @RequestMapping("/employees")
@@ -38,38 +38,35 @@ public class EmployeeController {
 	
 	@GetMapping("")
 	public ResponseEntity<List<Employee>> getEmployees(){
-		return ResponseEntity.ok(employeeService.getEmployees());
+		List<Employee> retrieved = employeeService.getEmployees();
+		
+		return retrieved.isEmpty()==false?ResponseEntity.ok(retrieved):ResponseEntity.ok(new ArrayList<>());
 	}
 	
 	@GetMapping("/id")
-	public ResponseEntity<Object> getEmployeeByID(@RequestParam("id") int ID) {
-		Employee emp = employeeService.getEmployeeByID(ID);
+	@Validated
+	public ResponseEntity<Object> getEmployeeByID(@RequestParam("id") @NotNull int ID) {
+		Employee retrieved = employeeService.getEmployeeByID(ID);
 		
-		return emp==null?ResponseEntity.notFound().build():ResponseEntity.ok(emp);
-//		if(emp!=null) {
-//			return ResponseEntity.ok(emp);
-//		}else {
-//			throw new EntityNotFound(); //temp
-////			return ResponseEntity.status(HttpStatus.NOT_FOUND).body("404 NOT FOUND: Entity not found with parameters"); //Is ideal, not working atm
-//		}
+		return retrieved==null?ResponseEntity.notFound().build():ResponseEntity.ok(retrieved);
 	}
 	
 	@GetMapping("/id/cases")
 	public ResponseEntity<Object> getEmployeeCasesByID(@RequestParam("id") int ID){
-		List<Cases> cases = employeeService.getEmployeeCasesByID(ID);
-		return ResponseEntity.ok(cases);
+		List<Cases> retrieved = employeeService.getEmployeeCasesByID(ID);
+		return retrieved.isEmpty()==false?ResponseEntity.ok(retrieved):ResponseEntity.ok(new ArrayList<>());
 	}
 	
 	@GetMapping("/id/customers")
 	public ResponseEntity<Object> getCustomersAssignedToEmployee(@RequestParam("id") int ID){
-		List<Customer> customers = employeeService.getCustomersAssignedToEmployee(ID);
-		return ResponseEntity.ok(customers);
+		List<Customer> retrieved = employeeService.getCustomersAssignedToEmployee(ID);
+		return retrieved==null?ResponseEntity.notFound().build():ResponseEntity.ok(retrieved);
 	}
 	
 	@GetMapping("/id/cases/customer")
 	public ResponseEntity<Object> getCustomerFromEmployeeAssignedCase(@RequestParam("empId") int empID, @RequestParam("caseId") int caseID){
-		Customer customer = employeeService.getCustomerFromEmployeeAssignedCase(empID, caseID);
-		return ResponseEntity.ok(customer);
+		Customer retrieved = employeeService.getCustomerFromEmployeeAssignedCase(empID, caseID);
+		return retrieved==null?ResponseEntity.notFound().build():ResponseEntity.ok(retrieved);
 	}
 	
 	//Principal-based GET
@@ -84,7 +81,8 @@ public class EmployeeController {
 	}
 	@GetMapping("/users/customers")
 	public ResponseEntity<Object> getCustomersAssignedToUserEmployee(){
-		return ResponseEntity.ok(employeeService.getCustomersAssignedToEmployee(getEmployeeFromSession()));
+		List<Customer> retrieved = employeeService.getCustomersAssignedToEmployee(getEmployeeFromSession());
+		return retrieved.isEmpty()==false?ResponseEntity.ok(retrieved):ResponseEntity.notFound().build();
 	}
 	
 	@GetMapping("/users/cases/customer")
@@ -196,7 +194,7 @@ public class EmployeeController {
 	}
 	
 	private Employee getEmployeeFromSession() {
-		User user = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+		User user = SecurityContextHolder.getContext().getAuthentication().isAuthenticated()==true?(User) SecurityContextHolder.getContext().getAuthentication().getPrincipal():null;
 		return employeeService.getEmployeeByID(user.getEmployeeID());
 	}
 }

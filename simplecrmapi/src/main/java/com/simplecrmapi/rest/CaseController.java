@@ -114,8 +114,8 @@ public class CaseController {
 	
 	//Ideally, this would archive all active cases into a archive repo before deleting
 	@DeleteMapping("/products/customers")
-	public ResponseEntity<Object> deleteCasesWithDiscontinuedProducts(@RequestParam("product") String product){
-		casesService.deleteCasesWithDiscontinuedProducts(product);
+	public ResponseEntity<Object> deleteCasesWithDiscontinuedProducts(@RequestParam("productId") Integer productID){
+		casesService.deleteCasesWithDiscontinuedProducts(productID);
 		return ResponseEntity.noContent().build();
 	}
 

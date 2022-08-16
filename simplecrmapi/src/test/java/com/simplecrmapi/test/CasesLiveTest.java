@@ -746,7 +746,7 @@ public class CasesLiveTest {
 	@Test
 	@WithMockUser(username="employee2", password="test123", roles={"MANAGER"})
 	void deleteCasesWithDiscontinuedProducts() throws Exception{
-		Mockito.doNothing().when(casesService).deleteCasesWithDiscontinuedProducts(any(String.class));
+		Mockito.doNothing().when(casesService).deleteCasesWithDiscontinuedProducts(any(Integer.class));
 		
 		MockHttpServletRequestBuilder mockRequest = MockMvcRequestBuilders.delete("/cases/products/customers")
 																			.param("product", "New Product")
@@ -756,7 +756,7 @@ public class CasesLiveTest {
 		mockMvc.perform(mockRequest)
 				.andExpect(status().isNoContent());
 		
-		verify(casesService, times(1)).deleteCasesWithDiscontinuedProducts(any(String.class));
+		verify(casesService, times(1)).deleteCasesWithDiscontinuedProducts(any(Integer.class));
 	}
 	
 	@Test

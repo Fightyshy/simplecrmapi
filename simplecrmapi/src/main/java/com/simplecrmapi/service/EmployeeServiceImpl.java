@@ -100,29 +100,28 @@ public class EmployeeServiceImpl implements EmployeeService {
 	public Customer getCustomerFromEmployeeAssignedCase(int empID, int caseID) {
 		//Trade cumbersome set iteration for 2 queries and comparator?
 		try {
-			Employee emp = employeeDAO.findById(empID).orElseGet(null);
-			Cases cases = casesDAO.getCaseByID(caseID);
-			//Check if cases is part of emp set
-			if(emp.getCases().contains(cases)) {
-				return cases.getCustomer();
-			}else {
-				return null;
-			}
+			Customer cus = casesDAO.findCustomerFromEmployeeAssignedCase(empID, caseID);
+			return cus==null?null:cus;
+			//			Employee emp = employeeDAO.findById(empID).orElseGet(null);
+//			Cases cases = casesDAO.findById(caseID).orElseGet(null);
+//			//Check if cases is part of emp set
+//			if(emp.getCases().contains(cases)) {
+//				return cases.getCustomer();
+//			}else {
+//				return null;
+//			}
 		}catch(Exception e) {
 			throw new EntityNotFound();
 		}
 	}
 	
+	//TODO
 	@Override
 	@Transactional
 	public Customer getCustomerFromEmployeeAssignedCase(Employee emp, int caseID) {
 		try {
-			Cases cases = casesDAO.getCaseByID(caseID);
-			if(emp.getCases().contains(cases)) {
-				return cases.getCustomer();
-			}else {
-				return null;
-			}
+			Cases cases = casesDAO.findById(caseID).orElseGet(null);
+			return cases==null?null:cases.getCustomer();
 		}catch(Exception e) {
 			throw new EntityNotFound();
 		}
@@ -187,7 +186,7 @@ public class EmployeeServiceImpl implements EmployeeService {
 		
 		cases.setEmployee(new HashSet<Employee>());
 		cases.getEmployee().add(emp);
-		Cases cased = casesDAO.saveCase(cases);
+		Cases cased = casesDAO.saveAndFlush(cases);
 		
 		emp.getCases().add(cased);
 		employeeDAO.saveAndFlush(emp);
@@ -201,7 +200,7 @@ public class EmployeeServiceImpl implements EmployeeService {
 		
 		cases.setEmployee(new HashSet<Employee>());
 		cases.getEmployee().add(emp);
-		Cases cased = casesDAO.saveCase(cases);
+		Cases cased = casesDAO.saveAndFlush(cases);
 		
 		emp.getCases().add(cased);
 		employeeDAO.saveAndFlush(emp);
@@ -231,7 +230,7 @@ public class EmployeeServiceImpl implements EmployeeService {
 		Employee emp = getEmployeeByID(ID);
 		cases.setEmployee(new HashSet<Employee>());
 		cases.getEmployee().add(emp);
-		Cases cased = casesDAO.saveCase(cases);
+		Cases cased = casesDAO.saveAndFlush(cases);
 		
 		emp.getCases().add(cased);
 		employeeDAO.saveAndFlush(emp);
@@ -246,7 +245,7 @@ public class EmployeeServiceImpl implements EmployeeService {
 			if(comparator.EqualsID(cased, cases)) {
 				cases.setEmployee(new HashSet<Employee>());
 				cases.getEmployee().add(emp);
-				Cases caser = casesDAO.saveCase(cases);
+				Cases caser = casesDAO.saveAndFlush(cases);
 				emp.getCases().add(caser);
 				employeeDAO.saveAndFlush(emp);
 				return caser;
@@ -320,7 +319,7 @@ public class EmployeeServiceImpl implements EmployeeService {
 				break;
 			}
 		}
-		casesDAO.saveCase(foundCase);
+		casesDAO.saveAndFlush(foundCase);
 	}
 
 	

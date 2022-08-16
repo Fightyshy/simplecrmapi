@@ -33,25 +33,29 @@ public class CasesServiceImpl implements CasesService {
 	@Override
 	@Transactional
 	public List<Cases> getAllCases() {
-		return casesDAO.getCases();
+		return casesDAO.findAll();
 	}
 
 	@Override
 	@Transactional
 	public List<Cases> getCasesByLastName(String lastName) {
-		return casesDAO.getCasesByCustomerLastName(lastName);
+		return casesDAO.findCasesByCustomerLastName(lastName);
 	}
 
 	@Override
 	@Transactional
 	public List<Cases> getCasesByFirstName(String firstName) {
-		return casesDAO.getCasesByCustomerFirstName(firstName);
+		return casesDAO.findCasesByCustomerFirstName(firstName);
 	}
 
 	@Override
 	@Transactional
 	public Cases getCaseByID(Integer ID) {
-		return casesDAO.getCaseByID(ID);
+		try {
+			return casesDAO.findById(ID).orElseGet(null);
+		}catch(Exception e) {
+			return null;
+		}
 	}
 
 	@Override
@@ -65,7 +69,7 @@ public class CasesServiceImpl implements CasesService {
 		cases.setEmployee(emps);
 		cases.setProduct(productDAO.findByName(product));
 		creator.getCases().add(cases);
-		Cases newCase = casesDAO.saveCase(cases);
+		Cases newCase = casesDAO.saveAndFlush(cases);
 		employeeDAO.saveAndFlush(creator);
 		
 		return newCase;
@@ -76,7 +80,7 @@ public class CasesServiceImpl implements CasesService {
 	@Override
 	@Transactional
 	public Cases updateCase(Cases cases) {
-		Cases updatedCase = casesDAO.saveCase(cases);
+		Cases updatedCase = casesDAO.saveAndFlush(cases);
 		return updatedCase;
 	}
 	
@@ -85,7 +89,7 @@ public class CasesServiceImpl implements CasesService {
 	public Cases updateCase(Cases cases, Employee employee) {
 		for(Cases empCase: employee.getCases()) {
 			if(comparator.EqualsID(cases, empCase)) {
-				return casesDAO.saveCase(cases);
+				return casesDAO.saveAndFlush(cases);
 			}
 		}
 		return null;
@@ -99,14 +103,14 @@ public class CasesServiceImpl implements CasesService {
 		employeeDAO.saveAndFlush(toAdd);
 		
 		cases.getEmployee().add(toAdd);
-		return casesDAO.saveCase(cases);
+		return casesDAO.saveAndFlush(cases);
 	}
 	
 	@Override
 	@Transactional
 	public void deleteCaseByID(Integer ID) {
 		try {
-			casesDAO.deleteCaseByID(ID);
+			casesDAO.deleteById(ID);
 		}catch(Exception e) {
 			
 		}
@@ -118,13 +122,13 @@ public class CasesServiceImpl implements CasesService {
 	public void deleteEmployeeFromCase(Integer ID, Integer empID) {
 		try {
 			//temp loops
-			Cases temp = casesDAO.getCaseByID(ID);
+			Cases temp = casesDAO.findById(empID).orElseGet(null);
 			Employee tempEmp = employeeDAO.findById(empID).orElseGet(null);
 			
 			temp.getEmployee().remove(tempEmp);
 			tempEmp.getCases().remove(temp);
 			
-			casesDAO.saveCase(temp);
+			casesDAO.saveAndFlush(temp);
 			employeeDAO.saveAndFlush(tempEmp);
 		}catch(Exception e) {
 			
@@ -133,7 +137,7 @@ public class CasesServiceImpl implements CasesService {
 
 	@Override
 	public List<Customer> getCustomersFromCaseProducts(String product) {
-		List<Cases> cases = casesDAO.getCases();
+		List<Cases> cases = casesDAO.findAll();
 		List<Customer> cus = new ArrayList<>();
 		
 		for(Cases cased: cases) {
@@ -147,7 +151,7 @@ public class CasesServiceImpl implements CasesService {
 	}
 
 	@Override
-	public void deleteCasesWithDiscontinuedProducts(String product) {
-		casesDAO.deleteCaseByProducts(product);
+	public void deleteCasesWithDiscontinuedProducts(Integer productID) {
+		casesDAO.deleteByProduct(productID);
 	}
 }

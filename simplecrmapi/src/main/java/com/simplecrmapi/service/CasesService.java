@@ -27,7 +27,7 @@ public interface CasesService {
 
 	public List<Customer> getCustomersFromCaseProducts(String product);
 
-	public void deleteCasesWithDiscontinuedProducts(String product);
+	public void deleteCasesWithDiscontinuedProducts(Integer productID);
 
 	public Cases saveNewCase(Cases cases, String product, Integer empID);
 }

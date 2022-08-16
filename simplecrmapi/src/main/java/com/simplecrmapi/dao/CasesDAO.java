@@ -2,24 +2,29 @@ package com.simplecrmapi.dao;
 
 import java.util.List;
 
+import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
+
 import com.simplecrmapi.entity.Cases;
+import com.simplecrmapi.entity.Customer;
 
-public interface CasesDAO {
-	public List<Cases> getCases();
+public interface CasesDAO extends JpaRepository<Cases, Integer>{
+	@Query("SELECT FROM Cases c WHERE c.employee.id=:empID")
+	List<Cases> findCasesByEmployee(@Param("empID") Integer employeeID);
 	
-	public Cases getCaseByID(Integer ID);
+	@Query("SELECT FROM Cases c WHERE c.customer.id=:cusID")
+	List<Cases> findCasesByCustomer(@Param("cusID") Integer customerID);
 	
-	public List<Cases> getCasesByEmployee(Integer employeeID);
-	
-	public List<Cases> getCasesByCustomer(Integer customerID);
-	
-	public Cases saveCase(Cases casee);
-	
-	public void deleteCaseByID(Integer ID);
+	@Query("SELECT FROM Cases c WHERE c.customer.firstname=:firstname")
+	List<Cases> findCasesByCustomerFirstName(@Param("firstname") String firstName);
 
-	public List<Cases> getCasesByCustomerFirstName(String firstName);
-
-	public List<Cases> getCasesByCustomerLastName(String lastName);
-
-	public void deleteCaseByProducts(String product);
+	@Query("SELECT FROM Cases c WHERE c.customer.lastname=:lastname")
+	List<Cases> findCasesByCustomerLastName(@Param("lastname") String lastName);
+	
+	@Query("SELECT FROM Cases c WHERE c.id=:caseID AND c.employee.id=:empID")
+	Customer findCustomerFromEmployeeAssignedCase(@Param("empID") Integer employeeID, @Param("caseID") Integer caseID);
+	
+	@Query("DELETE FROM Cases WHERE c.product.id=:prodID")
+	void deleteByProduct(@Param("prodID") Integer productID);
 }
