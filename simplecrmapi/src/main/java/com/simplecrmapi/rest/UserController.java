@@ -47,12 +47,28 @@ public class UserController {
                 		login.getPassword()
                 )
         );
+        System.out.println("test");
         SecurityContextHolder.getContext().setAuthentication(authentication);
         final String token = jwtTokenUtil.generateToken(authentication);
         return ResponseEntity.ok(new AuthToken(token));
     }
     
     //Key Authorization, Value "Bearer <Token>"
+    
+    @PostMapping("/retrieve-user")
+    public ResponseEntity<User> getUserDetails(@RequestBody Login login){
+    	try {
+    		final Authentication authentication = authenticationManager.authenticate(
+    				new UsernamePasswordAuthenticationToken(
+    						login.getUsername(),
+    						login.getPassword())
+    				);
+    		
+    		return ResponseEntity.ok((User) SecurityContextHolder.getContext().getAuthentication().getPrincipal());
+    	}catch(Exception e){
+    		return null;
+    	}
+    }
     
     @PostMapping("/register")
     public User saveUser(@RequestBody User user){

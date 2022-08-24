@@ -54,7 +54,7 @@ public class SimpleCRMSecurityConfig extends WebSecurityConfigurerAdapter {
     protected void configure(HttpSecurity http) throws Exception {
         http.cors().and().csrf().disable() 
                 .authorizeRequests()
-                .antMatchers("/users/authenticate", "/users/register").permitAll()
+                .antMatchers("/users/authenticate", "/users/register", "/users/retrieve-user").permitAll()
                 .antMatchers(HttpMethod.GET,"/customers/**", "/customers", "/customers/id", "/customers/id/**").hasAnyRole("EMPLOYEE","ADMIN","MANAGER")
                 .antMatchers(HttpMethod.POST,"/customers/**", "/customers", "/customers/id", "/customers/id/**").hasAnyRole("EMPLOYEE","ADMIN","MANAGER")
                 .antMatchers(HttpMethod.PUT,"/customers/**", "/customers", "/customers/id", "/customers/id/**").hasAnyRole("EMPLOYEE","ADMIN","MANAGER")
@@ -73,7 +73,7 @@ public class SimpleCRMSecurityConfig extends WebSecurityConfigurerAdapter {
                 .antMatchers(HttpMethod.POST, "/cases/id", "/cases/id/**").hasAnyRole("MANAGER", "ADMIN")
                 .antMatchers(HttpMethod.PUT, "/cases/id", "/cases/id/**").hasAnyRole("MANAGER", "ADMIN")
                 .antMatchers(HttpMethod.PUT, "/cases/users", "/cases/users/**", "/cases/users/*").authenticated()
-                .antMatchers(HttpMethod.DELETE, "/cases", "/cases/**", "/cases/id", "/cases/id/**").hasAnyRole("MANAGER", "ADMIN")
+                .antMatchers(HttpMethod.DELETE, "/cases", "/cases/**", "/cases/id", "/cases/id/**", "/cases/products/**").hasAnyRole("MANAGER", "ADMIN")
 //                .anyRequest().authenticated()
                 .and()
                 .exceptionHandling().authenticationEntryPoint(unauthorizedEntryPoint).and()

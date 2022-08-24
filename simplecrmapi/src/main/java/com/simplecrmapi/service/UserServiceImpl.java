@@ -40,6 +40,7 @@ public class UserServiceImpl implements UserService, UserDetailsService {
 	@Transactional
 	public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException{
 		User user = userDAO.findByUsername(username);
+		System.out.println("test");
 		if(user==null) {
 			throw new UsernameNotFoundException("Invalid username or password");
 		}

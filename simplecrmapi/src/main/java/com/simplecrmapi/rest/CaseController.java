@@ -68,13 +68,13 @@ public class CaseController {
 	}
 	
 	@PostMapping("")
-	public ResponseEntity<Object> saveNewCase(@Valid @RequestBody Cases cases, @RequestParam("productName") String product, @RequestParam("empId") int empID) throws URISyntaxException{
+	public ResponseEntity<Object> saveNewCase(@Valid @RequestBody Cases cases, @RequestParam("productId") int product, @RequestParam("empId") int empID) throws URISyntaxException{
 		Cases newCase = casesService.saveNewCase(cases, product,empID);
 		return ResponseEntity.created(new URI("/cases/id/"+newCase.getId())).body(newCase);
 	}
 	
 	@PostMapping("/users")
-	public ResponseEntity<Object> saveNewCaseToUser(@Valid @RequestBody Cases cases, @RequestParam("productName") String product) throws URISyntaxException{
+	public ResponseEntity<Object> saveNewCaseToUser(@Valid @RequestBody Cases cases, @RequestParam("productId") int product) throws URISyntaxException{
 		Cases newCase = casesService.saveNewCase(cases, product, getEmployeeFromSession().getId());
 		return ResponseEntity.created(new URI("/cases/id/"+newCase.getId())).body(newCase);
 	}

@@ -236,11 +236,11 @@ public class CasesValidationTest {
 		Cases cases = casesTestingSet.get(1);
 		cases.setProduct(new Products("New product", "Altered example product name here"));
 		
-		Mockito.when(casesService.saveNewCase(any(Cases.class), any(String.class), any(int.class))).thenReturn(cases);
+		Mockito.when(casesService.saveNewCase(any(Cases.class), any(int.class), any(int.class))).thenReturn(cases);
 		String expectedBody = mapper.writeValueAsString(cases);
 		
 		MockHttpServletRequestBuilder mockRequest = MockMvcRequestBuilders.post("/cases").param("empId", "1")
-													.param("productName", "New product")
+													.param("productId", "1")
 													.contentType(MediaType.APPLICATION_JSON)
 													.content(expectedBody)
 													.accept(MediaType.APPLICATION_JSON);
@@ -249,7 +249,7 @@ public class CasesValidationTest {
 				.andExpect(status().isCreated())
 				.andExpect(content().json(expectedBody));
 		
-		verify(casesService).saveNewCase(any(Cases.class),any(String.class), any(int.class));
+		verify(casesService).saveNewCase(any(Cases.class),any(int.class), any(int.class));
 	}
 
 	

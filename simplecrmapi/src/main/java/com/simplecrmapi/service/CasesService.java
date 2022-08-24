@@ -2,6 +2,8 @@ package com.simplecrmapi.service;
 
 import java.util.List;
 
+import javax.validation.Valid;
+
 import com.simplecrmapi.entity.Cases;
 import com.simplecrmapi.entity.Customer;
 import com.simplecrmapi.entity.Employee;
@@ -29,5 +31,5 @@ public interface CasesService {
 
 	public void deleteCasesWithDiscontinuedProducts(Integer productID);
 
-	public Cases saveNewCase(Cases cases, String product, Integer empID);
+	public Cases saveNewCase(@Valid Cases cases, int product, Integer id);
 }

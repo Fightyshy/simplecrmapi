@@ -94,6 +94,13 @@ public class CustomerController {
 	
 	//TODO temp ifs
 	//TODO validation catch, null catch
+	
+	@PutMapping("/id")
+	public ResponseEntity<Object> updateCustomerDetails(@Valid @RequestBody Customer customer){
+		Customer cus = customerService.saveCustomerDetails(customer);
+		return cus==null?ResponseEntity.notFound().build():ResponseEntity.ok(cus);
+	}
+	
 	@PutMapping("/id/socialmedia")
 	public ResponseEntity<Object> updateCustomerSocialMedia(@Valid @RequestBody SocialMedia socialMedia, @RequestParam(name="id") int ID){
 		SocialMedia sm = customerService.updateCustomerSocialMedia(socialMedia, ID);

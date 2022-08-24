@@ -27,18 +27,17 @@ public class ProductsServiceImpl implements ProductsService {
 
 	@Override
 	public Products getProductByID(Integer ID) {
-		Optional<Products> products = productsDAO.findById(ID);
-		return products.isEmpty()?null:products.get();
+		return productsDAO.findById(ID).orElseGet(null);
 	}
 
 	@Override
 	public Products saveProduct(Products product) {
-		return productsDAO.save(product);
+		return productsDAO.saveAndFlush(product);
 	}
 
 	@Override
 	public Products updateProduct(Products product) {
-		return productsDAO.save(product);
+		return productsDAO.saveAndFlush(product);
 	}
 
 	@Override

@@ -3,7 +3,6 @@ package com.simplecrmapi.service;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.NoSuchElementException;
-import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -16,10 +15,6 @@ import com.simplecrmapi.entity.Cases;
 import com.simplecrmapi.entity.Customer;
 import com.simplecrmapi.entity.Employee;
 import com.simplecrmapi.entity.SocialMedia;
-import com.simplecrmapi.util.CustomerInvalidAddressException;
-import com.simplecrmapi.util.CustomerInvalidObjectsException;
-import com.simplecrmapi.util.CustomerInvalidSocialMediaException;
-import com.simplecrmapi.util.EntityNotFound;
 import com.simplecrmapi.util.IDComparator;
 
 @Service
@@ -72,32 +67,26 @@ public class CustomerServiceImpl implements CustomerService {
 
 	@Override
 	@Transactional
+	//Dual function save/update
 	public Customer saveCustomerDetails(Customer customer) {
-		
-		//TODO trycatch cleanup
-		Customer newCustomer;
-		if(customer.getId()==null) {
-			throw new EntityNotFound();
-		}else if((customer.getAddress().isEmpty()||customer.getAddress().equals(null))&&(customer.getSocialMedia()==null||!customer.getSocialMedia().getPreferredSocialMedia().equals("NO_PREFERENCE"))) {
-			throw new CustomerInvalidObjectsException();
-		}else if(customer.getAddress().isEmpty()||customer.getAddress().equals(null)) {
-			throw new CustomerInvalidAddressException();
-		}else if(customer.getSocialMedia()==null||!customer.getSocialMedia().getPreferredSocialMedia().equals("NO_PREFERENCE")) {
-			throw new CustomerInvalidSocialMediaException();
+		Customer inputCus = customer;
+		Customer fromMemory = getCustomerByID(customer.getId());
+		if(fromMemory==null) {
+			inputCus.setId(0); //new
+		}else {
+			inputCus.setId(fromMemory.getId());
 		}
 		
-		//TODO ????
-		if(customer.getAddress().isEmpty()||customer.getAddress()==null) {
-			newCustomer = customerDAO.saveAndFlush(customer);
-			return newCustomer; //TODO customer should be modified if needed			
+		if(inputCus.getAddress().isEmpty()||inputCus.getAddress()==null) {
+			inputCus.setAddress(new ArrayList<Address>());
 		}else {
-			newCustomer = customerDAO.saveAndFlush(customer);
-			for(Address add:customer.getAddress()) {
-				add.setCustomer(newCustomer); //It works shutup
+			for(Address add: inputCus.getAddress()) {
+				add.setCustomer(inputCus);
 				addressDAO.saveAndFlush(add);
 			}
-			return newCustomer;
 		}
+		
+		return customerDAO.saveAndFlush(inputCus);
 	}
 	
 	@Override
@@ -133,7 +122,7 @@ public class CustomerServiceImpl implements CustomerService {
 					cus.getAddress().remove(add);
 					cus.getAddress().add(address);
 					address.setCustomer(cus);
-					addressDAO.save(address);
+					addressDAO.saveAndFlush(address);
 					return address;
 				}
 			}
@@ -159,10 +148,7 @@ public class CustomerServiceImpl implements CustomerService {
 	@Transactional
 	public SocialMedia updateCustomerSocialMedia(SocialMedia socialMedia, Integer ID) {
 		try {
-			Customer cus = customerDAO.findById(ID).orElseGet(null);
-			if(cus==null) {
-				throw new NoSuchElementException();
-			}
+			Customer cus = customerDAO.findById(ID).get();
 			cus.setSocialMedia(socialMedia);
 			cus = customerDAO.saveAndFlush(cus);
 			return cus.getSocialMedia();

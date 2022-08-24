@@ -100,8 +100,16 @@ public class EmployeeServiceImpl implements EmployeeService {
 	public Customer getCustomerFromEmployeeAssignedCase(int empID, int caseID) {
 		//Trade cumbersome set iteration for 2 queries and comparator?
 		try {
-			Customer cus = casesDAO.findCustomerFromEmployeeAssignedCase(empID, caseID);
-			return cus==null?null:cus;
+//			Customer cus = casesDAO.findCustomerFromEmployeeAssignedCase(empID, caseID);
+//			return cus==null?null:cus;
+			
+			Employee emp = employeeDAO.findById(empID).orElseGet(null);
+			for(Cases cases:emp.getCases()) {
+				if(cases.getId()==caseID&&cases.getEmployee().contains(emp)) {
+					return cases.getCustomer();
+				}
+			}
+			return null;
 			//			Employee emp = employeeDAO.findById(empID).orElseGet(null);
 //			Cases cases = casesDAO.findById(caseID).orElseGet(null);
 //			//Check if cases is part of emp set

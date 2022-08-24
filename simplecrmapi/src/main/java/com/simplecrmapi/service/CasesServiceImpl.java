@@ -60,14 +60,14 @@ public class CasesServiceImpl implements CasesService {
 
 	@Override
 	@Transactional
-	public Cases saveNewCase(Cases cases, String product, Integer empID) {
+	public Cases saveNewCase(Cases cases, int product, Integer empID) {
 		cases.setId(0);
 		
 		Employee creator = employeeDAO.findById(empID).orElseGet(null);
 		HashSet<Employee> emps = new HashSet<Employee>();
 		emps.add(creator);
 		cases.setEmployee(emps);
-		cases.setProduct(productDAO.findByName(product));
+		cases.setProduct(productDAO.findById(product).orElseGet(null));
 		creator.getCases().add(cases);
 		Cases newCase = casesDAO.saveAndFlush(cases);
 		employeeDAO.saveAndFlush(creator);
