@@ -9,6 +9,7 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -50,24 +51,46 @@ public class UserController {
         System.out.println("test");
         SecurityContextHolder.getContext().setAuthentication(authentication);
         final String token = jwtTokenUtil.generateToken(authentication);
-        return ResponseEntity.ok(new AuthToken(token));
+        AuthToken wrapped = new AuthToken(token);
+        System.out.println(wrapped);
+        return ResponseEntity.ok(wrapped);
     }
     
     //Key Authorization, Value "Bearer <Token>"
     
     @PostMapping("/retrieve-user")
-    public ResponseEntity<User> getUserDetails(@RequestBody Login login){
-    	try {
-    		final Authentication authentication = authenticationManager.authenticate(
-    				new UsernamePasswordAuthenticationToken(
-    						login.getUsername(),
-    						login.getPassword())
-    				);
-    		
-    		return ResponseEntity.ok((User) SecurityContextHolder.getContext().getAuthentication().getPrincipal());
-    	}catch(Exception e){
-    		return null;
-    	}
+    public ResponseEntity<Object> getUserDetails(@RequestBody Login login){
+    	
+    	UserDetails userDetails = userService.loadUserByUsername(login.getUsername());
+    	
+    	return ResponseEntity.ok(userDetails);
+    	
+//    	User user = (User) userService.loadUserByUsername(username);
+//    	final Authentication authentication = authenticationManager.authenticate(
+//    			new UsernamePasswordAuthenticationToken(
+//    					user.getUsername(),
+//    					user.getPassword())
+//    			);
+//    	SecurityContextHolder.getContext().setAuthentication(authentication);
+//    	return authentication;
+    	
+//    	return (User) userService.loadUserByUsername(username); 	
+//    	try {
+//    	System.out.println("test2");
+//    		final Authentication authentication = authenticationManager.authenticate(
+//    				new UsernamePasswordAuthenticationToken(
+//    						login.getUsername(),
+//    						login.getPassword())
+//    				);
+//    		SecurityContextHolder.getContext().setAuthentication(authentication);
+//    		System.out.println("test");
+////    		return (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+////    		return ResponseEntity.ok((User) SecurityContextHolder.getContext().getAuthentication().getPrincipal());
+//    		return ResponseEntity.ok(authentication);
+//    	}catch(Exception e){
+//    		System.out.println("test2");
+//    		return ResponseEntity.notFound().build();
+//    	}
     }
     
     @PostMapping("/register")
