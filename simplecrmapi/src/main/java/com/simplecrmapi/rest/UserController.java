@@ -2,8 +2,7 @@ package com.simplecrmapi.rest;
 
 import javax.validation.Valid;
 
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
+import org.slf4j.Logger;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -20,7 +19,6 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.simplecrmapi.SimplecrmapiApplication;
 import com.simplecrmapi.entity.EmailWrapper;
 import com.simplecrmapi.entity.Login;
 import com.simplecrmapi.entity.PWResetToken;
@@ -33,19 +31,21 @@ import com.simplecrmapi.util.TokenProvider;
 @RestController
 @RequestMapping("/users")
 public class UserController {
-    @Autowired
+
     private AuthenticationManager authenticationManager;
-
-    @Autowired
     private TokenProvider jwtTokenUtil;
-
-    @Autowired
     private UserService userService;
-    
-    @Autowired
     private EmployeeService employeeService;
+    private final Logger log;
     
-	private static final org.slf4j.Logger log = LoggerFactory.getLogger(SimplecrmapiApplication.class);
+	public UserController(AuthenticationManager authenticationManager, TokenProvider jwtTokenUtil,
+			UserService userService, EmployeeService employeeService, Logger log) {
+		this.authenticationManager = authenticationManager;
+		this.jwtTokenUtil = jwtTokenUtil;
+		this.userService = userService;
+		this.employeeService = employeeService;
+		this.log = log;
+	}
 	
     @PostMapping("/authenticate")
     public ResponseEntity<Object> generateToken(@RequestBody Login login) throws AuthenticationException {

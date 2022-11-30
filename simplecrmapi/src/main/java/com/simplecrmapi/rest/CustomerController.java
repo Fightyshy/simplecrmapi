@@ -33,7 +33,6 @@ import com.simplecrmapi.service.EmployeeService;
 public class CustomerController {
 
 	private CustomerService customerService;
-	
 	private EmployeeService employeeService;
 	
 	public CustomerController(CustomerService customerService, EmployeeService employeeService) {

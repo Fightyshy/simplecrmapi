@@ -30,12 +30,14 @@ import com.simplecrmapi.service.EmployeeService;
 @RequestMapping("/cases")
 public class CaseController {
 
-	@Autowired
 	private CasesService casesService;
-	
-	@Autowired
 	private EmployeeService employeeService;
 	
+	public CaseController(CasesService casesService, EmployeeService employeeService) {
+		this.casesService = casesService;
+		this.employeeService = employeeService;
+	}
+
 	@GetMapping("")
 	public ResponseEntity<List<Cases>> getAllCases() {
 		return ResponseEntity.ok(casesService.getAllCases());
