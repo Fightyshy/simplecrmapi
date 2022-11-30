@@ -45,7 +45,16 @@ public class Employee extends Person{
 	@ManyToMany(mappedBy="employee",cascade= {CascadeType.DETACH,CascadeType.REFRESH,CascadeType.REMOVE})
 	private Set<Cases> cases;
 	
+	@OneToMany(mappedBy="employee",cascade= {CascadeType.DETACH, CascadeType.REFRESH, CascadeType.REMOVE})
+	private List<Address> address;
 
+	public List<Address> getAddress() {
+		return address;
+	}
+
+	public void setAddress(List<Address> address) {
+		this.address = address;
+	}
 
 	public Employee(Integer id, @NotNull @NotEmpty String firstName, String middleName,
 			@NotNull @NotEmpty String lastName,

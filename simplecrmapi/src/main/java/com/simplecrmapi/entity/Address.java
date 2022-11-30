@@ -72,7 +72,7 @@ public class Address {
 	private String faxNumber;
 	
 	//TODO elegant solution, unidrectional required
-	@ManyToOne(fetch=FetchType.LAZY)
+	@ManyToOne(fetch=FetchType.LAZY, cascade={CascadeType.PERSIST,CascadeType.MERGE,CascadeType.DETACH,CascadeType.REFRESH})
 	@JoinColumn(name="customer_id")
 	@JsonIgnore
 	private Customer customer;

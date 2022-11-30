@@ -31,6 +31,9 @@ public class Customer extends Person {
 	@Column(name="industry")
 	@AlphabetOnly
 	private String industry;
+	
+	@OneToMany(mappedBy="customer",cascade= {CascadeType.DETACH, CascadeType.REFRESH, CascadeType.REMOVE})
+	private List<Address> address;
 
 	public Customer(Integer id, @NotNull @NotEmpty String firstName, String middleName,
 			@NotNull @NotEmpty String lastName,
@@ -69,6 +72,14 @@ public class Customer extends Person {
 
 	public void setIndustry(String industry) {
 		this.industry = industry;
+	}
+
+	public List<Address> getAddress() {
+		return address;
+	}
+
+	public void setAddress(List<Address> address) {
+		this.address = address;
 	}
 
 	

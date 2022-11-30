@@ -14,6 +14,7 @@ import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.JoinTable;
 import javax.persistence.ManyToMany;
+import javax.persistence.OneToOne;
 
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
@@ -35,9 +36,6 @@ public class User implements UserDetails{
 	@JsonIgnore
 	private String password;
 	
-	@Column
-	private int employeeID;
-	
 	@ManyToMany(fetch = FetchType.EAGER, cascade = CascadeType.ALL)
 	@JoinTable(name = "USER_ROLES",
 				joinColumns = {
@@ -50,25 +48,38 @@ public class User implements UserDetails{
 	
 	@Column
 	private boolean enabled = true;
+	
+	@OneToOne(fetch = FetchType.EAGER, cascade = CascadeType.ALL)
+	@JoinColumn(name="employee_id")
+	private Employee employee;
 
 	public User() {
 		
 	}
 	
-	public User(String username, String password, int employeeID, Set<Role> roles) {
+	public User(String username, String password, Set<Role> roles) {
 		this.username = username;
 		this.password = password;
-		this.employeeID = employeeID;
 		this.roles = roles;
 	}
 	
 	//Test constructor please ignore
-	public User(int id, String username, String password, int employeeID, Set<Role> roles) {
+	public User(int id, String username, String password, Set<Role> roles) {
 		this.id = id;
 		this.username = username;
 		this.password = password;
-		this.employeeID = employeeID;
 		this.roles = roles;
+	}
+
+	//also a test constructor
+	public User(int id, String username, String password, Set<Role> roles, boolean enabled, Employee employee) {
+		super();
+		this.id = id;
+		this.username = username;
+		this.password = password;
+		this.roles = roles;
+		this.enabled = enabled;
+		this.employee = employee;
 	}
 
 	public int getId() {
@@ -95,14 +106,6 @@ public class User implements UserDetails{
 		this.password = password;
 	}
 
-	public int getEmployeeID() {
-		return employeeID;
-	}
-
-	public void setEmployeeID(int employeeID) {
-		this.employeeID = employeeID;
-	}
-
 	public Set<Role> getRoles() {
 		return roles;
 	}
@@ -117,6 +120,14 @@ public class User implements UserDetails{
 
 	public void setEnabled(boolean enabled) {
 		this.enabled = enabled;
+	}
+
+	public Employee getEmployee() {
+		return employee;
+	}
+
+	public void setEmployee(Employee employee) {
+		this.employee = employee;
 	}
 
 	@Override

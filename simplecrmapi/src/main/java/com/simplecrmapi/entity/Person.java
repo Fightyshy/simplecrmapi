@@ -17,6 +17,8 @@ import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Past;
 
+import org.springframework.format.annotation.DateTimeFormat;
+
 import com.simplecrmapi.validation.AlphabetOnly;
 import com.simplecrmapi.validation.NumbersInStringOnly;
 
@@ -50,6 +52,7 @@ public class Person {
 	@Column(name="date_of_birth")
 	@NotNull
 	@Past(message="Date has to be in the past")
+	@DateTimeFormat(pattern="yyyy-MM-dd")
 	private LocalDate dateOfBirth; //use this instead of java.Date.util (depreciated)
 	//sauce https://stackoverflow.com/questions/43039614/insert-fetch-java-time-localdate-objects-to-from-an-sql-database-such-as-h2
 	
@@ -61,9 +64,6 @@ public class Person {
 	@Email(message="Please input a valid email address")
 	@NotNull
 	private String emailAddress;
-	
-	@OneToMany(mappedBy="employee",cascade= {CascadeType.DETACH, CascadeType.REFRESH, CascadeType.REMOVE})
-	private List<Address> address;
 	
 	@OneToOne(cascade=CascadeType.ALL)
 	@JoinColumn(name="social_media_id")
@@ -143,14 +143,6 @@ public class Person {
 
 	public void setEmailAddress(String emailAddress) {
 		this.emailAddress = emailAddress;
-	}
-
-	public List<Address> getAddress() {
-		return address;
-	}
-
-	public void setAddress(List<Address> address) {
-		this.address = address;
 	}
 
 	public SocialMedia getSocialMedia() {
