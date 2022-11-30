@@ -2,7 +2,6 @@ package com.simplecrmapi.config;
 
 import java.util.Arrays;
 import java.util.HashSet;
-import java.util.List;
 
 import javax.annotation.Resource;
 
@@ -12,15 +11,12 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
-import org.springframework.security.config.annotation.authentication.configurers.provisioning.InMemoryUserDetailsManagerConfigurer;
-import org.springframework.security.config.annotation.method.configuration.EnableGlobalMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
-import org.springframework.security.provisioning.InMemoryUserDetailsManager;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
 import com.simplecrmapi.entity.Role;
@@ -42,7 +38,7 @@ public class SimpleCRMSecurityConfig extends WebSecurityConfigurerAdapter {
 	 private UnauthorizedEntryPoint unauthorizedEntryPoint;
 	
 	@Autowired
-	private BCryptPasswordEncoder passwordEncoder;
+	private BCryptPasswordEncoder passwordEncoder = new BCryptPasswordEncoder(12);
 	
 	@Override
 	public void configure(AuthenticationManagerBuilder auth) throws Exception {
@@ -54,7 +50,8 @@ public class SimpleCRMSecurityConfig extends WebSecurityConfigurerAdapter {
     protected void configure(HttpSecurity http) throws Exception {
         http.cors().and().csrf().disable() 
                 .authorizeRequests()
-                .antMatchers("/users/authenticate", "/users/register", "/users/retrieve-user").permitAll()
+                .antMatchers(HttpMethod.POST, "/users/issue-pw-token", "/users/reset-pw", "/users/emailChecker").permitAll()
+                .antMatchers(HttpMethod.PUT, "/users/authenticate", "/users/register", "/users/retrieve-user").permitAll()
                 .antMatchers(HttpMethod.GET,"/customers/**", "/customers", "/customers/id", "/customers/id/**").hasAnyRole("EMPLOYEE","ADMIN","MANAGER")
                 .antMatchers(HttpMethod.POST,"/customers/**", "/customers", "/customers/id", "/customers/id/**").hasAnyRole("EMPLOYEE","ADMIN","MANAGER")
                 .antMatchers(HttpMethod.PUT,"/customers/**", "/customers", "/customers/id", "/customers/id/**").hasAnyRole("EMPLOYEE","ADMIN","MANAGER")
@@ -77,7 +74,8 @@ public class SimpleCRMSecurityConfig extends WebSecurityConfigurerAdapter {
 //                .anyRequest().authenticated()
                 .and()
                 .exceptionHandling().authenticationEntryPoint(unauthorizedEntryPoint).and()
-                .sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS);
+                .sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS)
+                .and().formLogin().disable();
 
         http.addFilterBefore(authenticationTokenFilterBean(), UsernamePasswordAuthenticationFilter.class);
     }
@@ -98,19 +96,19 @@ public class SimpleCRMSecurityConfig extends WebSecurityConfigurerAdapter {
         return new JwtAuthenticationFilter();
     }
     
-    @Bean
-    public UserDetailsService testEmployeeDetails() {
-		Role emper = new Role("EMPLOYEE");
-		HashSet<Role> emloyee = new HashSet<>();
-		emloyee.add(emper);
-		User emp1 = new User(1, "employee1", "$2a$10$/lsJHIECOXOL9T8GAa5SGuskWo4E5dg/7neiYnYfqEeWqTV33dnZq",1 ,emloyee);
-		emp1.setEmployeeID(1);
-
-		//Another smoking gun https://babarowski.com/blog/mock-authentication-with-custom-userdetails/#final-solution
-		//But instead extended the class and created a (sloppy) custom implementation
-		//Which is basically the important parts using custom user
-		//TODO Move to separate testing config
-		return new InMemoryCustomUserDetailsManager(Arrays.asList(emp1));
-    }
+//    @Bean
+//    public UserDetailsService testEmployeeDetails() {
+//		Role emper = new Role("EMPLOYEE");
+//		HashSet<Role> emloyee = new HashSet<>();
+//		emloyee.add(emper);
+//		User emp1 = new User(1, "employee1", "$2a$10$/lsJHIECOXOL9T8GAa5SGuskWo4E5dg/7neiYnYfqEeWqTV33dnZq",1 ,emloyee);
+//		emp1.setEmployeeID(1);
+//
+//		//Another smoking gun https://babarowski.com/blog/mock-authentication-with-custom-userdetails/#final-solution
+//		//But instead extended the class and created a (sloppy) custom implementation
+//		//Which is basically the important parts using custom user
+//		//TODO Move to separate testing config
+//		return new InMemoryCustomUserDetailsManager(Arrays.asList(emp1));
+//    }
 }
 
