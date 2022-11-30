@@ -92,7 +92,7 @@ public class SimpleCRMSecurityConfig extends WebSecurityConfigurerAdapter {
     }
 
     @Bean
-    public JwtAuthenticationFilter authenticationTokenFilterBean() throws Exception {
+    JwtAuthenticationFilter authenticationTokenFilterBean() throws Exception {
         return new JwtAuthenticationFilter();
     }
     
