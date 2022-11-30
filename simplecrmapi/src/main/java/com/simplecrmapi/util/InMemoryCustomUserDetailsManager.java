@@ -34,7 +34,7 @@ public class InMemoryCustomUserDetailsManager extends InMemoryUserDetailsManager
 			throw new UsernameNotFoundException(username);
 		}
 		
-		return new User(user.getId(), user.getUsername(), user.getPassword(), user.getEmployeeID(), user.getRoles());
+		return new User(user.getId(), user.getUsername(), user.getPassword(), user.getRoles(), true, user.getEmployee());
 	}
 	
 	public void createUser(User user) {

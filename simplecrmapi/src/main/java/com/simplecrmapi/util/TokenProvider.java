@@ -33,6 +33,12 @@ public class TokenProvider{
 
     @Value("${jwt.authorities.key}")
     public String AUTHORITIES_KEY;
+    
+    @Value("${jwt.resettoken.validity}")
+    public long RESETTOKEN_VALIDITY;
+    
+    @Value("${jwt.pwreset.key}")
+    public String PWRESET_KEY;
 
     public String getUsernameFromToken(String token) {
         return getClaimFromToken(token, Claims::getSubject);
@@ -73,17 +79,17 @@ public class TokenProvider{
                 .compact();
     }
     
-    public String generatePWToken(User user) {
-    	String authorities = user.getAuthorities().stream()
-    			.map(GrantedAuthority::getAuthority)
-    			.collect(Collectors.joining(","));
+    public String generatePWToken(String email) {
+//    	String authorities = user.getAuthorities().stream()
+//    			.map(GrantedAuthority::getAuthority)
+//    			.collect(Collectors.joining(","));
     	
     	
     	return Jwts.builder()
-    			.setSubject(user.getUsername())
-    			.claim(AUTHORITIES_KEY, authorities)
+    			.setSubject(email)
+    			.claim(PWRESET_KEY, email)
     			.setIssuedAt(new Date(System.currentTimeMillis()))
-    			.setExpiration(new Date(System.currentTimeMillis()+TOKEN_VALIDITY*1000))
+    			.setExpiration(new Date(System.currentTimeMillis()+RESETTOKEN_VALIDITY*1000))
     			.signWith(SignatureAlgorithm.HS256, SIGNING_KEY)
     			.compact();
     }
