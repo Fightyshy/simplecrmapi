@@ -122,7 +122,7 @@ public class CaseController {
 	//Add user style controls
 	private Employee getEmployeeFromSession() {
 		User user = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-		return employeeService.getEmployeeByID(user.getEmployeeID());
+		return employeeService.getEmployeeByID(user.getEmployee().getId());
 	}
 	
 	//No user delete endpoint, user shouldn't be allowed to delete case without manager consent (archive under status is different)

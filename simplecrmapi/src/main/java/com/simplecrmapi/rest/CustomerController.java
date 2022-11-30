@@ -32,12 +32,15 @@ import com.simplecrmapi.service.EmployeeService;
 @RequestMapping("/customers")
 public class CustomerController {
 
-	@Autowired
 	private CustomerService customerService;
 	
-	@Autowired
 	private EmployeeService employeeService;
 	
+	public CustomerController(CustomerService customerService, EmployeeService employeeService) {
+		this.customerService = customerService;
+		this.employeeService = employeeService;
+	}
+
 	@GetMapping("")
 	public ResponseEntity<List<Customer>> getCustomers(){
 		List<Customer> retrieved = customerService.getCustomers();
@@ -56,19 +59,32 @@ public class CustomerController {
 	@GetMapping("/lastname")
 	public ResponseEntity<Object> getCustomersByLastName(@RequestParam(name="lastname") String lastName){
 		List<Customer> retrieved = customerService.getCustomerByLastName(lastName);
-		return retrieved.isEmpty()==false?ResponseEntity.ok(retrieved):ResponseEntity.ok(new ArrayList<Customer>());
+		return retrieved.isEmpty()==false?ResponseEntity.ok(retrieved):ResponseEntity.notFound().build();
 	}
 	//LIST
 	@GetMapping("/firstname")
 	public ResponseEntity<Object> getCustomersByFirstName(@RequestParam(name="firstname") String firstName){
 		List<Customer> retrieved = customerService.getCustomerByFirstName(firstName);
-		return retrieved.isEmpty()==false?ResponseEntity.ok(retrieved):ResponseEntity.ok(new ArrayList<Customer>());
+		return retrieved.isEmpty()==false?ResponseEntity.ok(retrieved):ResponseEntity.notFound().build();
 	}
 	
 	@GetMapping("/users")
 	public ResponseEntity<Object> getUserCustomersFromCases(){
 		List<Customer> retrieved = customerService.getUserCustomersFromCases(getEmployeeFromSession());
 		return retrieved.isEmpty()==false?ResponseEntity.ok(retrieved):ResponseEntity.ok(new ArrayList<Customer>());
+	}
+	
+	@GetMapping("/customer-address")
+	public ResponseEntity<Object> getCustomersAddress(@RequestParam(name="id") int id, @RequestParam(name="addressId") int addressId){
+		Customer retrieved = customerService.getCustomerByID(id);
+		Address ad = null;
+		for(Address add: retrieved.getAddress()) {
+			if(add.getId()==addressId) {
+				ad = add;
+			}
+		}
+		
+		return ad==null?ResponseEntity.notFound().build():ResponseEntity.ok(ad);
 	}
 	
 	//Post/Put changed to response entity w/ bodies, more api like and works with testing
@@ -108,7 +124,11 @@ public class CustomerController {
 	}
 	
 	@PutMapping("/id/addresses")
-	public ResponseEntity<Object> updateCustomerAddressByID(@Valid @RequestBody Address address){
+	public ResponseEntity<Object> updateCustomerAddressByID(@Valid @RequestBody Address address, @RequestParam(name="cusId") int ID){
+		System.out.println(address.getId());
+		System.out.println(address.getLine1());
+		Customer cus = customerService.getCustomerByID(ID);
+		address.setCustomer(cus);
 		Address updatedAddress = customerService.updateCustomerAddressByID(address);
 		return updatedAddress!=null?ResponseEntity.ok(updatedAddress):ResponseEntity.badRequest().body("400 BAD REQUEST: Unable to update customer's address");
 	}
@@ -153,6 +173,6 @@ public class CustomerController {
 	
 	private Employee getEmployeeFromSession() {
 		User user = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-		return employeeService.getEmployeeByID(user.getEmployeeID());
+		return employeeService.getEmployeeByID(user.getEmployee().getId());
 	}
 }

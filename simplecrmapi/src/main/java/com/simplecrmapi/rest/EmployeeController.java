@@ -195,6 +195,6 @@ public class EmployeeController {
 	
 	private Employee getEmployeeFromSession() {
 		User user = SecurityContextHolder.getContext().getAuthentication().isAuthenticated()==true?(User) SecurityContextHolder.getContext().getAuthentication().getPrincipal():null;
-		return employeeService.getEmployeeByID(user.getEmployeeID());
+		return employeeService.getEmployeeByID(user.getEmployee().getId());
 	}
 }
