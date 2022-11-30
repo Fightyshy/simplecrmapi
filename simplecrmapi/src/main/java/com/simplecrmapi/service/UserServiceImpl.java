@@ -4,6 +4,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -13,11 +14,10 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.simplecrmapi.SimplecrmapiApplication;
 import com.simplecrmapi.dao.UserDAO;
 import com.simplecrmapi.entity.Role;
 import com.simplecrmapi.entity.User;
-
-import ch.qos.logback.classic.Logger;
 
 @Service("userService")
 public class UserServiceImpl implements UserService, UserDetailsService {
@@ -29,11 +29,35 @@ public class UserServiceImpl implements UserService, UserDetailsService {
 	public RoleService roleService;
 	
 //	@Autowired
-	private BCryptPasswordEncoder passwordEncoder;
+	private BCryptPasswordEncoder passwordEncoder = new BCryptPasswordEncoder(12);
 	
 	@Autowired
 	public void setPasswordEncoder(BCryptPasswordEncoder passwordEncoder) {
 		this.passwordEncoder=passwordEncoder;
+	}
+	
+	private static final org.slf4j.Logger log = LoggerFactory.getLogger(SimplecrmapiApplication.class);
+	
+	@Override
+	@Transactional
+	public User findUserByEmployeeID(int id) {
+		try {
+			return userDAO.findByEmployeeID(id);			
+		}catch(Exception e) {
+			return null;
+		}
+	}
+	
+	@Override
+	@Transactional
+	public User findByEmailAddress(String email) {
+		try {
+			return userDAO.findByEmail(email);
+		}catch(Exception e) {
+			log.error("Email address could not be retrieved");
+			log.error(e.toString());
+			return null;
+		}
 	}
 	
 	@Override

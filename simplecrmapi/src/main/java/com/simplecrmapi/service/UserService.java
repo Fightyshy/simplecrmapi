@@ -19,4 +19,8 @@ public interface UserService extends UserDetailsService{
 	public User updateUserPassword(User user);
 	
 	public UserDetails loadUserByUsername(String username);
+
+	public User findUserByEmployeeID(int id);
+
+	public User findByEmailAddress(String email);
 }

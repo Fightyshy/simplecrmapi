@@ -55,4 +55,6 @@ public interface EmployeeService {
 	public void deleteEmployeeAddressByIDs(Employee emp, int addressID);
 
 	public void removeEmployeeAssignedCase(int employeeID, int caseID);
+
+	public Employee getEmployeeByEmailAddress(String email);
 }

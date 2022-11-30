@@ -66,27 +66,51 @@ public class CustomerServiceImpl implements CustomerService {
 	}
 
 	@Override
-	@Transactional
+	@Transactional(rollbackFor=Exception.class)
 	//Dual function save/update
+	//real fucking resource expensive, look for a way to persist form data in thymeleaf
 	public Customer saveCustomerDetails(Customer customer) {
+//		try {
 		Customer inputCus = customer;
 		Customer fromMemory = getCustomerByID(customer.getId());
+
 		if(fromMemory==null) {
-			inputCus.setId(0); //new
-		}else {
-			inputCus.setId(fromMemory.getId());
-		}
-		
-		if(inputCus.getAddress().isEmpty()||inputCus.getAddress()==null) {
-			inputCus.setAddress(new ArrayList<Address>());
+			inputCus.setId(0);
+			return customerDAO.save(inputCus);
+		}else if(fromMemory.getAddress()==null||fromMemory.getAddress().isEmpty()&& (inputCus.getAddress()==null|| inputCus.getAddress().isEmpty())) {
+			inputCus.setAddress(null);
+		}else if(!(fromMemory.getAddress()==null || fromMemory.getAddress().isEmpty())) {
+			inputCus.setAddress(fromMemory.getAddress());
 		}else {
 			for(Address add: inputCus.getAddress()) {
 				add.setCustomer(inputCus);
-				addressDAO.saveAndFlush(add);
+				addressDAO.save(add);
 			}
 		}
-		
-		return customerDAO.saveAndFlush(inputCus);
+//		
+//		if(fromMemory==null) {
+//			inputCus.setId(0); //new
+//		}else {
+//			inputCus.setId(fromMemory.getId());
+//		}
+//		
+//		if((fromMemory.getAddress()==null || fromMemory.getAddress().isEmpty()) && (inputCus.getAddress()==null || inputCus.getAddress().isEmpty())) {
+//			inputCus.setAddress(null);
+//		}else if(!(fromMemory.getAddress()==null || fromMemory.getAddress().isEmpty())) {
+//			inputCus.setAddress(fromMemory.getAddress());
+//		}else {
+//			for(Address add: inputCus.getAddress()) {
+//				add.setCustomer(inputCus);
+//				addressDAO.save(add);
+//			}
+//		}
+
+		return customerDAO.save(inputCus);
+//		}
+//		catch(Exception e) {
+//			System.out.println(e);
+//			return null;
+//		}
 	}
 	
 	@Override
@@ -183,9 +207,12 @@ public class CustomerServiceImpl implements CustomerService {
 	
 	@Override
 	@Transactional
-	public void deleteCustomerAddressByID(Integer CustomerID, Integer AddressID) {
+	public void deleteCustomerAddressByID(Integer customerID, Integer addressID) {
 		try {
-			customerDAO.deleteCustomerAddressByID(CustomerID, AddressID);
+			Address add = addressDAO.getById(addressID);
+			add.setCustomer(null);
+			add.setEmployee(null);
+			addressDAO.deleteById(addressID);
 		}catch(Exception e) {
 			
 		}

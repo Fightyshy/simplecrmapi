@@ -135,6 +135,15 @@ public class EmployeeServiceImpl implements EmployeeService {
 		}
 	}
 
+	@Override
+	@Transactional
+	public Employee getEmployeeByEmailAddress(String email) {
+		try {
+			return employeeDAO.findByEmailAddress(email);
+		}catch(Exception e) {
+			return null;
+		}
+	}
 	
 	@Override
 	@Transactional
