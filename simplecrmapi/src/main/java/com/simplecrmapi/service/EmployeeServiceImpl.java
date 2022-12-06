@@ -26,17 +26,18 @@ import com.simplecrmapi.util.IDComparator;
 @Service
 public class EmployeeServiceImpl implements EmployeeService {
 
-	@Autowired
 	private EmployeeDAO employeeDAO;
-	
-	@Autowired
 	private AddressDAO addressDAO;
-	
-	@Autowired
 	private CasesDAO casesDAO;
 	
 	private IDComparator comparator;
 	
+	public EmployeeServiceImpl(EmployeeDAO employeeDAO, AddressDAO addressDAO, CasesDAO casesDAO) {
+		this.employeeDAO = employeeDAO;
+		this.addressDAO = addressDAO;
+		this.casesDAO = casesDAO;
+	}
+
 	@Override
 	@Transactional
 	public List<Employee> getEmployees() {

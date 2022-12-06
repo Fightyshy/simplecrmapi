@@ -3,6 +3,8 @@ package com.simplecrmapi.util;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Date;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -13,8 +15,6 @@ import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Component;
-
-import com.simplecrmapi.entity.User;
 
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jws;
@@ -79,21 +79,29 @@ public class TokenProvider{
                 .compact();
     }
     
-    public String generatePWToken(String email) {
-//    	String authorities = user.getAuthorities().stream()
-//    			.map(GrantedAuthority::getAuthority)
-//    			.collect(Collectors.joining(","));
-    	
+    public String generatePWToken(String email, String password) {
+
+    	Map<String,Object> claims = new HashMap<>();
+    	claims.put(PWRESET_KEY, email);
+    	claims.put(PWRESET_KEY, password);
     	
     	return Jwts.builder()
     			.setSubject(email)
-    			.claim(PWRESET_KEY, email)
+//    			.claim(PWRESET_KEY, email)
+    			.addClaims(claims)
     			.setIssuedAt(new Date(System.currentTimeMillis()))
     			.setExpiration(new Date(System.currentTimeMillis()+RESETTOKEN_VALIDITY*1000))
     			.signWith(SignatureAlgorithm.HS256, SIGNING_KEY)
     			.compact();
     }
-
+    
+    public Boolean validatePWToken(String token, String email, String password) {
+    	String emailGot = Jwts.parser().setSigningKey(SIGNING_KEY).parseClaimsJws(token).getBody().get(email, String.class);
+    	String passwordGot = Jwts.parser().setSigningKey(SIGNING_KEY).parseClaimsJws(token).getBody().get(password, String.class);
+    	
+    	return emailGot.equals(email) && passwordGot.equals(password) && !isTokenExpired(token)? true : false;
+    }
+    
     public Boolean validateToken(String token, UserDetails userDetails) {
         final String username = getUsernameFromToken(token);
         return (username.equals(userDetails.getUsername()) && !isTokenExpired(token));

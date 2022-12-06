@@ -38,7 +38,7 @@ public class SimpleCRMSecurityConfig extends WebSecurityConfigurerAdapter {
 	 private UnauthorizedEntryPoint unauthorizedEntryPoint;
 	
 	@Autowired
-	private BCryptPasswordEncoder passwordEncoder = new BCryptPasswordEncoder(12);
+	private BCryptPasswordEncoder passwordEncoder;
 	
 	@Override
 	public void configure(AuthenticationManagerBuilder auth) throws Exception {
@@ -72,6 +72,11 @@ public class SimpleCRMSecurityConfig extends WebSecurityConfigurerAdapter {
                 .antMatchers(HttpMethod.PUT, "/cases/users", "/cases/users/**", "/cases/users/*").authenticated()
                 .antMatchers(HttpMethod.DELETE, "/cases", "/cases/**", "/cases/id", "/cases/id/**", "/cases/products/**").hasAnyRole("MANAGER", "ADMIN")
 //                .anyRequest().authenticated()
+                .and()
+                .logout()
+                .logoutSuccessUrl("http://localhost:8081/logindefault")
+                .invalidateHttpSession(true)
+                .deleteCookies("token")
                 .and()
                 .exceptionHandling().authenticationEntryPoint(unauthorizedEntryPoint).and()
                 .sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS)

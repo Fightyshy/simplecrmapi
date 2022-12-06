@@ -20,14 +20,16 @@ import com.simplecrmapi.util.IDComparator;
 @Service
 public class CustomerServiceImpl implements CustomerService {
 
-	@Autowired
 	private CustomerDAO customerDAO;
-	
-	@Autowired
 	private AddressDAO addressDAO;
 	
 	private IDComparator comparator;
 	
+	public CustomerServiceImpl(CustomerDAO customerDAO, AddressDAO addressDAO) {
+		this.customerDAO = customerDAO;
+		this.addressDAO = addressDAO;
+	}
+
 	@Override
 	@Transactional
 	public List<Customer> getCustomers() {

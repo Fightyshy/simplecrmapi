@@ -4,7 +4,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-import org.slf4j.LoggerFactory;
+import org.slf4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -14,7 +14,6 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.simplecrmapi.SimplecrmapiApplication;
 import com.simplecrmapi.dao.UserDAO;
 import com.simplecrmapi.entity.Role;
 import com.simplecrmapi.entity.User;
@@ -22,21 +21,18 @@ import com.simplecrmapi.entity.User;
 @Service("userService")
 public class UserServiceImpl implements UserService, UserDetailsService {
 
-	@Autowired
-	public UserDAO userDAO;
-	
-	@Autowired
-	public RoleService roleService;
-	
-//	@Autowired
-	private BCryptPasswordEncoder passwordEncoder = new BCryptPasswordEncoder(12);
-	
-	@Autowired
-	public void setPasswordEncoder(BCryptPasswordEncoder passwordEncoder) {
-		this.passwordEncoder=passwordEncoder;
+	private UserDAO userDAO;
+	private RoleService roleService;
+	private BCryptPasswordEncoder passwordEncoder;
+	private final Logger log;
+
+	public UserServiceImpl(UserDAO userDAO, RoleService roleService, BCryptPasswordEncoder passwordEncoder,
+			Logger log) {
+		this.userDAO = userDAO;
+		this.roleService = roleService;
+		this.passwordEncoder = passwordEncoder;
+		this.log = log;
 	}
-	
-	private static final org.slf4j.Logger log = LoggerFactory.getLogger(SimplecrmapiApplication.class);
 	
 	@Override
 	@Transactional
@@ -102,7 +98,7 @@ public class UserServiceImpl implements UserService, UserDetailsService {
 	@Override
 	@Transactional
 	public User updateUserPassword(User user) {
-		user.setEnabled(false);
+//		user.setEnabled(false);
 		user.setPassword(null);
 		return user;
 	}
@@ -111,7 +107,7 @@ public class UserServiceImpl implements UserService, UserDetailsService {
 	@Transactional
 	public User updateUserPassword(User user, String password) {
 		user.setPassword(passwordEncoder.encode(password));
-		user.setEnabled(true);
+//		user.setEnabled(true);
 		return userDAO.save(user);
 	}
 

@@ -15,7 +15,7 @@ import org.springframework.web.client.RestTemplate;
 public class SimpleCRMAppConfig {
     @Bean
     BCryptPasswordEncoder passwordEncoder() {
-        return new BCryptPasswordEncoder(10);
+        return new BCryptPasswordEncoder(12);
     }
 
     @Bean

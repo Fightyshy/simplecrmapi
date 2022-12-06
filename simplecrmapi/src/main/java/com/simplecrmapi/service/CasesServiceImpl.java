@@ -19,16 +19,16 @@ import com.simplecrmapi.util.IDComparator;
 @Service
 public class CasesServiceImpl implements CasesService {
 	
-	@Autowired
 	private CasesDAO casesDAO;
-	
-	@Autowired
 	private EmployeeDAO employeeDAO;
-	
-	@Autowired
 	private ProductsDAO productDAO;
-	
 	private IDComparator comparator;
+
+	public CasesServiceImpl(CasesDAO casesDAO, EmployeeDAO employeeDAO, ProductsDAO productDAO) {
+		this.casesDAO = casesDAO;
+		this.employeeDAO = employeeDAO;
+		this.productDAO = productDAO;
+	}
 
 	@Override
 	@Transactional
