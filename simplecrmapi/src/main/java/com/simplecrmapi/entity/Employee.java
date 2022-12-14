@@ -18,10 +18,16 @@ import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Past;
 import javax.validation.constraints.PositiveOrZero;
 
+import com.fasterxml.jackson.annotation.JsonIdentityInfo;
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.ObjectIdGenerators;
 
 @Entity
 @Table(name="employee")
+//
+//@JsonIdentityInfo(
+//		generator = ObjectIdGenerators.PropertyGenerator.class,
+//		property = "id")
 public class Employee extends Person{
 	
 	//Metrics below
@@ -41,7 +47,7 @@ public class Employee extends Person{
 	@PositiveOrZero(message="Please input a number greater than or equal to 0")
 	private Integer casesClosed;
 
-	@JsonIgnore
+//	@JsonIgnore
 	@ManyToMany(mappedBy="employee",cascade= {CascadeType.DETACH,CascadeType.REFRESH,CascadeType.REMOVE})
 	private Set<Cases> cases;
 	

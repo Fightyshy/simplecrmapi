@@ -21,6 +21,9 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import com.simplecrmapi.entity.Address;
 import com.simplecrmapi.entity.Cases;
 import com.simplecrmapi.entity.Customer;
@@ -69,6 +72,12 @@ public class EmployeeController {
 		return retrieved==null?ResponseEntity.notFound().build():ResponseEntity.ok(retrieved);
 	}
 	
+	@GetMapping("/username")
+	public ResponseEntity<Employee> getEmployeeFromUsername(@RequestParam("username") String username){
+		Employee emp = employeeService.getEmployeeByUsername(username);
+		return emp==null?ResponseEntity.notFound().build():ResponseEntity.ok(emp);
+	}
+	
 	//Principal-based GET
 	@GetMapping("/users")
 	public ResponseEntity<Object> getEmployeeByUserSession(){
@@ -76,9 +85,17 @@ public class EmployeeController {
 	}
 	
 	@GetMapping("/users/cases")
-	public ResponseEntity<Object> getCasesAssignedToUserEmployee(){
+	public ResponseEntity<Object> getCasesAssignedToUserEmployee() throws JsonProcessingException{
+//		String cases = new ObjectMapper().registerModule(new JavaTimeModule()).writeValueAsString(getEmployeeFromSession().getCases());
 		return ResponseEntity.ok(getEmployeeFromSession().getCases());
 	}
+	
+//	//manager usage to check on employee
+//	@GetMapping("/users/cases/id")
+//	public ResponseEntity<Object> getCasesAssignedToUserEmployeeByID(@RequestParam("id") int id){
+//		
+//	}
+	
 	@GetMapping("/users/customers")
 	public ResponseEntity<Object> getCustomersAssignedToUserEmployee(){
 		List<Customer> retrieved = employeeService.getCustomersAssignedToEmployee(getEmployeeFromSession());

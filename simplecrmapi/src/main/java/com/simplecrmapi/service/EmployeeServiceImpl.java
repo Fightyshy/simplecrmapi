@@ -6,7 +6,6 @@ import java.util.List;
 
 import javax.validation.Valid;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -66,6 +65,15 @@ public class EmployeeServiceImpl implements EmployeeService {
 		}
 	}
 
+	@Override
+	@Transactional
+	public Employee getEmployeeByUsername(String username) {
+		try {
+			return employeeDAO.findEmployeeByUsername(username);
+		}catch(Exception e) {
+			return null;
+		}
+	}
 	
 	@Override
 	@Transactional

@@ -57,4 +57,6 @@ public interface EmployeeService {
 	public void removeEmployeeAssignedCase(int employeeID, int caseID);
 
 	public Employee getEmployeeByEmailAddress(String email);
+
+	public Employee getEmployeeByUsername(String username);
 }

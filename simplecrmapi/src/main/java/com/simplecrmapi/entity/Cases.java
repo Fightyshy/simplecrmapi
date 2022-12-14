@@ -12,18 +12,20 @@ import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.JoinTable;
 import javax.persistence.ManyToMany;
-import javax.persistence.OneToMany;
 import javax.persistence.OneToOne;
 import javax.persistence.Table;
-import javax.validation.constraints.Future;
-import javax.validation.constraints.FutureOrPresent;
 import javax.validation.constraints.NotNull;
 
+import com.fasterxml.jackson.annotation.JsonIdentityInfo;
+import com.fasterxml.jackson.annotation.JsonIdentityReference;
+import com.fasterxml.jackson.annotation.ObjectIdGenerators;
 import com.simplecrmapi.enums.CaseStatus;
-import com.simplecrmapi.validation.Alphanumeric;
 
 @Entity
 @Table(name="cases")
+@JsonIdentityInfo(
+		generator = ObjectIdGenerators.PropertyGenerator.class,
+		property = "id")
 public class Cases {
 	@Id
 	@GeneratedValue(strategy=GenerationType.IDENTITY)
@@ -50,6 +52,7 @@ public class Cases {
 	//TODO get this working
 //	@JsonIgnore //Jsonview this so it doesn't show when querying employee
 	@ManyToMany
+	@JsonIdentityReference(alwaysAsId = true)
 	@JoinTable(
 			name="employee_cases",
 			joinColumns=@JoinColumn(name="cases_id"),
