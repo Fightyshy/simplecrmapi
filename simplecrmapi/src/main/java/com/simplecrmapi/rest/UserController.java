@@ -119,12 +119,6 @@ public class UserController {
 	    	User user = userService.findUsername(username);
 	    	user = userService.updateUserPassword(user, reset.getPassword());
 	    	return ResponseEntity.ok("Password successfully changed");
-//    	if(user.isEnabled()==false) {
-//    		user = userService.updateUserPassword(user, reset.getPassword());
-//    	}else {
-//    		user = null;
-//    		return ResponseEntity.badRequest().build();
-//    	}
     	}catch(Exception e) {
     		return ResponseEntity.badRequest().build();
     	}

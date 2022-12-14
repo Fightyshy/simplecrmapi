@@ -3,7 +3,6 @@ package com.simplecrmapi.test;
 import static org.hamcrest.CoreMatchers.containsString;
 import static org.hamcrest.CoreMatchers.is;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.contains;
 import static org.mockito.Mockito.verify;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
@@ -28,7 +27,6 @@ import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.web.servlet.MockMvc;
-import org.springframework.test.web.servlet.ResultMatcher;
 import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 
@@ -37,9 +35,9 @@ import com.simplecrmapi.dao.CustomerDAO;
 import com.simplecrmapi.entity.Address;
 import com.simplecrmapi.entity.Customer;
 import com.simplecrmapi.entity.SocialMedia;
+import com.simplecrmapi.rest.CustomerController;
 import com.simplecrmapi.service.CustomerService;
 import com.simplecrmapi.test.util.CSVParser;
-import com.simplecrmapi.util.ViewFormatter.CustomerController;
 
 @SpringBootTest
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
