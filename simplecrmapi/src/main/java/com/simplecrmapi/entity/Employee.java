@@ -25,9 +25,10 @@ import com.fasterxml.jackson.annotation.ObjectIdGenerators;
 @Entity
 @Table(name="employee")
 //
-//@JsonIdentityInfo(
-//		generator = ObjectIdGenerators.PropertyGenerator.class,
-//		property = "id")
+@JsonIdentityInfo(
+		scope = Employee.class,
+		generator = ObjectIdGenerators.PropertyGenerator.class,
+		property = "id")
 public class Employee extends Person{
 	
 	//Metrics below

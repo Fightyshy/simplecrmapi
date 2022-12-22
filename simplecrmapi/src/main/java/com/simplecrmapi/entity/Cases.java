@@ -24,6 +24,7 @@ import com.simplecrmapi.enums.CaseStatus;
 @Entity
 @Table(name="cases")
 @JsonIdentityInfo(
+		scope = Cases.class,
 		generator = ObjectIdGenerators.PropertyGenerator.class,
 		property = "id")
 public class Cases {
@@ -52,7 +53,7 @@ public class Cases {
 	//TODO get this working
 //	@JsonIgnore //Jsonview this so it doesn't show when querying employee
 	@ManyToMany
-	@JsonIdentityReference(alwaysAsId = true)
+//	@JsonIdentityReference(alwaysAsId = true)
 	@JoinTable(
 			name="employee_cases",
 			joinColumns=@JoinColumn(name="cases_id"),
