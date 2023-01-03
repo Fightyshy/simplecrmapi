@@ -78,6 +78,16 @@ public class UserController {
         return userService.saveUser(user);
     }
     
+    @PostMapping("")
+    public ResponseEntity<Object> saveNewUserFromParams(@RequestParam("username") String username, @RequestParam("password") String password, @RequestParam("empID") String empID){
+    	User user = new User();
+    	user.setEmployee(employeeService.getEmployeeByID(Integer.parseInt(empID)));
+    	user.setUsername(username);
+    	user.setPassword(password);
+    	user = userService.saveUser(user);
+    	return ResponseEntity.ok().build();
+    }
+    
     @PostMapping("/issue-pw-token")
     public ResponseEntity<Object> IssuePasswordResetToken(@RequestBody @Valid EmailWrapper email){
     	User user = userService.findByEmailAddress(email.getEmail());

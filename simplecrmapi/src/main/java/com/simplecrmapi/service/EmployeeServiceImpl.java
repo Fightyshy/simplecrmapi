@@ -157,20 +157,20 @@ public class EmployeeServiceImpl implements EmployeeService {
 	@Override
 	@Transactional
 	public Employee saveEmployeeDetails(Employee employee) {
-		if(employee.getId()==null) {
-			throw new EntityNotFound();
-		}else if((employee.getAddress().isEmpty()||employee.getAddress().equals(null))&&(employee.getSocialMedia()==null||!employee.getSocialMedia().getPreferredSocialMedia().equals("NO_PREFERENCE"))) {
-			
-		}else if(employee.getAddress().isEmpty()||employee.getAddress().equals(null)) {
-			throw new CustomerInvalidAddressException();
-		}else if(employee.getSocialMedia()==null||!employee.getSocialMedia().getPreferredSocialMedia().equals("NO_PREFERENCE")) {
-			throw new CustomerInvalidSocialMediaException();
-		}
 		
+//		if(employee.getId()==null) {
+//			throw new EntityNotFound();
+//		}else if((employee.getAddress().isEmpty()||employee.getAddress().equals(null))&&(employee.getSocialMedia()==null||!employee.getSocialMedia().getPreferredSocialMedia().equals("NO_PREFERENCE"))) {
+//			
+//		}else if(employee.getAddress().isEmpty()||employee.getAddress().equals(null)) {
+//			throw new CustomerInvalidAddressException();
+//		}else if(employee.getSocialMedia()==null||!employee.getSocialMedia().getPreferredSocialMedia().equals("NO_PREFERENCE")) {
+//			throw new CustomerInvalidSocialMediaException();
+//		}
 		employee.setId(0);
 		Employee newEmployee = employeeDAO.saveAndFlush(employee);
 
-		if(employee.getAddress().isEmpty()||employee.getAddress()==null) {
+		if(employee.getAddress()==null) {
 			return newEmployee; //TODO customer should be modified if needed			
 		}else {
 			for(Address add:employee.getAddress()) {
