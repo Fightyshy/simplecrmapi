@@ -42,9 +42,12 @@ public class Cases {
 	@NotNull
 	private LocalDateTime startDate; //Not null
 	
+		
 	//Should be set by computer
 	@Column(name="end_date")
 	private LocalDateTime endDate;
+	
+//	TODO private String desc;
 	
 	@OneToOne(cascade=CascadeType.ALL)
 	@JoinColumn(name="products_id")
