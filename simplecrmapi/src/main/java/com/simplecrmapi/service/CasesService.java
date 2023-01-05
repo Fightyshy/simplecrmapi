@@ -32,4 +32,6 @@ public interface CasesService {
 	public void deleteCasesWithDiscontinuedProducts(Integer productID);
 
 	public Cases saveNewCase(@Valid Cases cases, int product, Integer id);
+
+	public List<Cases> getCasesFromCustomerID(Integer cusID);
 }

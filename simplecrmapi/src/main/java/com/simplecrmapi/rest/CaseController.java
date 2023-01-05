@@ -64,6 +64,11 @@ public class CaseController {
 		return ResponseEntity.ok(casesService.getCaseByID(ID));
 	}
 	
+	@GetMapping("/customers")
+	public ResponseEntity<Object> getCustomerCasesByID(@RequestParam("id") int ID){
+		return ResponseEntity.ok(casesService.getCasesFromCustomerID(ID));
+	}
+	
 	@GetMapping("/users")
 	public ResponseEntity<List<Cases>> getAllEmployeeUserCases(){
 		return ResponseEntity.ok(new ArrayList<>(getEmployeeFromSession().getCases()));
@@ -99,6 +104,18 @@ public class CaseController {
 	public ResponseEntity<Object> updateUserCases(@Valid @RequestBody Cases cases){
 		Cases updatedCase = casesService.updateCase(cases, getEmployeeFromSession());
 		return updatedCase==null? ResponseEntity.notFound().build():ResponseEntity.ok(updatedCase);
+	}
+	
+	@PutMapping("/status")
+	public ResponseEntity<Object> udateUserCaseStatus(@RequestParam("id") int ID, @RequestParam("status") String status){
+		Cases updatedCase = casesService.getCaseByID(ID);
+		if(updatedCase!=null) {
+			updatedCase.setCasesStatus(status);
+			casesService.updateCase(updatedCase);
+			return ResponseEntity.ok(updatedCase);
+		}else {
+			return ResponseEntity.notFound().build();
+		}
 	}
 	
 	@DeleteMapping("/id")

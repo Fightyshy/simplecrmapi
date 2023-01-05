@@ -47,6 +47,12 @@ public class CasesServiceImpl implements CasesService {
 	public List<Cases> getCasesByFirstName(String firstName) {
 		return casesDAO.findCasesByCustomerFirstName(firstName);
 	}
+	
+	@Override
+	@Transactional
+	public List<Cases> getCasesFromCustomerID(Integer cusID){
+		return casesDAO.findCasesByCustomer(cusID);
+	}
 
 	@Override
 	@Transactional
