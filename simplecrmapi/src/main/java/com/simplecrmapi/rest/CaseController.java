@@ -2,12 +2,12 @@ package com.simplecrmapi.rest;
 
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
 import javax.validation.Valid;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -98,6 +98,14 @@ public class CaseController {
 	@PutMapping("")
 	public ResponseEntity<Object> updateCase(@Valid @RequestBody Cases cases){
 		return ResponseEntity.ok(casesService.updateCase(cases));
+	}
+	
+	@PutMapping("/endTime")
+	public ResponseEntity<Object> updateCaseEndTime(@Valid @RequestBody Cases cases){
+		LocalDateTime endTime = LocalDateTime.now();
+		cases.setEndDate(endTime);
+		Cases updatedCase = casesService.updateCase(cases);
+		return updatedCase == null ? ResponseEntity.notFound().build():ResponseEntity.ok(updatedCase);
 	}
 	
 	@PutMapping("/users")

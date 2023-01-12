@@ -7,7 +7,6 @@ import java.util.List;
 import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.validation.annotation.Validated;
@@ -106,9 +105,6 @@ public class CustomerController {
 		Customer updatedCustomer = customerService.saveCustomerDetails(customer);
 		return ResponseEntity.ok(updatedCustomer);
 	}
-	
-	//TODO temp ifs
-	//TODO validation catch, null catch
 	
 	@PutMapping("/id")
 	public ResponseEntity<Object> updateCustomerDetails(@Valid @RequestBody Customer customer){

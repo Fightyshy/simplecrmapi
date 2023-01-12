@@ -47,7 +47,9 @@ public class Cases {
 	@Column(name="end_date")
 	private LocalDateTime endDate;
 	
-//	TODO private String desc;
+//	TODO
+	@Column(name="desc")
+	private String desc;
 	
 	@OneToOne(cascade=CascadeType.ALL)
 	@JoinColumn(name="products_id")
