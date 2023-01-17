@@ -75,8 +75,9 @@ public class CaseController {
 	}
 	
 	@PostMapping("")
-	public ResponseEntity<Object> saveNewCase(@Valid @RequestBody Cases cases, @RequestParam("productId") int product, @RequestParam("empId") int empID) throws URISyntaxException{
-		Cases newCase = casesService.saveNewCase(cases, product,empID);
+	public ResponseEntity<Object> saveNewCase(@Valid @RequestBody Cases cases) throws URISyntaxException{
+		//Only one employee atm, always. Temp solution pending adding multiple employees on a new case
+		Cases newCase = casesService.saveNewCase(cases, cases.getProduct().getId() , cases.getEmployee().iterator().next().getId());
 		return ResponseEntity.created(new URI("/cases/id/"+newCase.getId())).body(newCase);
 	}
 	

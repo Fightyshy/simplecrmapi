@@ -17,9 +17,7 @@ import javax.persistence.Table;
 import javax.validation.constraints.NotNull;
 
 import com.fasterxml.jackson.annotation.JsonIdentityInfo;
-import com.fasterxml.jackson.annotation.JsonIdentityReference;
 import com.fasterxml.jackson.annotation.ObjectIdGenerators;
-import com.simplecrmapi.enums.CaseStatus;
 
 @Entity
 @Table(name="cases")
@@ -41,19 +39,18 @@ public class Cases {
 	@Column(name="start_date")
 	@NotNull
 	private LocalDateTime startDate; //Not null
-	
 		
 	//Should be set by computer
 	@Column(name="end_date")
 	private LocalDateTime endDate;
 	
 //	TODO
-	@Column(name="desc")
-	private String desc;
+	@Column(name="summary")
+	private String summary;
 	
 	@OneToOne(cascade=CascadeType.ALL)
 	@JoinColumn(name="products_id")
-	private Products product;
+	private Product product;
 	
 	//TODO get this working
 //	@JsonIgnore //Jsonview this so it doesn't show when querying employee
@@ -70,17 +67,44 @@ public class Cases {
 	private Customer customer;
 	
 	public Cases() {
-		this.casesStatus = CaseStatus.PENDING.toString();
+		this.casesStatus = "PENDING";
 		this.startDate = LocalDateTime.now();
 	}
 	
-	public Cases(@NotNull String casesStatus, Products product, Customer customer) {
+	public Cases(@NotNull String casesStatus, String summary, Product product, Customer customer) {
 		this.casesStatus = casesStatus;
 		this.startDate = LocalDateTime.now();
 		this.endDate = null;
+		this.summary = summary;
 		this.product  = product;
 		this.customer = customer;
 	}
+	
+	
+	public Cases(Integer id, @NotNull String casesStatus, @NotNull LocalDateTime startDate, LocalDateTime endDate,
+			String summary, Product product, Set<Employee> employee, Customer customer) {
+		this.id = id;
+		this.casesStatus = casesStatus;
+		this.startDate = startDate;
+		this.endDate = endDate;
+		this.summary = summary;
+		this.product = product;
+		this.employee = employee;
+		this.customer = customer;
+	}
+	
+//	public Cases() {
+//		this.casesStatus = CaseStatus.PENDING.toString();
+//		this.startDate = LocalDateTime.now();
+//	}
+//	
+//	public Cases(@NotNull String casesStatus, Product product, Customer customer) {
+//		this.casesStatus = casesStatus;
+//		this.startDate = LocalDateTime.now();
+//		this.endDate = null;
+//		this.product  = product;
+//		this.customer = customer;
+//	}
 	
 
 	public Integer getId() {
@@ -115,11 +139,19 @@ public class Cases {
 		this.endDate = endDate;
 	}
 
-	public Products getProduct() {
+	public String getSummary() {
+		return summary;
+	}
+
+	public void setSummary(String summary) {
+		this.summary = summary;
+	}
+
+	public Product getProduct() {
 		return product;
 	}
 
-	public void setProduct(Products product) {
+	public void setProduct(Product product) {
 		this.product = product;
 	}
 
@@ -167,4 +199,12 @@ public class Cases {
 		}
 		return true;
 	}
+
+	@Override
+	public String toString() {
+		return "Cases [id=" + id + ", casesStatus=" + casesStatus + ", startDate=" + startDate + ", endDate=" + endDate
+				+ ", desc=" + summary + ", product=" + product + ", employee=" + employee + ", customer=" + customer + "]";
+	}
+	
+	
 }

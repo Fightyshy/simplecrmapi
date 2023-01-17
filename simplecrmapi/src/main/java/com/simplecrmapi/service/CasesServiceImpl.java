@@ -4,7 +4,8 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 
-import org.springframework.beans.factory.annotation.Autowired;
+//import javax.transaction.Transactional;
+
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -69,14 +70,17 @@ public class CasesServiceImpl implements CasesService {
 	public Cases saveNewCase(Cases cases, int product, Integer empID) {
 		cases.setId(0);
 		
-		Employee creator = employeeDAO.findById(empID).orElseGet(null);
-		HashSet<Employee> emps = new HashSet<Employee>();
-		emps.add(creator);
-		cases.setEmployee(emps);
-		cases.setProduct(productDAO.findById(product).orElseGet(null));
-		creator.getCases().add(cases);
+//		Employee creator = employeeDAO.findById(empID).orElseGet(null);
+//		HashSet<Employee> emps = new HashSet<Employee>();
+		System.out.println("here emp");
+		System.out.println(product);
+//		emps.add(creator);
+//		cases.setEmployee(emps);
+//		cases.setProduct(productDAO.findById(product).orElseGet(null));
 		Cases newCase = casesDAO.saveAndFlush(cases);
-		employeeDAO.saveAndFlush(creator);
+		Employee emp = newCase.getEmployee().iterator().next();
+		emp.getCases().add(newCase);
+		employeeDAO.saveAndFlush(emp);
 		
 		return newCase;
 	}
