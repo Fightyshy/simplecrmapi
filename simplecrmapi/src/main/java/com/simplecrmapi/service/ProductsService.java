@@ -2,18 +2,18 @@ package com.simplecrmapi.service;
 
 import java.util.List;
 
-import com.simplecrmapi.entity.Products;
+import com.simplecrmapi.entity.Product;
 
 public interface ProductsService {
-	public List<Products> getAllProducts();
+	public List<Product> getAllProducts();
 
-	public Products getProductByName(String name);
+	public Product getProductByName(String name);
 	
-	public Products getProductByID(Integer ID);
+	public Product getProductByID(Integer ID);
 	
-	public Products saveProduct(Products product);
+	public Product saveProduct(Product product);
 	
-	public Products updateProduct(Products product);
+	public Product updateProduct(Product product);
 	
 	public void deleteProductByName(String name);
 	

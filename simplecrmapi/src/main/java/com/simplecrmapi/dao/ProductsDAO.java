@@ -2,10 +2,10 @@ package com.simplecrmapi.dao;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 
-import com.simplecrmapi.entity.Products;
+import com.simplecrmapi.entity.Product;
 
-public interface ProductsDAO extends JpaRepository<Products, Integer> {
-	Products findByName(String name);
+public interface ProductsDAO extends JpaRepository<Product, Integer> {
+	Product findByName(String name);
 	
-	Products deleteByName(String name);
+	Product deleteByName(String name);
 }

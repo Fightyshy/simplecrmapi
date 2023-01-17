@@ -7,7 +7,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.simplecrmapi.dao.ProductsDAO;
-import com.simplecrmapi.entity.Products;
+import com.simplecrmapi.entity.Product;
 
 @Service
 public class ProductsServiceImpl implements ProductsService {
@@ -16,27 +16,27 @@ public class ProductsServiceImpl implements ProductsService {
 	private ProductsDAO productsDAO;
 	
 	@Override
-	public List<Products> getAllProducts() {
+	public List<Product> getAllProducts() {
 		return productsDAO.findAll();
 	}
 
 	@Override
-	public Products getProductByName(String name) {
+	public Product getProductByName(String name) {
 		return productsDAO.findByName(name);
 	}
 
 	@Override
-	public Products getProductByID(Integer ID) {
+	public Product getProductByID(Integer ID) {
 		return productsDAO.findById(ID).orElseGet(null);
 	}
 
 	@Override
-	public Products saveProduct(Products product) {
+	public Product saveProduct(Product product) {
 		return productsDAO.saveAndFlush(product);
 	}
 
 	@Override
-	public Products updateProduct(Products product) {
+	public Product updateProduct(Product product) {
 		return productsDAO.saveAndFlush(product);
 	}
 

@@ -15,7 +15,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.simplecrmapi.entity.Products;
+import com.simplecrmapi.entity.Product;
 import com.simplecrmapi.service.ProductsService;
 
 @RestController
@@ -25,33 +25,34 @@ public class ProductsController {
 	private ProductsService productsService;
 	
 	@GetMapping("")
-	public ResponseEntity<List<Products>> getAllProducts(){
+	public ResponseEntity<List<Product>> getAllProducts(){
 		return ResponseEntity.ok(productsService.getAllProducts());
 	}
 	
 	@GetMapping("/name")
-	public ResponseEntity<Products> getproductByName(@RequestParam("product") String name){
-		Products product = productsService.getProductByName(name);
+	public ResponseEntity<Product> getproductByName(@RequestParam("product") String name){
+		Product product = productsService.getProductByName(name);
 		return product==null?ResponseEntity.notFound().build():ResponseEntity.ok(product);
 	}
 	
 	@GetMapping("/id")
-	public ResponseEntity<Products> getProductByID(@RequestParam("id") int ID){
-		Products product = productsService.getProductByID(ID);
+	public ResponseEntity<Product> getProductByID(@RequestParam("id") int ID){
+		Product product = productsService.getProductByID(ID);
+		System.out.println(product);
 		return ResponseEntity.ok(product);
 	}
 	
 	//Maybe tags as a separate db table and list?
 	
 	@PostMapping("")
-	public ResponseEntity<Products> saveProduct(@RequestBody Products product) throws URISyntaxException{
-		Products newProduct = productsService.saveProduct(product);
+	public ResponseEntity<Product> saveProduct(@RequestBody Product product) throws URISyntaxException{
+		Product newProduct = productsService.saveProduct(product);
 		return ResponseEntity.created(new URI("/products/id/"+product.getId())).body(newProduct);
 	}
 	
 	@PutMapping("")
-	public ResponseEntity<Products> updateProduct(@RequestBody Products product){
-		Products updateProduct = productsService.updateProduct(product);
+	public ResponseEntity<Product> updateProduct(@RequestBody Product product){
+		Product updateProduct = productsService.updateProduct(product);
 		return ResponseEntity.ok(updateProduct);
 	}
 	

@@ -52,6 +52,7 @@ public class SimpleCRMSecurityConfig extends WebSecurityConfigurerAdapter {
                 .authorizeRequests()
                 .antMatchers(HttpMethod.POST, "/users/issue-pw-token", "/users/reset-pw", "/users/emailChecker").permitAll()
                 .antMatchers(HttpMethod.PUT, "/users/authenticate", "/users/register", "/users/retrieve-user").permitAll()
+                .antMatchers(HttpMethod.GET, "/products/id").permitAll()
                 .antMatchers(HttpMethod.GET,"/customers/**", "/customers", "/customers/id", "/customers/id/**").hasAnyRole("EMPLOYEE","ADMIN","MANAGER")
                 .antMatchers(HttpMethod.POST,"/customers/**", "/customers", "/customers/id", "/customers/id/**").hasAnyRole("EMPLOYEE","ADMIN","MANAGER")
                 .antMatchers(HttpMethod.PUT,"/customers/**", "/customers", "/customers/id", "/customers/id/**").hasAnyRole("EMPLOYEE","ADMIN","MANAGER")
