@@ -5,9 +5,11 @@ import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
+import javax.persistence.Table;
 
 @Entity
-public class Products {
+@Table(name="products")
+public class Product {
 	
 	@Id
 	@GeneratedValue(strategy=GenerationType.IDENTITY)
@@ -17,15 +19,15 @@ public class Products {
 	@Column(name="name")
 	private String name;
 	
-	@Column(name="desc")
-	private String desc;
+	@Column(name="summary")
+	private String summary;
 
-	public Products() {
+	public Product() {
 	}
 
-	public Products(String name, String desc) {
+	public Product(String name, String summary) {
 		this.name = name;
-		this.desc = desc;
+		this.summary = summary;
 	}
 
 	public int getId() {
@@ -44,11 +46,11 @@ public class Products {
 		this.name = name;
 	}
 
-	public String getDesc() {
-		return desc;
+	public String getSummary() {
+		return summary;
 	}
 
-	public void setDesc(String desc) {
-		this.desc = desc;
+	public void setSummary(String summary) {
+		this.summary = summary;
 	}
 }
