@@ -69,14 +69,6 @@ public class CasesServiceImpl implements CasesService {
 	@Transactional
 	public Cases saveNewCase(Cases cases, int product, Integer empID) {
 		cases.setId(0);
-		
-//		Employee creator = employeeDAO.findById(empID).orElseGet(null);
-//		HashSet<Employee> emps = new HashSet<Employee>();
-		System.out.println("here emp");
-		System.out.println(product);
-//		emps.add(creator);
-//		cases.setEmployee(emps);
-//		cases.setProduct(productDAO.findById(product).orElseGet(null));
 		Cases newCase = casesDAO.saveAndFlush(cases);
 		Employee emp = newCase.getEmployee().iterator().next();
 		emp.getCases().add(newCase);

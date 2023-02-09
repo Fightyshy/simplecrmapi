@@ -87,8 +87,15 @@ public class CaseController {
 		return ResponseEntity.created(new URI("/cases/id/"+newCase.getId())).body(newCase);
 	}
 	
+	@PutMapping("/employees")
+	public ResponseEntity<Object> saveCaseWithNewEmployee(@Valid @RequestBody Cases cases){
+		Cases updatedCase = casesService.updateCase(cases);
+		return ResponseEntity.ok(updatedCase);
+	}
+	
 	//PostMapping("id/employees")
 	//Save new employee to case
+	//legacy?
 	@PutMapping("/id/employees")
 	public ResponseEntity<Object> saveEmployeeToCase(@Valid @RequestBody Cases cases, @RequestParam("empId") int empID){
 		Cases updatedCase = casesService.saveEmployeeToCase(cases, empID);

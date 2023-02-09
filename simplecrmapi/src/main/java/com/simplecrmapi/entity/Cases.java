@@ -48,7 +48,7 @@ public class Cases {
 	@Column(name="summary")
 	private String summary;
 	
-	@OneToOne(cascade=CascadeType.ALL)
+	@OneToOne(cascade= {CascadeType.DETACH, CascadeType.REFRESH, CascadeType.REMOVE})
 	@JoinColumn(name="products_id")
 	private Product product;
 	
