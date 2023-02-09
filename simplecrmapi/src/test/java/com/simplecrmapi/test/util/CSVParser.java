@@ -12,7 +12,7 @@ import com.simplecrmapi.entity.Address;
 import com.simplecrmapi.entity.Cases;
 import com.simplecrmapi.entity.Customer;
 import com.simplecrmapi.entity.Employee;
-import com.simplecrmapi.entity.Products;
+import com.simplecrmapi.entity.Product;
 import com.simplecrmapi.entity.SocialMedia;
 
 public class CSVParser {
@@ -149,7 +149,7 @@ public class CSVParser {
 			}else {				
 				cases1.setEndDate(LocalDateTime.parse(csv[3]));
 			}
-			Products product = new Products(csv[4], csv[5]);
+			Product product = new Product(csv[4], csv[5]);
 			cases1.setProduct(product);
 			caseOut.add(cases1);
 		}

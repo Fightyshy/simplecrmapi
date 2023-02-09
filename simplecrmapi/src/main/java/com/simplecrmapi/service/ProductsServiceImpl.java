@@ -32,6 +32,7 @@ public class ProductsServiceImpl implements ProductsService {
 
 	@Override
 	public Product saveProduct(Product product) {
+		product.setId(0);
 		return productsDAO.saveAndFlush(product);
 	}
 

@@ -73,7 +73,6 @@ public class User implements UserDetails{
 
 	//also a test constructor
 	public User(int id, String username, String password, Set<Role> roles, boolean enabled, Employee employee) {
-		super();
 		this.id = id;
 		this.username = username;
 		this.password = password;

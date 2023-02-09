@@ -2,6 +2,7 @@ package com.simplecrmapi.config;
 
 import java.util.Arrays;
 import java.util.HashSet;
+import java.util.List;
 
 import javax.annotation.Resource;
 
@@ -19,8 +20,10 @@ import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
+import com.simplecrmapi.entity.Employee;
 import com.simplecrmapi.entity.Role;
 import com.simplecrmapi.entity.User;
+import com.simplecrmapi.util.CSVParser;
 import com.simplecrmapi.util.InMemoryCustomUserDetailsManager;
 import com.simplecrmapi.util.JwtAuthenticationFilter;
 import com.simplecrmapi.util.UnauthorizedEntryPoint;
@@ -102,19 +105,20 @@ public class SimpleCRMSecurityConfig extends WebSecurityConfigurerAdapter {
         return new JwtAuthenticationFilter();
     }
     
-//    @Bean
-//    public UserDetailsService testEmployeeDetails() {
-//		Role emper = new Role("EMPLOYEE");
-//		HashSet<Role> emloyee = new HashSet<>();
-//		emloyee.add(emper);
-//		User emp1 = new User(1, "employee1", "$2a$10$/lsJHIECOXOL9T8GAa5SGuskWo4E5dg/7neiYnYfqEeWqTV33dnZq",1 ,emloyee);
-//		emp1.setEmployeeID(1);
-//
-//		//Another smoking gun https://babarowski.com/blog/mock-authentication-with-custom-userdetails/#final-solution
-//		//But instead extended the class and created a (sloppy) custom implementation
-//		//Which is basically the important parts using custom user
-//		//TODO Move to separate testing config
-//		return new InMemoryCustomUserDetailsManager(Arrays.asList(emp1));
-//    }
+    @Bean
+    public UserDetailsService testEmployeeDetails() {
+    	CSVParser parser = new CSVParser();
+    	List<String []> empList = parser.readLine("Employee.txt");
+    	Employee emp = parser.employeeParser(empList).get(0);
+		Role emper = new Role("EMPLOYEE");
+		HashSet<Role> employee = new HashSet<>();
+		employee.add(emper);
+		User emp1 = new User(1, "employee1", "$2a$10$/lsJHIECOXOL9T8GAa5SGuskWo4E5dg/7neiYnYfqEeWqTV33dnZq", employee, true, emp);
+		//Another smoking gun https://babarowski.com/blog/mock-authentication-with-custom-userdetails/#final-solution
+		//But instead extended the class and created a (sloppy) custom implementation
+		//Which is basically the important parts using custom user
+		//TODO Move to separate testing config
+		return new InMemoryCustomUserDetailsManager(Arrays.asList(emp1));
+    }
 }
 
