@@ -7,10 +7,8 @@ import java.util.Set;
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
-import javax.persistence.JoinColumn;
 import javax.persistence.ManyToMany;
 import javax.persistence.OneToMany;
-import javax.persistence.OneToOne;
 import javax.persistence.Table;
 import javax.validation.constraints.Email;
 import javax.validation.constraints.NotEmpty;
@@ -19,8 +17,8 @@ import javax.validation.constraints.Past;
 import javax.validation.constraints.PositiveOrZero;
 
 import com.fasterxml.jackson.annotation.JsonIdentityInfo;
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.ObjectIdGenerators;
+import com.simplerestapiconsumer.entity.Employee;
 
 @Entity
 @Table(name="employee")
@@ -119,5 +117,20 @@ public class Employee extends Person{
 
 	public void setCases(Set<Cases> cases) {
 		this.cases = cases;
+	}
+	
+	@Override
+	public boolean equals(Object emp) {
+		if(emp instanceof Employee) {
+			Employee comparator = (Employee) emp;
+			return this.id.equals(comparator.id);
+		}
+		return false;
+	}
+
+	@Override
+	public int hashCode() {
+		// TODO Auto-generated method stub
+		return id.hashCode(); //id is immutable in this case (either deleted along with entity or never changes
 	}
 }

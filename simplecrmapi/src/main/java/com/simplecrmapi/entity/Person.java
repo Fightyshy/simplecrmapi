@@ -31,7 +31,7 @@ public class Person {
 	@GeneratedValue(strategy=GenerationType.IDENTITY)
 	@Column(name="id")
 //	@NotNull
-	private Integer id;
+	protected Integer id;
 	
 	@Column(name="first_name")
 	@NotNull
