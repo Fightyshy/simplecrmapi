@@ -59,4 +59,6 @@ public interface EmployeeService {
 	public Employee getEmployeeByEmailAddress(String email);
 
 	public Employee getEmployeeByUsername(String username);
+
+	public Cases updateCaseWithNewEmployee(Cases cases, Integer ID);
 }

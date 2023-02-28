@@ -19,6 +19,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.simplecrmapi.entity.AddEmployeeDTO;
 import com.simplecrmapi.entity.Cases;
 import com.simplecrmapi.entity.Customer;
 import com.simplecrmapi.entity.Employee;
@@ -123,13 +124,24 @@ public class CaseController {
 	}
 	
 	@PutMapping("/status")
-	public ResponseEntity<Object> udateUserCaseStatus(@RequestParam("id") int ID, @RequestParam("status") String status){
+	public ResponseEntity<Object> updateUserCaseStatus(@RequestParam("id") int ID, @RequestParam("status") String status){
 		Cases updatedCase = casesService.getCaseByID(ID);
 		if(updatedCase!=null) {
 			updatedCase.setCasesStatus(status);
 			casesService.updateCase(updatedCase);
 			return ResponseEntity.ok(updatedCase);
 		}else {
+			return ResponseEntity.notFound().build();
+		}
+	}
+	
+	@PutMapping("/employees/new")
+	public ResponseEntity<Object> updateNewEmployeeIntoCase(@RequestBody AddEmployeeDTO empCase){
+		try {
+//			casesService.updateCase(empCase.getCases());
+			Cases updatedEmp = employeeService.updateCaseWithNewEmployee(empCase.getCases(), empCase.getEmployee().getId());
+			return ResponseEntity.ok(null);
+		}catch(Exception e) {
 			return ResponseEntity.notFound().build();
 		}
 	}

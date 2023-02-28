@@ -86,15 +86,8 @@ public class EmployeeController {
 	
 	@GetMapping("/users/cases")
 	public ResponseEntity<Object> getCasesAssignedToUserEmployee() throws JsonProcessingException{
-//		String cases = new ObjectMapper().registerModule(new JavaTimeModule()).writeValueAsString(getEmployeeFromSession().getCases());
 		return ResponseEntity.ok(getEmployeeFromSession().getCases());
 	}
-	
-//	//manager usage to check on employee
-//	@GetMapping("/users/cases/id")
-//	public ResponseEntity<Object> getCasesAssignedToUserEmployeeByID(@RequestParam("id") int id){
-//		
-//	}
 	
 	@GetMapping("/users/customers")
 	public ResponseEntity<Object> getCustomersAssignedToUserEmployee(){

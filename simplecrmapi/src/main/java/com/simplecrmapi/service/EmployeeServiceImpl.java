@@ -265,6 +265,18 @@ public class EmployeeServiceImpl implements EmployeeService {
 	
 	@Override
 	@Transactional
+	public Cases updateCaseWithNewEmployee(Cases cases, Integer ID) {
+		Employee emp = getEmployeeByID(ID);
+		cases.getEmployee().add(emp);
+		Cases updated = casesDAO.saveAndFlush(cases);
+		
+		emp.getCases().add(updated);
+		employeeDAO.saveAndFlush(emp);
+		return updated;
+	}
+	
+	@Override
+	@Transactional
 	public Cases updateEmployeeAssignedCaseByID(Cases cases, Employee emp) {
 		
 		for(Cases cased:emp.getCases()) {
@@ -308,20 +320,24 @@ public class EmployeeServiceImpl implements EmployeeService {
 	@Override
 	@Transactional
 	public void deleteEmployeeByID(Integer ID) {
+		purgeEmployeeCasesForDelete(ID);
 		employeeDAO.deleteById(ID);
 	}
 
 	@Override
+	@Transactional
 	public void deleteEmployeeAddressByIDs(int employeeID, int addressID) {
 		employeeDAO.deleteEmployeeAddressByIDs(employeeID, addressID);
 	}
 	
 	@Override
+	@Transactional
 	public void deleteEmployeeAddressByIDs(Employee emp, int addressID) {
 		employeeDAO.deleteEmployeeAddressByIDs(emp.getId(), addressID);
 	}
 
 	@Override
+	@Transactional
 	public void removeEmployeeAssignedCase(int employeeID, int caseID) {
 		Employee emp = getEmployeeByID(employeeID);
 		Cases foundCase = new Cases();
@@ -348,5 +364,11 @@ public class EmployeeServiceImpl implements EmployeeService {
 		casesDAO.saveAndFlush(foundCase);
 	}
 
-	
+	@Transactional
+	private Employee purgeEmployeeCasesForDelete(int employeeID) {
+		Employee emp = getEmployeeByID(employeeID);
+		emp.setCases(new HashSet<Cases>());
+		employeeDAO.saveAndFlush(emp);
+		return emp;
+	}
 }

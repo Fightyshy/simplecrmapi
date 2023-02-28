@@ -18,7 +18,6 @@ import javax.validation.constraints.PositiveOrZero;
 
 import com.fasterxml.jackson.annotation.JsonIdentityInfo;
 import com.fasterxml.jackson.annotation.ObjectIdGenerators;
-import com.simplerestapiconsumer.entity.Employee;
 
 @Entity
 @Table(name="employee")
@@ -47,7 +46,7 @@ public class Employee extends Person{
 	private Integer casesClosed;
 
 //	@JsonIgnore
-	@ManyToMany(mappedBy="employee",cascade= {CascadeType.DETACH,CascadeType.REFRESH,CascadeType.REMOVE})
+	@ManyToMany(mappedBy="employee",cascade= {CascadeType.DETACH,CascadeType.REFRESH})
 	private Set<Cases> cases;
 	
 	@OneToMany(mappedBy="employee",cascade= {CascadeType.DETACH, CascadeType.REFRESH, CascadeType.REMOVE})
@@ -130,7 +129,6 @@ public class Employee extends Person{
 
 	@Override
 	public int hashCode() {
-		// TODO Auto-generated method stub
 		return id.hashCode(); //id is immutable in this case (either deleted along with entity or never changes
 	}
 }

@@ -62,7 +62,7 @@ public class Cases {
 			inverseJoinColumns=@JoinColumn(name="employee_id"))
 	private Set<Employee> employee;
 	
-	@OneToOne
+	@OneToOne(cascade= {CascadeType.DETACH, CascadeType.REFRESH})
 	@JoinColumn(name="customer_id")
 	private Customer customer;
 	
@@ -92,20 +92,6 @@ public class Cases {
 		this.employee = employee;
 		this.customer = customer;
 	}
-	
-//	public Cases() {
-//		this.casesStatus = CaseStatus.PENDING.toString();
-//		this.startDate = LocalDateTime.now();
-//	}
-//	
-//	public Cases(@NotNull String casesStatus, Product product, Customer customer) {
-//		this.casesStatus = casesStatus;
-//		this.startDate = LocalDateTime.now();
-//		this.endDate = null;
-//		this.product  = product;
-//		this.customer = customer;
-//	}
-	
 
 	public Integer getId() {
 		return id;
