@@ -124,8 +124,9 @@ public class CasesServiceImpl implements CasesService {
 	public void deleteEmployeeFromCase(Integer ID, Integer empID) {
 		try {
 			//temp loops
-			Cases temp = casesDAO.findById(empID).orElseGet(null);
+			Cases temp = casesDAO.findById(ID).orElseGet(null);
 			Employee tempEmp = employeeDAO.findById(empID).orElseGet(null);
+			
 			
 			temp.getEmployee().remove(tempEmp);
 			tempEmp.getCases().remove(temp);
