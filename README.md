@@ -5,7 +5,7 @@ Personal project done applying skills learned regarding Spring and Spring boot
 
 ### Frameworks and supporting tools used
 - Spring Boot
-- -MySQL Database
+- MySQL Database
 - JPA (Java Persistence API) with Spring Data
 - JWT (Json Web Tokens)
 - Hibernate Validator
